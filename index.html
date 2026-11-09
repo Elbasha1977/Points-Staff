@@ -1096,6 +1096,29 @@ function encodeSavedGroupingsForFirestore(source){
  });
  return encoded;
 }
+// Generic protection: any array directly contained in another array is
+// converted to a marker object before writing to Firestore. This covers fields
+// beyond savedGroupings (including student/class records and mirror documents).
+function encodeFirestoreSafeData(value, parentIsArray=false){
+ if(Array.isArray(value)){
+  const items=value.map(item=>encodeFirestoreSafeData(item,true));
+  return parentIsArray?{__firestoreNestedArrayEncoded:true,items:items}:items;
+ }
+ if(value&&typeof value==='object'&&!(value instanceof Date)){
+  const out={};
+  Object.keys(value).forEach(key=>{out[key]=encodeFirestoreSafeData(value[key],false);});
+  return out;
+ }
+ return value;
+}
+function decodeFirestoreSafeData(value){
+ if(Array.isArray(value))return value.map(decodeFirestoreSafeData);
+ if(value&&typeof value==='object'){
+  if(value.__firestoreNestedArrayEncoded===true&&Array.isArray(value.items))return value.items.map(decodeFirestoreSafeData);
+  const out={};Object.keys(value).forEach(key=>{out[key]=decodeFirestoreSafeData(value[key]);});return out;
+ }
+ return value;
+}
 function decodeSavedGroupingsFromFirestore(source){
  const decoded={};
  Object.keys(source||{}).forEach(classId=>{
@@ -1121,7 +1144,7 @@ async function loadFirebaseData(){
   if(isSchoolManager()){allClassesData={};classPrizes={};parentContacts={};studentLevels={};groupScores={};dailyTrackerData={};violationsData={};warningsData={};disconnectedStudents={};studentRewards={};medicalConditions={};academicScores={};assessmentsScores={};savedGroupings={};diagnosticData={};messagesLog=[];monthlyPoints={};currentClass='';availablePrizesCount=0;}
   const snap=await dataRef.get();
   if(snap.exists){
-   const d=snap.data();
+   const d=decodeFirestoreSafeData(snap.data());
    if((isSchoolManager()&&d.schoolId!==firebaseProfile.schoolId)||(isGlobalFirebaseAdmin()&&d.schoolId))throw new Error('بيانات المدرسة لا تطابق نطاق الحساب.');
    if(d.allClassesData!==undefined)allClassesData=d.allClassesData;
    if(d.classPrizes!==undefined)classPrizes=d.classPrizes;
@@ -1206,7 +1229,7 @@ async function saveFirebaseData(){
    const batch=firestoreDb.batch();
    permitted.forEach(classId=>{
     if(!Object.prototype.hasOwnProperty.call(allClassesData||{},classId))return;
-    const mirror={classId,classData:allClassesData[classId],schoolId:tenant,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
+    const mirror=encodeFirestoreSafeData({classId,classData:allClassesData[classId],schoolId:tenant,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid});
     batch.set(firestoreDb.collection('schoolClasses').doc(tenant+'__'+classId),mirror,{merge:true});
    });
    await batch.commit();
@@ -1220,13 +1243,13 @@ async function saveFirebaseData(){
  const payload={allClassesData,currentClass,classPrizes,parentContacts,studentLevels,groupScores,dailyTrackerData,violationsData,warningsData,disconnectedStudents,studentRewards,medicalConditions,academicScores,assessmentsScores,savedGroupings:encodeSavedGroupingsForFirestore(savedGroupings),diagnosticData,messagesLog,monthlyPoints,availablePrizesCount,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
  if(tenant)payload.schoolId=tenant;
  try{
-  await dataRef.set(payload,{merge:true});
+  await dataRef.set(encodeFirestoreSafeData(payload),{merge:true});
   const classIds=Object.keys(allClassesData||{});
   for(let start=0;start<classIds.length;start+=400){
     const batch=firestoreDb.batch();
     classIds.slice(start,start+400).forEach(classId=>{
       const docId=tenant?(tenant+'__'+classId):classId;
-      const mirror={classId:classId,classData:allClassesData[classId],updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
+      const mirror=encodeFirestoreSafeData({classId:classId,classData:allClassesData[classId],updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid});
       if(tenant)mirror.schoolId=tenant;
       batch.set(firestoreDb.collection('schoolClasses').doc(docId),mirror,{merge:true});
     });
