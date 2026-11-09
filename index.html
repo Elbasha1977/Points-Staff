@@ -482,6 +482,7 @@ body{overscroll-behavior-y:auto}
                         <a id="warningDropdown">⚠️ إعطاء إنذار</a>
                         <a id="groupPointsDropdown">🎯 نقاط المجموعات</a>
                         <a id="studentsPointsDropdown">📊 نقاط الطلاب</a>
+                        <a id="homeworkResultsDropdown">📢 نتائج الواجبات المنزلية</a>
                     </div>
                 </div>
 
@@ -1044,6 +1045,8 @@ body{overscroll-behavior-y:auto}
 
 <div id="uploadPhotosModal" class="modal"><div class="modal-content" style="max-width:600px; position: relative;"><button class="modal-close-x" onclick="closeUploadPhotosModal(); event.stopPropagation();">✕</button><h2>📸 رفع صور الفائقين</h2><div class="upload-area"><label>🥇 المركز الأول</label><input type="file" id="photo1Input" accept="image/*"><div id="preview1"></div></div><div class="upload-area"><label>🥈 المركز الثاني</label><input type="file" id="photo2Input" accept="image/*"><div id="preview2"></div></div><div class="upload-area"><label>🥉 المركز الثالث</label><input type="file" id="photo3Input" accept="image/*"><div id="preview3"></div></div><div style="display:flex;justify-content:center;gap:10px;"><button class="close-modal confirm-btn" id="savePhotosBtn">💾 حفظ</button><button class="close-modal cancel-btn" id="cancelPhotosBtn">إلغاء</button></div></div></div>
 
+
+<div id="homeworkResultsModal" class="modal"><div class="modal-content" style="max-width:1100px;width:96%;max-height:90vh;overflow:auto;position:relative"><button class="modal-close-x" onclick="document.getElementById('homeworkResultsModal').style.display='none'">✕</button><h2>📢 نتائج الواجبات المنزلية</h2><div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0"><select id="homeworkResultsClass" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px"><option value="">كل الفصول المصرح بها</option></select><button class="close-modal confirm-btn" id="refreshHomeworkResults">🔄 تحديث النتائج</button></div><div id="homeworkResultsStats" style="font-weight:bold;margin:10px 0"></div><div style="overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#1e3a8a;color:white"><th style="padding:9px">الطالب</th><th>الصف</th><th>ورقة العمل</th><th>الدرجة</th><th>حالة النقاط</th><th>تاريخ الاعتماد</th></tr></thead><tbody id="homeworkResultsBody"></tbody></table></div><p style="color:#64748b;font-size:13px">تظهر هنا النتائج التي تم اعتمادها وإضافة نقاطها فعليًا إلى رصيد الطالب.</p></div></div>
 <div id="studentsPointsModal" class="modal"><div class="modal-content" style="position: relative;"><button class="modal-close-x" onclick="closeStudentsPointsModal(); event.stopPropagation();">✕</button><h2>📊 نقاط الطلاب</h2><div style="overflow-x: auto;"><table class="students-table-modal"><thead><tr><th>الترتيب</th><th>الطالب</th><th>المستوى</th><th>النقاط</th></tr></thead><tbody id="studentsPointsTableBody"></tbody></table></div><button class="close-modal cancel-btn" id="closeStudentsPointsModalBtn" style="margin-top: 20px;">إغلاق</button></div></div>
 
 <div id="levelsModal" class="modal"><div class="modal-content" style="position: relative;"><button class="modal-close-x" onclick="closeLevelsModal(); event.stopPropagation();">✕</button><h2>📊 مستويات الطلاب</h2><div style="max-height: 500px; overflow-y: auto;"><table style="width:100%"><thead><tr style="background:#4338ca;color:white"><th>#</th><th>الطالب</th><th>المستوى</th></tr></thead><tbody id="levelsTableBody"></tbody></table></div><div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;"><button class="close-modal" id="exportLevelsExcelBtn" style="background: #16a34a;">📊 Excel</button><button class="close-modal confirm-btn" id="saveLevelsBtn">💾 حفظ</button><button class="close-modal cancel-btn" id="closeLevelsBtn">إلغاء</button></div></div></div>
@@ -1081,57 +1084,6 @@ function getTenantDataRef(){
  if(isSchoolManager())return firestoreDb.collection('schoolData').doc(firebaseProfile.schoolId);
  return null;
 }
-// Firestore does not allow arrays to directly contain other arrays.
-// Encode the outer saved-group list as an indexed object; keep each group's
-// member list as a normal array, then restore the original shape after reading.
-function encodeSavedGroupingsForFirestore(source){
- const encoded={};
- Object.keys(source||{}).forEach(classId=>{
-  const item=source[classId];
-  if(item&&Array.isArray(item.groups)){
-   const indexed={};
-   item.groups.forEach((group,index)=>{indexed[String(index)]=Array.isArray(group)?group:[];});
-   encoded[classId]={...item,groups:{__encodedGroupArray:true,items:indexed}};
-  }else encoded[classId]=item;
- });
- return encoded;
-}
-// Generic protection: any array directly contained in another array is
-// converted to a marker object before writing to Firestore. This covers fields
-// beyond savedGroupings (including student/class records and mirror documents).
-function encodeFirestoreSafeData(value, parentIsArray=false){
- if(Array.isArray(value)){
-  const items=value.map(item=>encodeFirestoreSafeData(item,true));
-  return parentIsArray?{__firestoreNestedArrayEncoded:true,items:items}:items;
- }
- if(value&&typeof value==='object'&&!(value instanceof Date)){
-  const out={};
-  Object.keys(value).forEach(key=>{out[key]=encodeFirestoreSafeData(value[key],false);});
-  return out;
- }
- return value;
-}
-function decodeFirestoreSafeData(value){
- if(Array.isArray(value))return value.map(decodeFirestoreSafeData);
- if(value&&typeof value==='object'){
-  if(value.__firestoreNestedArrayEncoded===true&&Array.isArray(value.items))return value.items.map(decodeFirestoreSafeData);
-  const out={};Object.keys(value).forEach(key=>{out[key]=decodeFirestoreSafeData(value[key]);});return out;
- }
- return value;
-}
-function decodeSavedGroupingsFromFirestore(source){
- const decoded={};
- Object.keys(source||{}).forEach(classId=>{
-  const item=source[classId];
-  if(item&&item.groups&&item.groups.__encodedGroupArray===true&&item.groups.items&&typeof item.groups.items==='object'){
-   const items=item.groups.items;
-   const groups=Object.keys(items).sort((a,b)=>Number(a)-Number(b)).map(key=>items[key]);
-   decoded[classId]={...item,groups};
-  }else decoded[classId]=item;
- });
- return decoded;
-}
-
 async function loadFirebaseData(){
  const dataRef=getTenantDataRef();
  const statusEl=document.getElementById('firebaseSyncStatus');
@@ -1144,7 +1096,7 @@ async function loadFirebaseData(){
   if(isSchoolManager()){allClassesData={};classPrizes={};parentContacts={};studentLevels={};groupScores={};dailyTrackerData={};violationsData={};warningsData={};disconnectedStudents={};studentRewards={};medicalConditions={};academicScores={};assessmentsScores={};savedGroupings={};diagnosticData={};messagesLog=[];monthlyPoints={};currentClass='';availablePrizesCount=0;}
   const snap=await dataRef.get();
   if(snap.exists){
-   const d=decodeFirestoreSafeData(snap.data());
+   const d=snap.data();
    if((isSchoolManager()&&d.schoolId!==firebaseProfile.schoolId)||(isGlobalFirebaseAdmin()&&d.schoolId))throw new Error('بيانات المدرسة لا تطابق نطاق الحساب.');
    if(d.allClassesData!==undefined)allClassesData=d.allClassesData;
    if(d.classPrizes!==undefined)classPrizes=d.classPrizes;
@@ -1159,7 +1111,7 @@ async function loadFirebaseData(){
    if(d.medicalConditions!==undefined)medicalConditions=d.medicalConditions;
    if(d.academicScores!==undefined)academicScores=d.academicScores;
    if(d.assessmentsScores!==undefined)assessmentsScores=d.assessmentsScores;
-   if(d.savedGroupings!==undefined)savedGroupings=decodeSavedGroupingsFromFirestore(d.savedGroupings);
+   if(d.savedGroupings!==undefined)savedGroupings=d.savedGroupings;
    if(d.diagnosticData!==undefined)diagnosticData=d.diagnosticData;
    if(d.messagesLog!==undefined)messagesLog=d.messagesLog;
    if(d.monthlyPoints!==undefined)monthlyPoints=d.monthlyPoints;
@@ -1229,7 +1181,7 @@ async function saveFirebaseData(){
    const batch=firestoreDb.batch();
    permitted.forEach(classId=>{
     if(!Object.prototype.hasOwnProperty.call(allClassesData||{},classId))return;
-    const mirror=encodeFirestoreSafeData({classId,classData:allClassesData[classId],schoolId:tenant,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid});
+    const mirror={classId,classData:allClassesData[classId],schoolId:tenant,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
     batch.set(firestoreDb.collection('schoolClasses').doc(tenant+'__'+classId),mirror,{merge:true});
    });
    await batch.commit();
@@ -1240,16 +1192,16 @@ async function saveFirebaseData(){
  const dataRef=getTenantDataRef();
  if(!dataRef)return;
  const tenant=isSchoolManager()?firebaseProfile.schoolId:null;
- const payload={allClassesData,currentClass,classPrizes,parentContacts,studentLevels,groupScores,dailyTrackerData,violationsData,warningsData,disconnectedStudents,studentRewards,medicalConditions,academicScores,assessmentsScores,savedGroupings:encodeSavedGroupingsForFirestore(savedGroupings),diagnosticData,messagesLog,monthlyPoints,availablePrizesCount,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
+ const payload={allClassesData,currentClass,classPrizes,parentContacts,studentLevels,groupScores,dailyTrackerData,violationsData,warningsData,disconnectedStudents,studentRewards,medicalConditions,academicScores,assessmentsScores,savedGroupings,diagnosticData,messagesLog,monthlyPoints,availablePrizesCount,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
  if(tenant)payload.schoolId=tenant;
  try{
-  await dataRef.set(encodeFirestoreSafeData(payload),{merge:true});
+  await dataRef.set(payload,{merge:true});
   const classIds=Object.keys(allClassesData||{});
   for(let start=0;start<classIds.length;start+=400){
     const batch=firestoreDb.batch();
     classIds.slice(start,start+400).forEach(classId=>{
       const docId=tenant?(tenant+'__'+classId):classId;
-      const mirror=encodeFirestoreSafeData({classId:classId,classData:allClassesData[classId],updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid});
+      const mirror={classId:classId,classData:allClassesData[classId],updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
       if(tenant)mirror.schoolId=tenant;
       batch.set(firestoreDb.collection('schoolClasses').doc(docId),mirror,{merge:true});
     });
@@ -5534,6 +5486,35 @@ function renderStudents() {
     promptEligibleSurpriseVerification();
 }
 
+
+// سجل النتائج المنشورة: لا يعرض إلا النتائج التي سُجل نجاح إضافة نقاطها.
+async function openHomeworkResultsModal(){
+ const modal=document.getElementById('homeworkResultsModal'); modal.style.display='flex';
+ const sel=document.getElementById('homeworkResultsClass'); sel.innerHTML='<option value="">كل الفصول المصرح بها</option>';
+ const permitted=(firebaseProfile&&firebaseProfile.role==='staff'&&Array.isArray(firebaseProfile.classIds))?firebaseProfile.classIds:Object.keys(allClassesData||{});
+ permitted.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+ if(firebaseProfile&&firebaseProfile.role==='staff'&&permitted.length)sel.value=permitted[0];
+ await loadHomeworkResults();
+}
+async function loadHomeworkResults(){
+ const body=document.getElementById('homeworkResultsBody'), stats=document.getElementById('homeworkResultsStats');
+ body.innerHTML='<tr><td colspan="6" style="padding:15px;text-align:center">جارٍ تحميل النتائج...</td></tr>';
+ try{
+  let q=firestoreDb.collection('homework_results');
+  const school=(firebaseProfile&&firebaseProfile.schoolId)||'global';
+  q=q.where('schoolId','==',school);
+  let cls=document.getElementById('homeworkResultsClass').value;
+  if(firebaseProfile&&firebaseProfile.role==='staff'){const allowed=Array.isArray(firebaseProfile.classIds)?firebaseProfile.classIds:[];if(!cls)cls=allowed[0]||'';if(!allowed.includes(cls))throw new Error('لا تملك صلاحية عرض نتائج هذا الفصل.');}
+  if(cls)q=q.where('studentClass','==',cls);
+  const snap=await q.get(); let rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+  rows.sort((a,b)=>((b.awardedAt&&b.awardedAt.toMillis)?b.awardedAt.toMillis():0)-((a.awardedAt&&a.awardedAt.toMillis)?a.awardedAt.toMillis():0));
+  stats.textContent='إجمالي الطلاب الذين أضيفت نقاطهم فعليًا: '+rows.length;
+  if(!rows.length){body.innerHTML='<tr><td colspan="6" style="padding:15px;text-align:center">لا توجد نتائج معتمدة حتى الآن.</td></tr>';return;}
+  body.innerHTML=rows.map(a=>'<tr style="border-bottom:1px solid #e2e8f0;text-align:center"><td style="padding:9px;font-weight:bold">'+escapeHomeworkResult(a.studentName)+'</td><td>'+escapeHomeworkResult(a.studentClass)+'</td><td>'+escapeHomeworkResult(a.worksheetTitle)+'</td><td>'+Number(a.score||0)+' / '+Number(a.maxScore||0)+'</td><td style="color:#047857;font-weight:bold">✔ تم احتساب النقاط</td><td>'+((a.awardedAt&&a.awardedAt.toDate)?a.awardedAt.toDate().toLocaleString('ar-QA'):'—')+'</td></tr>').join('');
+ }catch(e){body.innerHTML='<tr><td colspan="6" style="color:#b91c1c;padding:12px">تعذر تحميل النتائج: '+escapeHomeworkResult(e.message||e)+'</td></tr>';stats.textContent='';}
+}
+function escapeHomeworkResult(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
 // ==================== ربط الأحداث ====================
 document.addEventListener('DOMContentLoaded', function() {
     initMonthlyData();
@@ -5561,6 +5542,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('warningDropdown').onclick = function() { showMultiSelectModal('⚠️ اختر الطلاب','warning'); };
     document.getElementById('groupPointsDropdown').onclick = function() { showGroupPointsSetup(); };
     document.getElementById('studentsPointsDropdown').onclick = function() { showStudentsPointsModal(); };
+    document.getElementById('homeworkResultsDropdown').onclick = function() { openHomeworkResultsModal(); };
+    document.getElementById('refreshHomeworkResults').onclick = function() { loadHomeworkResults(); };
     document.getElementById('rewardsShopDropdown').onclick = function() { showCandidatesCelebration(); };
     document.getElementById('surpriseDropdown').onclick = function() { showAutoSurprise(); };
     document.getElementById('editPrizesDropdown').onclick = function() { showEditPrizesModal(); };
