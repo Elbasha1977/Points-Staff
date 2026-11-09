@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"> 
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1081,6 +1081,34 @@ function getTenantDataRef(){
  if(isSchoolManager())return firestoreDb.collection('schoolData').doc(firebaseProfile.schoolId);
  return null;
 }
+// Firestore does not allow arrays to directly contain other arrays.
+// Encode the outer saved-group list as an indexed object; keep each group's
+// member list as a normal array, then restore the original shape after reading.
+function encodeSavedGroupingsForFirestore(source){
+ const encoded={};
+ Object.keys(source||{}).forEach(classId=>{
+  const item=source[classId];
+  if(item&&Array.isArray(item.groups)){
+   const indexed={};
+   item.groups.forEach((group,index)=>{indexed[String(index)]=Array.isArray(group)?group:[];});
+   encoded[classId]={...item,groups:{__encodedGroupArray:true,items:indexed}};
+  }else encoded[classId]=item;
+ });
+ return encoded;
+}
+function decodeSavedGroupingsFromFirestore(source){
+ const decoded={};
+ Object.keys(source||{}).forEach(classId=>{
+  const item=source[classId];
+  if(item&&item.groups&&item.groups.__encodedGroupArray===true&&item.groups.items&&typeof item.groups.items==='object'){
+   const items=item.groups.items;
+   const groups=Object.keys(items).sort((a,b)=>Number(a)-Number(b)).map(key=>items[key]);
+   decoded[classId]={...item,groups};
+  }else decoded[classId]=item;
+ });
+ return decoded;
+}
+
 async function loadFirebaseData(){
  const dataRef=getTenantDataRef();
  const statusEl=document.getElementById('firebaseSyncStatus');
@@ -1108,7 +1136,7 @@ async function loadFirebaseData(){
    if(d.medicalConditions!==undefined)medicalConditions=d.medicalConditions;
    if(d.academicScores!==undefined)academicScores=d.academicScores;
    if(d.assessmentsScores!==undefined)assessmentsScores=d.assessmentsScores;
-   if(d.savedGroupings!==undefined)savedGroupings=d.savedGroupings;
+   if(d.savedGroupings!==undefined)savedGroupings=decodeSavedGroupingsFromFirestore(d.savedGroupings);
    if(d.diagnosticData!==undefined)diagnosticData=d.diagnosticData;
    if(d.messagesLog!==undefined)messagesLog=d.messagesLog;
    if(d.monthlyPoints!==undefined)monthlyPoints=d.monthlyPoints;
@@ -1189,7 +1217,7 @@ async function saveFirebaseData(){
  const dataRef=getTenantDataRef();
  if(!dataRef)return;
  const tenant=isSchoolManager()?firebaseProfile.schoolId:null;
- const payload={allClassesData,currentClass,classPrizes,parentContacts,studentLevels,groupScores,dailyTrackerData,violationsData,warningsData,disconnectedStudents,studentRewards,medicalConditions,academicScores,assessmentsScores,savedGroupings,diagnosticData,messagesLog,monthlyPoints,availablePrizesCount,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
+ const payload={allClassesData,currentClass,classPrizes,parentContacts,studentLevels,groupScores,dailyTrackerData,violationsData,warningsData,disconnectedStudents,studentRewards,medicalConditions,academicScores,assessmentsScores,savedGroupings:encodeSavedGroupingsForFirestore(savedGroupings),diagnosticData,messagesLog,monthlyPoints,availablePrizesCount,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
  if(tenant)payload.schoolId=tenant;
  try{
   await dataRef.set(payload,{merge:true});
