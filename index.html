@@ -1171,13 +1171,13 @@ async function loadFirebaseData(){
   }
   ['allClassesData','classPrizes','parentContacts','studentLevels','groupScores','dailyTrackerData','violationsData','warningsData','disconnectedStudents','studentRewards','medicalConditions','academicScores','assessmentsScores','savedGroupings','diagnosticData','messagesLog','monthlyPoints'].forEach(k=>localStorage.setItem(k,JSON.stringify(window[k]!==undefined?window[k]:eval(k))));
   firebaseSyncReady=true;
-  if(statusEl)statusEl.textContent=isSchoolManager()?'☁️ تم الاتصال ببيانات المدرسة':'☁️ تم الاتصال بقاعدة البيانات';
+  if(statusEl)statusEl.textContent=isSchoolManager()?'☁️ تم الاتصال ببيانات المدرسة':'☁️ Connected';
   return true;
  }catch(e){
   firebaseSyncReady=false;
   console.error(e);
   if(statusEl)statusEl.textContent='⚠️ تعذر تحميل البيانات: '+(e.message||e);
-  alert('تعذر تحميل بيانات نطاق الحساب من Firebase: '+(e.message||e));
+  alert('تعذر تحميل بيانات نطاق الحساب من قاعدة البيانات: '+(e.message||e));
   return false;
  }
 }
@@ -6023,13 +6023,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('loginBtn').onclick = async function() {
  const email=document.getElementById('loginEmail').value.trim().toLowerCase(), password=document.getElementById('loginPassword').value, msgDiv=document.getElementById('loginMessage');
  if(!email){msgDiv.innerText='❌ الرجاء إدخال البريد';return;} if(!isValidEmail(email)){msgDiv.innerText='❌ البريد يجب أن ينتهي بـ @education.qa';return;}
- msgDiv.innerText='⏳ جاري التحقق من Firebase...';msgDiv.style.color='#f59e0b';
+ msgDiv.innerText='⏳ جاري التحقق من حسابك...';msgDiv.style.color='#f59e0b';
  try{
   const cred=await firebaseAuth.signInWithEmailAndPassword(email,password);firebaseCurrentUser=cred.user;
   const ps=await FIRESTORE_PROFILE_COLLECTION.doc(firebaseCurrentUser.uid).get();
   if(!ps.exists){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ لا يوجد ملف صلاحيات لهذا الحساب في قاعدة البيانات';return;}
   firebaseProfile=ps.data();
-  if(firebaseProfile.active!==true||firebaseProfile.approved!==true){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='⏳ الحساب غير مفعل من المدير';return;}
+  if(firebaseProfile.active!==true||firebaseProfile.approved!==true){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='⏳ الحساب غير مفعل من مدير الموقع';return;}
   if(firebaseProfile.role==='admin'){
     if(!await loadFirebaseData()){await firebaseAuth.signOut();firebaseCurrentUser=null;return;}
   } else if(firebaseProfile.role==='schoolAdmin'){
@@ -6057,7 +6057,7 @@ document.addEventListener('DOMContentLoaded', function() {
     await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ نوع الحساب غير معروف.';return;
   }
   msgDiv.innerText='✅ تم تسجيل الدخول';msgDiv.style.color='#22c55e';
-  setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال بقاعدة البيانات';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent='☁️ تم تحميل الفصول المصرح بها';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}},400);
+  setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ Connected';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent='☁️ تم تحميل الفصول المصرح بها';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}},400);
  }catch(e){console.error(e);msgDiv.innerText='❌ تعذر تسجيل الدخول: '+(e.message||e);msgDiv.style.color='#dc2626';}
 };
 
