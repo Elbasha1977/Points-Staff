@@ -6329,5 +6329,158 @@ window.showExamClassificationModal = showExamClassificationModal;
 window.closeExamClassificationModal = closeExamClassificationModal;
 window.applyExamClassification = applyExamClassification;
 </script>
+
+<script>
+// ===== إدارة الأرقام السرية للطلاب =====
+async function pinManagerSha256(value) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(value)));
+  return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function pinManagerNormalizeName(value){return String(value||'').trim().replace(/\s+/g,' ').toLowerCase();}
+function pinManagerSchoolId(){return (firebaseProfile&&firebaseProfile.schoolId)||'global';}
+function installStudentPinManager(){
+  const anchor=document.getElementById('homeworkResultsDropdown');
+  if(!anchor||document.getElementById('studentPinManagerDropdown'))return;
+  const link=document.createElement('a');
+  link.id='studentPinManagerDropdown';
+  link.textContent='🔐 الأرقام السرية للطلاب';
+  link.style.display='none';
+  link.onclick=openStudentPinManager;
+  anchor.parentNode.insertBefore(link,anchor.nextSibling);
+  const modal=document.createElement('div');
+  modal.id='studentPinManagerModal';
+  modal.className='modal';
+  modal.innerHTML=`<div class="modal-content large" style="max-width:900px;max-height:90vh;overflow:auto;position:relative">
+    <button class="modal-close-x" onclick="document.getElementById('studentPinManagerModal').style.display='none'">✕</button>
+    <h2>🔐 إدارة الأرقام السرية للطلاب</h2>
+    <p style="color:#475569">اختر الصف، ثم أنشئ رقمًا سريًا من 4 أرقام لكل طالب. الأرقام الموجودة لن تتغير عند إعادة التحميل.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:15px 0">
+      <select id="pinManagerClass" style="min-width:220px;padding:12px;border:1px solid #cbd5e1;border-radius:10px">
+        <option value="">-- اختر الصف --</option><option>السادس 2</option><option>السادس 4</option><option>السادس 6</option>
+      </select>
+      <button class="close-modal confirm-btn" id="pinManagerLoadBtn">عرض الطلاب والأرقام</button>
+      <button class="close-modal" id="pinManagerGenerateBtn" style="background:#0f766e">إنشاء الأرقام الناقصة</button>
+      <button class="close-modal" id="pinManagerPrintBtn" style="background:#4338ca">🖨️ طباعة كشف الأرقام</button>
+      <button class="close-modal" id="pinManagerMigrateBtn" style="background:#b45309">🔒 منع إعادة إرسال الواجبات السابقة</button>
+    </div>
+    <div id="pinManagerStatus" style="padding:10px;background:#f1f5f9;border-radius:8px;margin-bottom:10px">اختر الصف للبدء.</div>
+    <div style="overflow:auto"><table class="students-table-modal" style="width:100%"><thead><tr><th>م</th><th>اسم الطالب</th><th>الرقم السري</th><th>الحالة</th></tr></thead><tbody id="pinManagerBody"></tbody></table></div>
+    <p style="color:#b91c1c;font-size:13px;margin-top:12px">احتفظ بكشف الأرقام ولا تنشره للطلاب جميعًا؛ كل طالب يحصل على رقمه الخاص فقط.</p>
+    <div style="text-align:center;margin-top:15px"><button class="close-modal cancel-btn" onclick="document.getElementById('studentPinManagerModal').style.display='none'">إغلاق</button></div>
+  </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('pinManagerLoadBtn').onclick=loadStudentPinsForClass;
+  document.getElementById('pinManagerGenerateBtn').onclick=generateMissingStudentPins;
+  document.getElementById('pinManagerPrintBtn').onclick=printStudentPins;
+  document.getElementById('pinManagerMigrateBtn').onclick=migratePreviousHomeworkSubmissions;
+}
+function canManageStudentPins(){
+  return !!(firebaseCurrentUser&&firebaseProfile&&firebaseProfile.active===true&&firebaseProfile.approved===true&&
+    (firebaseProfile.role==='admin'||firebaseProfile.role==='schoolAdmin'));
+}
+async function openStudentPinManager(){
+  if(!canManageStudentPins()){alert('إدارة الأرقام السرية متاحة للمدير فقط.');return;}
+  const m=document.getElementById('studentPinManagerModal');if(m)m.style.display='flex';
+  await loadStudentPinsForClass();
+}
+let currentStudentPinRows=[];
+async function loadStudentPinsForClass(){
+  const cls=document.getElementById('pinManagerClass').value;
+  const body=document.getElementById('pinManagerBody'),status=document.getElementById('pinManagerStatus');
+  if(!cls){status.textContent='اختر الصف أولاً.';body.innerHTML='';return;}
+  const students=(allClassesData&&allClassesData[cls]&&Array.isArray(allClassesData[cls].students))?allClassesData[cls].students:[];
+  if(!students.length){status.textContent='لا توجد أسماء طلاب محملة لهذا الصف في برنامج النقاط.';body.innerHTML='';currentStudentPinRows=[];return;}
+  status.textContent='⏳ جارٍ تحميل الأرقام المحفوظة...';
+  const schoolId=pinManagerSchoolId();
+  try{
+    currentStudentPinRows=await Promise.all(students.map(async(st,index)=>{
+      const name=String(st.name||'').trim();
+      const studentKey=await pinManagerSha256(schoolId+'|'+cls+'|'+pinManagerNormalizeName(name));
+      const ref=firestoreDb.collection('student_access').doc(studentKey);
+      const snap=await ref.get();
+      const d=snap.exists?snap.data():null;
+      return {index:index+1,name,studentKey,pin:d&&d.pin?String(d.pin):'',schoolId,className:cls};
+    }));
+    renderStudentPinRows();
+    status.textContent='عدد الطلاب: '+currentStudentPinRows.length+' | الأرقام المحفوظة: '+currentStudentPinRows.filter(x=>x.pin).length+' | الأرقام الناقصة: '+currentStudentPinRows.filter(x=>!x.pin).length;
+  }catch(e){status.textContent='تعذر تحميل الأرقام: '+(e.message||e);body.innerHTML='';}
+}
+function renderStudentPinRows(){
+  const body=document.getElementById('pinManagerBody');
+  body.innerHTML=currentStudentPinRows.map((x,i)=>`<tr><td>${i+1}</td><td>${escapeHomeworkResult(x.name)}</td><td style="font-weight:900;letter-spacing:4px;font-size:18px">${x.pin||'—'}</td><td style="color:${x.pin?'#047857':'#b91c1c'}">${x.pin?'جاهز':'لم يُنشأ بعد'}</td></tr>`).join('');
+}
+async function generateMissingStudentPins(){
+  if(!canManageStudentPins())return;
+  if(!currentStudentPinRows.length){await loadStudentPinsForClass();if(!currentStudentPinRows.length)return;}
+  const btn=document.getElementById('pinManagerGenerateBtn');btn.disabled=true;btn.textContent='⏳ جارٍ الإنشاء...';
+  try{
+    const batch=firestoreDb.batch();let created=0;
+    currentStudentPinRows.forEach(row=>{
+      if(row.pin)return;
+      const pin=String(Math.floor(1000+Math.random()*9000));
+      row.pin=pin;
+      const pinHashPromise=pinManagerSha256(row.studentKey+'|'+pin);
+      row._hashPromise=pinHashPromise;
+    });
+    for(const row of currentStudentPinRows){
+      if(!row._hashPromise)continue;
+      const pinHash=await row._hashPromise;
+      const ref=firestoreDb.collection('student_access').doc(row.studentKey);
+      batch.set(ref,{studentKey:row.studentKey,schoolId:row.schoolId,studentClass:row.className,studentName:row.name,pin:row.pin,pinHash:pinHash,createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+      delete row._hashPromise;created++;
+    }
+    if(created)await batch.commit();
+    renderStudentPinRows();
+    document.getElementById('pinManagerStatus').textContent='تم إنشاء '+created+' رقمًا جديدًا. الأرقام الموجودة لم تتغير.';
+  }catch(e){document.getElementById('pinManagerStatus').textContent='تعذر حفظ الأرقام: '+(e.message||e);}
+  finally{btn.disabled=false;btn.textContent='إنشاء الأرقام الناقصة';}
+}
+
+async function migratePreviousHomeworkSubmissions(){
+  if(!canManageStudentPins()){alert('هذه العملية متاحة للمدير فقط.');return;}
+  const status=document.getElementById('pinManagerStatus');
+  const btn=document.getElementById('pinManagerMigrateBtn');
+  if(!confirm('سيتم فحص الإجابات السابقة وإنشاء قفل لكل طالب وورقة عمل، لمنع إعادة إرسال الواجبات التي سبق إرسالها. هل تريد المتابعة؟'))return;
+  btn.disabled=true;btn.textContent='⏳ جارٍ فحص الإرسالات...';
+  try{
+    let legacyQuery=firestoreDb.collection('student_answers');
+    if(firebaseProfile&&firebaseProfile.role==='schoolAdmin')legacyQuery=legacyQuery.where('schoolId','==',pinManagerSchoolId());
+    const snap=await legacyQuery.get();
+    const unique=new Map();
+    for(const doc of snap.docs){
+      const a=doc.data()||{};
+      const schoolId=String(a.schoolId||'global'),cls=String(a.studentClass||'').trim(),name=String(a.studentName||'').trim(),worksheetId=String(a.worksheetId||'').trim();
+      if(!name||!cls||!worksheetId||!['السادس 2','السادس 4','السادس 6'].includes(cls))continue;
+      const studentKey=await pinManagerSha256(schoolId+'|'+cls+'|'+pinManagerNormalizeName(name));
+      const lockId=studentKey+'_'+worksheetId;
+      if(!unique.has(lockId))unique.set(lockId,{studentKey,worksheetId,schoolId,studentClass:cls,studentName:name,legacy:true,lockedAt:firebase.firestore.FieldValue.serverTimestamp()});
+    }
+    const entries=Array.from(unique.entries());
+    let created=0;
+    for(let i=0;i<entries.length;i+=300){
+      const group=entries.slice(i,i+300);
+      const states=await Promise.all(group.map(async([id])=>({id,exists:(await firestoreDb.collection('homework_submission_locks').doc(id).get()).exists})));
+      const batch=firestoreDb.batch();let chunkCreated=0;
+      states.forEach((state,index)=>{if(state.exists)return;batch.set(firestoreDb.collection('homework_submission_locks').doc(state.id),group[index][1]);created++;chunkCreated++;});
+      if(chunkCreated)await batch.commit();
+    }
+    status.textContent='اكتمل الفحص. إجمالي سجلات الطلاب والواجبات السابقة: '+entries.length+'، الأقفال الجديدة: '+created+'، والإجابات القديمة أصبحت محمية من إعادة الإرسال.';
+  }catch(e){status.textContent='تعذر ترحيل الإرسالات السابقة: '+(e.message||e);}
+  finally{btn.disabled=false;btn.textContent='🔒 منع إعادة إرسال الواجبات السابقة';}
+}
+function printStudentPins(){
+  if(!currentStudentPinRows.length){alert('اعرض طلاب الصف أولاً.');return;}
+  const cls=document.getElementById('pinManagerClass').value;
+  const rows=currentStudentPinRows.map((x,i)=>`<tr><td>${i+1}</td><td>${escapeHomeworkResult(x.name)}</td><td style="font-size:20px;font-weight:bold;letter-spacing:4px">${x.pin||'لم يُنشأ'}</td></tr>`).join('');
+  const w=window.open('','_blank');if(!w){alert('اسمح بالنوافذ المنبثقة للطباعة.');return;}
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>الأرقام السرية - ${cls}</title><style>body{font-family:Arial;padding:25px}h2{text-align:center}table{width:100%;border-collapse:collapse}th,td{border:1px solid #999;padding:10px;text-align:center}th{background:#eee}@media print{button{display:none}}</style><h2>كشف الأرقام السرية للطلاب – ${cls}</h2><table><thead><tr><th>م</th><th>اسم الطالب</th><th>الرقم السري</th></tr></thead><tbody>${rows}</tbody></table><p>يُسلّم كل طالب رقمه بشكل فردي.</p><script>window.onload=()=>window.print()<\\/script></html>`);
+  w.document.close();
+}
+document.addEventListener('DOMContentLoaded',function(){
+  installStudentPinManager();
+  setInterval(()=>{const a=document.getElementById('studentPinManagerDropdown');if(a)a.style.display=canManageStudentPins()?'block':'none';},1000);
+});
+</script>
+
 </body>
 </html>
