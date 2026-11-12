@@ -396,6 +396,11 @@ body { background: linear-gradient(135deg, #dbeafe, #c7d2fe); padding: 20px; }
     .academic-table, .assessments-table { font-size: 10px; }
     .academic-table input[type="number"], .assessments-table input[type="number"] { width: 45px; padding: 4px 2px; font-size: 11px; }
 }
+
+/* Commercial plan feature locks */
+.dropdown-content a.feature-locked{opacity:.48!important;filter:grayscale(1);cursor:not-allowed!important;position:relative;padding-left:38px!important;text-decoration:none!important}
+.dropdown-content a.feature-locked::after{content:'🔒';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px}
+.dropdown-content a.feature-locked:hover{background:#f1f5f9!important;color:#64748b!important}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -447,29 +452,29 @@ body{overscroll-behavior-y:auto}
                 <div class="dropdown">
                     <button class="dropdown-btn">📋 إدارة الصفوف <span>▼</span></button>
                     <div class="dropdown-content">
-                        <a id="selectClassDropdown">📖 اختيار الصف</a>
-                        <a id="addClassDropdown">📋 إضافة صف</a>
+                        <a id="selectClassDropdown" data-feature="menuSelectClass">📖 اختيار الصف</a>
+                        <a id="addClassDropdown" data-feature="menuAddClass">📋 إضافة صف</a>
                     </div>
                 </div>
 
                 <div class="dropdown">
                     <button class="dropdown-btn">👨‍🎓 تسجيل الطلاب <span>▼</span></button>
                     <div class="dropdown-content">
-                        <a id="addStudentDropdown">➕ إضافة طالب</a>
-                        <a id="deleteStudentDropdown">🗑️ حذف طالب</a>
-                        <a id="randomPickerDropdown">🎲 اختيار طالب عشوائي</a>
+                        <a id="addStudentDropdown" data-feature="menuAddStudent">➕ إضافة طالب</a>
+                        <a id="deleteStudentDropdown" data-feature="menuDeleteStudent">🗑️ حذف طالب</a>
+                        <a id="randomPickerDropdown" data-feature="menuRandomPicker">🎲 اختيار طالب عشوائي</a>
                     </div>
                 </div>
 
                 <div class="dropdown">
                     <button class="dropdown-btn">📊 تصنيف الطلاب <span>▼</span></button>
                     <div class="dropdown-content">
-                        <a id="studentsLevelsDropdown">📊 مستويات الطلاب</a>
-                        <a id="diagnosticTestDropdown">📝 الاختبار التشخيصي</a>
-                        <a id="examClassificationDropdown">📝 تصنيف حسب الامتحانات</a>
-                        <a id="divisionDropdown">🔀 تقسيم الطلاب</a>
-                        <a id="groupScoresDropdown">🏆 درجات المجموعات</a>
-                        <a id="medicalConditionsDropdown">🏥 الحالات المرضية</a>
+                        <a id="studentsLevelsDropdown" data-feature="menuStudentLevels">📊 مستويات الطلاب</a>
+                        <a id="diagnosticTestDropdown" data-feature="menuDiagnosticTest">📝 الاختبار التشخيصي</a>
+                        <a id="examClassificationDropdown" data-feature="menuExamClassification">📝 تصنيف حسب الامتحانات</a>
+                        <a id="divisionDropdown" data-feature="menuStudentDivision">🔀 تقسيم الطلاب</a>
+                        <a id="groupScoresDropdown" data-feature="menuGroupScores">🏆 درجات المجموعات</a>
+                        <a id="medicalConditionsDropdown" data-feature="menuMedicalConditions">🏥 الحالات المرضية</a>
                     </div>
                 </div>
             </div>
@@ -478,51 +483,51 @@ body{overscroll-behavior-y:auto}
                 <div class="dropdown">
                     <button class="dropdown-btn">⭐ النقاط <span>▼</span></button>
                     <div class="dropdown-content">
-                        <a id="addPointsDropdown">➕ إضافة نقاط</a>
-                        <a id="deductPointsDropdown">🔻 خصم نقاط</a>
-                        <a id="warningDropdown">⚠️ إعطاء إنذار</a>
-                        <a id="groupPointsDropdown">🎯 نقاط المجموعات</a>
-                        <a id="studentsPointsDropdown">📊 نقاط الطلاب</a>
-                        <a id="homeworkResultsDropdown">📢 نتائج الواجبات المنزلية</a>
+                        <a id="addPointsDropdown" data-feature="menuAddPoints">➕ إضافة نقاط</a>
+                        <a id="deductPointsDropdown" data-feature="menuDeductPoints">🔻 خصم نقاط</a>
+                        <a id="warningDropdown" data-feature="menuWarning">⚠️ إعطاء إنذار</a>
+                        <a id="groupPointsDropdown" data-feature="menuGroupPoints">🎯 نقاط المجموعات</a>
+                        <a id="studentsPointsDropdown" data-feature="menuStudentPoints">📊 نقاط الطلاب</a>
+                        <a id="homeworkResultsDropdown" data-feature="menuHomeworkResults">📢 نتائج الواجبات المنزلية</a>
                     </div>
                 </div>
 
                 <div class="dropdown">
                     <button class="dropdown-btn">🏆 تحفيز الطلاب <span>▼</span></button>
                     <div class="dropdown-content">
-                        <a id="rewardsShopDropdown">🏅 مكتبة الجوائز</a>
-                        <a id="surpriseDropdown">🎁 صندوق المفاجآت</a>
-                        <a id="editPrizesDropdown">🏆 تغيير الجوائز</a>
-                        <a id="uploadPhotosDropdown">📸 صور الفائقين</a>
-                        <a id="certificatesDropdown">🏆 شهادات التقدير</a>
-                        <a id="legendaryCertificatesDropdown">🌟 شهادات الطالب الأسطوري</a>
-                        <a href="celebration.html" target="_blank" style="display:block; padding:10px; background:#8b5cf6; color:white; border-radius:16px; text-decoration:none; text-align:center; margin:5px 0;">🎉 الاحتفال بالطالب المثالي</a>
+                        <a id="rewardsShopDropdown" data-feature="menuRewardsShop">🏅 مكتبة الجوائز</a>
+                        <a id="surpriseDropdown" data-feature="menuSurpriseBox">🎁 صندوق المفاجآت</a>
+                        <a id="editPrizesDropdown" data-feature="menuEditPrizes">🏆 تغيير الجوائز</a>
+                        <a id="uploadPhotosDropdown" data-feature="menuUploadPhotos">📸 صور الفائقين</a>
+                        <a id="certificatesDropdown" data-feature="menuCertificates">🏆 شهادات التقدير</a>
+                        <a id="legendaryCertificatesDropdown" data-feature="menuLegendaryCertificates">🌟 شهادات الطالب الأسطوري</a>
+                        <a href="celebration.html" target="_blank" data-feature="menuIdealStudentCelebration" style="display:block; padding:10px; background:#8b5cf6; color:white; border-radius:16px; text-decoration:none; text-align:center; margin:5px 0;">🎉 الاحتفال بالطالب المثالي</a>
                     </div>
                 </div>
 
                 <div class="dropdown">
                     <button class="dropdown-btn">📋 المتابعة <span>▼</span></button>
                     <div class="dropdown-content">
-                        <a id="dailyTrackerDropdown">📋 المتابعة اليومية</a>
-                        <a id="academicTrackerDropdown">📝 المتابعة الأكاديمية (الدرجات)</a>
-                        <a id="assessmentsTrackerDropdown">📋 التقييمات (الفصل الأول والثاني)</a>
-                        <a id="comprehensiveReportDropdown">📊 تقرير شامل عن الطالب</a>
-                        <a id="bulkReportsDropdown">📚 إصدار جميع التقارير</a>
-                        <a id="violationsDropdown">⚠️ المخالفات</a>
-                        <a id="parentContactDropdown">📞 التواصل مع ولي الأمر</a>
-                        <a id="messagesLogDropdown">📨 سجل مراسلات أولياء الأمور</a>
+                        <a id="dailyTrackerDropdown" data-feature="menuDailyTracker">📋 المتابعة اليومية</a>
+                        <a id="academicTrackerDropdown" data-feature="menuAcademicTracker">📝 المتابعة الأكاديمية (الدرجات)</a>
+                        <a id="assessmentsTrackerDropdown" data-feature="menuAssessmentsTracker">📋 التقييمات (الفصل الأول والثاني)</a>
+                        <a id="comprehensiveReportDropdown" data-feature="menuComprehensiveReport">📊 تقرير شامل عن الطالب</a>
+                        <a id="bulkReportsDropdown" data-feature="menuBulkReports">📚 إصدار جميع التقارير</a>
+                        <a id="violationsDropdown" data-feature="menuViolations">⚠️ المخالفات</a>
+                        <a id="parentContactDropdown" data-feature="menuParentContact">📞 التواصل مع ولي الأمر</a>
+                        <a id="messagesLogDropdown" data-feature="menuMessagesLog">📨 سجل مراسلات أولياء الأمور</a>
                     </div>
                 </div>
 
                 <div class="dropdown">
                     <button class="dropdown-btn">⚙️ عن البرنامج <span>▼</span></button>
                     <div class="dropdown-content">
-                        <a id="backupDropdown">💾 نسخ احتياطي</a>
-                        <a id="restoreDropdown">📂 استعادة نسخة</a>
-                        <a id="refreshDropdown">🔄 تحديث</a>
-                        <a id="resetDropdown">⚠️ إعادة ضبط</a>
-                        <a id="zeroPointsDropdown">🔄 تصفير النقاط</a>
-                        <a id="embedDropdown">🌐 رابط التضمين</a>
+                        <a id="backupDropdown" data-feature="menuBackup">💾 نسخ احتياطي</a>
+                        <a id="restoreDropdown" data-feature="menuRestore">📂 استعادة نسخة</a>
+                        <a id="refreshDropdown" data-feature="menuRefresh">🔄 تحديث</a>
+                        <a id="resetDropdown" data-feature="menuReset">⚠️ إعادة ضبط</a>
+                        <a id="zeroPointsDropdown" data-feature="menuZeroPoints">🔄 تصفير النقاط</a>
+                        <a id="embedDropdown" data-feature="menuEmbedLink">🌐 رابط التضمين</a>
                     </div>
                 </div>
 
@@ -6067,6 +6072,7 @@ document.addEventListener('DOMContentLoaded', function() {
   } else {
     await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ نوع الحساب غير معروف.';return;
   }
+  await applyCommercialMenuLocks();
   msgDiv.innerText='✅ تم تسجيل الدخول';msgDiv.style.color='#22c55e';
   setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ Connected';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent='☁️ تم تحميل الفصول المصرح بها';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}},400);
  }catch(e){console.error(e);msgDiv.innerText='❌ تعذر تسجيل الدخول: '+(e.message||e);msgDiv.style.color='#dc2626';}
@@ -6560,6 +6566,22 @@ document.addEventListener('DOMContentLoaded',function(){
   installStudentPinManager();
   setInterval(()=>{const a=document.getElementById('studentPinManagerDropdown');if(a)a.style.display=canManageStudentPins()?'block':'none';},1000);
 });
+</script>
+
+<script>
+// Independent commercial entitlement for every dropdown item.
+async function applyCommercialMenuLocks(){
+  try{
+    if(!firebaseAuth || !firebaseAuth.currentUser) return;
+    if(firebaseProfile && (firebaseProfile.role==='admin' || firebaseCurrentUser?.uid==='hwPgzTQbdfUJa45G2Wwc79ANNJE2')) return;
+    const check=firebase.app().functions('us-central1').httpsCallable('checkCustomerFeature');
+    const entries=Array.from(document.querySelectorAll('.dropdown-content a[data-feature]'));
+    await Promise.all(entries.map(async el=>{
+      try{const result=await check({feature:el.dataset.feature});const allowed=!!(result.data&&result.data.allowed===true);el.classList.toggle('feature-locked',!allowed);if(!allowed){el.setAttribute('aria-disabled','true');el.title='هذه الميزة غير متاحة في باقتك الحالية';if(!el.dataset.featureLockBound){el.addEventListener('click',function(ev){ev.preventDefault();ev.stopImmediatePropagation();alert('🔒 هذه الميزة غير متاحة في باقتك الحالية. يرجى ترقية الباقة للتفعيل.');},true);el.dataset.featureLockBound='1';}}else{el.removeAttribute('aria-disabled');el.title='';}}
+      catch(err){el.classList.add('feature-locked');el.setAttribute('aria-disabled','true');el.title='تعذر التحقق من صلاحية هذه الميزة';if(!el.dataset.featureLockBound){el.addEventListener('click',function(ev){ev.preventDefault();ev.stopImmediatePropagation();alert('تعذر التحقق من صلاحية هذه الميزة. حاول تحديث الصفحة.');},true);el.dataset.featureLockBound='1';}}
+    }));
+  }catch(err){console.error('POINTS menu feature check failed:',err);}
+}
 </script>
 
 </body>
