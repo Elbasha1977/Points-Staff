@@ -5931,7 +5931,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return true; 
     }
     
-    function isValidEmail(email) { return email && email.toLowerCase().endsWith('@education.qa'); }
+    function isValidEmail(email) { return !!(email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())); }
     function verifyPassword(email, password) { return usersData[email] && usersData[email].password === password; }
     function isApproved(email) { return usersData[email] && usersData[email].approved === true; }
     
@@ -5961,18 +5961,14 @@ document.addEventListener('DOMContentLoaded', function() {
             '<div class="login-card">' +
                 '<h2>📚 نظام النقاط والتحفيز المدرسي</h2>' +
                 '<p style="color:#666; margin-bottom:20px;">تسجيل الدخول إلى النظام</p>' +
-                '<input type="email" id="loginEmail" placeholder="البريد الإلكتروني" dir="ltr" value="a.atia1201@education.qa">' +
+                '<input type="email" id="loginEmail" placeholder="البريد الإلكتروني" dir="ltr">' +
                 '<input type="password" id="loginPassword" placeholder="كلمة المرور" autofocus>' +
                 '<button id="loginBtn">🔐 دخول</button>' +
                 '<button id="showRegisterBtn" type="button" style="background:#0d9488;margin-top:8px;">📝 تسجيل موظف جديد</button>' +
                 '<div id="registerPanel" style="display:none;text-align:right;margin-top:12px;border:1px solid #ddd;border-radius:12px;padding:12px;">' +
                   '<input type="password" id="registerPasswordConfirm" placeholder="تأكيد كلمة المرور">' +
-                  '<label style="display:block;margin:8px 0;font-weight:bold;">الدولة</label>' +
-                  '<select id="registerCountry" required style="width:100%;padding:10px;margin-top:4px;box-sizing:border-box;">' +
-                    '<option value="">-- اختر الدولة العربية --</option>' +
-                    ['الأردن','الإمارات العربية المتحدة','البحرين','الجزائر','السعودية','السودان','الصومال','العراق','الكويت','المغرب','اليمن','تونس','جزر القمر','جيبوتي','سوريا','عُمان','فلسطين','قطر','لبنان','ليبيا','مصر','موريتانيا'].map(c=>'<option value="'+c+'">'+c+'</option>').join('') +
-                  '</select>' +
-                  '<input type="text" id="registerSchoolName" placeholder="اسم المدرسة" required style="width:100%;padding:10px;margin-top:8px;box-sizing:border-box;">' +
+                  '<label style="display:block;margin:8px 0;font-weight:bold;">🔑 كود الاشتراك</label>' +
+                  '<input type="text" id="registerInviteCode" placeholder="أدخل كود الاشتراك المرسل من إدارة النظام" required autocomplete="off" style="width:100%;padding:12px;margin:4px 0 10px;box-sizing:border-box;text-align:center;direction:ltr;font-weight:bold;letter-spacing:1px;">' +
                   '<label style="display:block;margin:8px 0;font-weight:bold;">المادة الدراسية</label>' +
                   '<select id="registerSubject" style="width:100%;padding:10px;">' +
                     '<option value="">-- اختر المادة --</option><option>اللغة الإنجليزية</option><option>اللغة العربية</option><option>الرياضيات</option><option>العلوم</option><option>التربية الإسلامية</option><option>الدراسات الاجتماعية</option><option>الحوسبة وتكنولوجيا المعلومات</option><option>التربية البدنية</option><option>الفنون</option>' +
@@ -5998,45 +5994,44 @@ document.addEventListener('DOMContentLoaded', function() {
           const email=document.getElementById('loginEmail').value.trim().toLowerCase();
           const password=document.getElementById('loginPassword').value;
           const confirmPassword=document.getElementById('registerPasswordConfirm').value;
-          const schoolName=document.getElementById('registerSchoolName').value.trim();
-          const country=document.getElementById('registerCountry').value;
-          // Generate a stable school scope ID from country + school name.
-          const schoolKey=(country+'|'+schoolName).trim().toLowerCase();
-          let schoolHash=2166136261;
-          for(let i=0;i<schoolKey.length;i++){schoolHash^=schoolKey.charCodeAt(i);schoolHash=Math.imul(schoolHash,16777619);}
-          const schoolId='sch_'+(schoolHash>>>0).toString(36);
+          const inviteCode=document.getElementById('registerInviteCode').value.trim();
           const subject=document.getElementById('registerSubject').value;
           const classes=Array.from(document.querySelectorAll('#registerClasses input:checked')).map(x=>x.value);
           const msg=document.getElementById('registerMessage');
-          if(!email||!isValidEmail(email)){msg.textContent='أدخل بريدًا صحيحًا ينتهي بـ @education.qa';return;}
+          if(!email||!isValidEmail(email)){msg.textContent='أدخل بريدًا إلكترونيًا صحيحًا';return;}
           if(!password||password.length<6){msg.textContent='كلمة المرور يجب أن تكون 6 أحرف على الأقل';return;}
           if(password!==confirmPassword){msg.textContent='كلمتا المرور غير متطابقتين';return;}
-          if(!schoolName){msg.textContent='اكتب اسم المدرسة';return;}
-          if(!schoolId){msg.textContent='تعذر إنشاء رمز المدرسة تلقائيًا';return;}
-          if(!country){msg.textContent='اكتب اسم الدولة';return;}
+          if(!inviteCode){msg.textContent='أدخل كود الاشتراك';return;}
           if(!subject){msg.textContent='اختر المادة الدراسية';return;}
           if(classes.length===0){msg.textContent='اختر فصلًا واحدًا على الأقل';return;}
-          msg.textContent='جارٍ إرسال الطلب...';
+          msg.textContent='⏳ جارٍ إنشاء الحساب والتحقق من كود الاشتراك...';
+          const submitButton=document.getElementById('submitRegisterBtn');submitButton.disabled=true;
           try{
             const cred=await firebaseAuth.createUserWithEmailAndPassword(email,password);
-            await firestoreDb.collection('staffRequests').doc(cred.user.uid).set({
-              uid:cred.user.uid,email:email,subject:subject,schoolName:schoolName,schoolId:schoolId,country:country,requestedClassIds:classes,
-              status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()
-            });
-            await firebaseAuth.signOut();
-            msg.style.color='#15803d';
-            msg.textContent='تم إرسال طلبك للمدير. لن تتمكن من الدخول قبل الموافقة.';
+            try{
+              const submitCall=firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('submitStaffRegistration');
+              const response=await submitCall({inviteCode:inviteCode,subject:subject,requestedClassIds:classes});
+              const result=response&&response.data?response.data:{};
+              if(result.success!==true)throw new Error(result.message||'لم يؤكد الخادم إرسال طلب التسجيل.');
+              await firebaseAuth.signOut();
+              msg.style.color='#15803d';
+              msg.textContent=result.message||'✅ تم إرسال طلبك بنجاح إلى المدير العام. لن تتمكن من الدخول قبل الموافقة.';
+            }catch(callError){
+              try{await cred.user.delete();}catch(cleanupError){console.warn('Could not remove unsubmitted Auth account',cleanupError);}
+              throw callError;
+            }
           }catch(err){
-            console.error('Registration request failed',err);
+            console.error('Commercial staff registration failed',err);
             msg.style.color='#b91c1c';
-            msg.textContent=err.code==='auth/email-already-in-use'?'هذا البريد مسجل بالفعل.':('تعذر التسجيل: '+(err.message||err));
-          }
+            const code=err.code||'';
+            msg.textContent=code==='auth/email-already-in-use'?'هذا البريد مسجل بالفعل.':('❌ تعذر التسجيل: '+(err.message||err));
+          }finally{submitButton.disabled=false;}
         };
 
         
         document.getElementById('loginBtn').onclick = async function() {
  const email=document.getElementById('loginEmail').value.trim().toLowerCase(), password=document.getElementById('loginPassword').value, msgDiv=document.getElementById('loginMessage');
- if(!email){msgDiv.innerText='❌ الرجاء إدخال البريد';return;} if(!isValidEmail(email)){msgDiv.innerText='❌ البريد يجب أن ينتهي بـ @education.qa';return;}
+ if(!email){msgDiv.innerText='❌ الرجاء إدخال البريد';return;} if(!isValidEmail(email)){msgDiv.innerText='❌ أدخل بريدًا إلكترونيًا صحيحًا';return;}
  msgDiv.innerText='⏳ جاري التحقق من حسابك...';msgDiv.style.color='#f59e0b';
  try{
   const cred=await firebaseAuth.signInWithEmailAndPassword(email,password);firebaseCurrentUser=cred.user;
@@ -6225,12 +6220,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const requested=Array.isArray(r.requestedClassIds)?r.requestedClassIds:[];
             const approvedClasses=Array.isArray(selectedClassIds)?selectedClassIds.filter(id=>requested.includes(id)):requested;
             if(!approvedClasses.length)throw new Error('يجب تحديد صف واحد على الأقل من الصفوف المطلوبة.');
-            await FIRESTORE_PROFILE_COLLECTION.doc(r.uid||doc.id).set({uid:r.uid||doc.id,email:r.email,role:'staff',subject:r.subject||'',schoolName:r.schoolName||'',schoolId:r.schoolId||'',country:r.country||'',classIds:approvedClasses,active:true,approved:true,approvedAt:firebase.firestore.FieldValue.serverTimestamp(),approvedBy:firebaseCurrentUser.uid},{merge:true});
-            await doc.ref.update({status:'approved',approvedClassIds:approvedClasses,reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),reviewedBy:firebaseCurrentUser.uid});
-            if(card)card.innerHTML='<div style="color:#15803d;font-weight:bold;padding:10px;">✅ تم الاعتماد: '+(r.email||'')+' · الصفوف: '+approvedClasses.join('، ')+'</div>';
+            const approveCall=firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('approveStaffRegistration');
+            const response=await approveCall({requestId:r.uid||doc.id,approvedClassIds:approvedClasses});
+            const result=response&&response.data?response.data:{};
+            if(result.success!==true||!result.licenseId)throw new Error(result.message||'لم يؤكد الخادم اعتماد الموظف وحجز المقعد.');
+            if(card)card.innerHTML='<div style="color:#15803d;font-weight:bold;padding:10px;">✅ تم الاعتماد وحجز مقعد للموظف: '+(r.email||'')+' · الصفوف: '+approvedClasses.join('، ')+'</div>';
           }
           async function rejectOne(doc, card){
-            await doc.ref.update({status:'rejected',reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),reviewedBy:firebaseCurrentUser.uid});
+            const rejectCall=firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('rejectStaffRegistration');
+            await rejectCall({requestId:doc.id});
             if(card)card.innerHTML='<div style="color:#b91c1c;padding:10px;">❌ تم رفض الطلب</div>';
           }
           async function render(){
