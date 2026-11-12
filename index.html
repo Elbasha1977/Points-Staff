@@ -401,6 +401,7 @@ body { background: linear-gradient(135deg, #dbeafe, #c7d2fe); padding: 20px; }
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <style>/* Firebase manager dashboard scrolling fix */ html,body{height:auto!important;min-height:100%;overflow-y:auto!important;overflow-x:hidden!important} #tempAdminPanel{overscroll-behavior:contain}</style><style id="firebase-scroll-fix">
 html,body{height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important}
 body{overscroll-behavior-y:auto}
@@ -410,17 +411,7 @@ body{overscroll-behavior-y:auto}
 #registerClasses{padding-bottom:6px}
 #submitRegisterBtn{margin-bottom:10px!important}
 
-</style>
-<!-- PWA: Points Staff -->
-<meta name="theme-color" content="#071B3A">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Points Staff">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-</head>
+</style></head>
 <body>
 
 <div class="container">
@@ -1091,6 +1082,19 @@ const firebaseAuth=firebase.auth(), firestoreDb=firebase.firestore();
 let firebaseCurrentUser=null, firebaseProfile=null, firebaseSyncReady=false;
 const FIRESTORE_DATA_DOC=firestoreDb.collection('schoolData').doc('main');
 const FIRESTORE_PROFILE_COLLECTION=firestoreDb.collection('users');
+
+// ==================== التحقق المركزي من ترخيص نسخة الموظفين ====================
+const POINTS_STAFF_APP_ID='points-staff';
+const POINTS_LICENSE_REGION='us-central1';
+async function verifyPointsStaffLicense(){
+ if(!firebaseAuth.currentUser)throw new Error('يجب تسجيل الدخول أولاً.');
+ if(typeof firebase.app().functions!=='function')throw new Error('مكتبة Firebase Functions لم تُحمّل. حدّث الصفحة ثم حاول مرة أخرى.');
+ const check=firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('checkAppLicense');
+ const response=await check({appId:POINTS_STAFF_APP_ID});
+ const result=response&&response.data?response.data:{};
+ if(result.success!==true||result.authorized!==true)throw new Error(result.message||'ترخيص نسخة الموظفين غير نشط أو غير صالح.');
+ return result;
+}
 function isApprovedFirebaseProfile(){
  return !!(firebaseCurrentUser&&firebaseProfile&&firebaseProfile.active===true&&firebaseProfile.approved===true);
 }
@@ -5877,7 +5881,7 @@ document.addEventListener('DOMContentLoaded', function() {
 (function() {
     const USERS_STORAGE_KEY = 'school_users_data_complete';
     const PENDING_KEY = 'school_pending_requests_complete';
-    const LEGACY_ADMIN_CODE = '';
+    const LEGACY_ADMIN_CODE = 'Anhs7293@';
     const ADMIN_EMAIL = 'a.atia1201@education.qa';
     let usersData = {};
     
@@ -6040,6 +6044,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if(!ps.exists){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ لا يوجد ملف صلاحيات لهذا الحساب في قاعدة البيانات';return;}
   firebaseProfile=ps.data();
   if(firebaseProfile.active!==true||firebaseProfile.approved!==true){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='⏳ الحساب غير مفعل من مدير الموقع';return;}
+  msgDiv.innerText='⏳ تم التحقق من الحساب. جارٍ التحقق من ترخيص نسخة الموظفين...';
+  await verifyPointsStaffLicense();
   if(firebaseProfile.role==='admin'){
     if(!await loadFirebaseData()){await firebaseAuth.signOut();firebaseCurrentUser=null;return;}
   } else if(firebaseProfile.role==='schoolAdmin'){
@@ -6558,15 +6564,5 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('./sw.js').catch(function (error) {
-      console.warn('تعذر تسجيل Service Worker:', error);
-    });
-  });
-}
-</script>
 </body>
 </html>
