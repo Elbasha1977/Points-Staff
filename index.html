@@ -1100,6 +1100,76 @@ async function verifyPointsStaffLicense(){
  if(result.success!==true||result.authorized!==true)throw new Error(result.message||'ترخيص نسخة الموظفين غير نشط أو غير صالح.');
  return result;
 }
+
+// ==================== PHASE 23C: server-backed points client ====================
+let POINTS_SKIP_NEXT_CLOUD_SAVE = false;
+function getPointsCallable(name) {
+    if (!firebaseAuth.currentUser) throw new Error('يجب تسجيل الدخول أولاً.');
+    if (typeof firebase.app().functions !== 'function') throw new Error('مكتبة Firebase Functions غير متاحة.');
+    return firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable(name);
+}
+function getPointsSchoolId() {
+    if (firebaseProfile && typeof firebaseProfile.schoolId === 'string') return firebaseProfile.schoolId.trim();
+    return '';
+}
+async function loadServerPointsForCurrentClass() {
+    if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) return false;
+    const schoolId = getPointsSchoolId();
+    if (!schoolId && !isGlobalFirebaseAdmin()) return false;
+    const call = getPointsCallable('getStudentPointsData');
+    const response = await call({ classId: currentClass, ...(schoolId ? { schoolId } : {}) });
+    const data = response && response.data ? response.data : {};
+    if (data.migrated !== true || !Array.isArray(data.students)) return false;
+    const pointsByName = new Map(data.students.map(row => [String(row.name || '').trim(), Number(row.points) || 0]));
+    const students = (allClassesData[currentClass] && Array.isArray(allClassesData[currentClass].students))
+        ? allClassesData[currentClass].students : [];
+    students.forEach(student => {
+        if (pointsByName.has(String(student.name || '').trim())) student.points = pointsByName.get(String(student.name || '').trim());
+    });
+    localStorage.setItem('allClassesData', JSON.stringify(allClassesData));
+    return true;
+}
+async function loadServerWarningsForCurrentClass() {
+    if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) return false;
+    const schoolId = getPointsSchoolId();
+    if (!schoolId && !isGlobalFirebaseAdmin()) return false;
+    const call = getPointsCallable('getClassWarningsData');
+    const response = await call({ classId: currentClass, ...(schoolId ? { schoolId } : {}) });
+    const data = response && response.data ? response.data : {};
+    if (data.success !== true || data.migrated !== true) return false;
+    warningsData[currentClass] = data.data || {};
+    localStorage.setItem('warningsData', JSON.stringify(warningsData));
+    return true;
+}
+
+async function applyServerPointsBatch(action, amount, reason) {
+    if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) {
+        throw new Error('يجب الاتصال بحساب الموظف واختيار الفصل أولاً.');
+    }
+    const ids = getSelectedStudents();
+    const students = getCurrentStudents();
+    const names = ids.map(id => students[id] && students[id].name).filter(Boolean);
+    if (!names.length) throw new Error('اختر طالبًا واحدًا على الأقل.');
+    const blocked = ids.filter(id => students[id] && isStudentDisconnected(students[id].name));
+    if (blocked.length) throw new Error('لا يمكن تنفيذ العملية على طالب منقطع.');
+    const schoolId = getPointsSchoolId();
+    const call = getPointsCallable('applyStudentPointsBatch');
+    const response = await call({ action, classId: currentClass, studentNames: names, amount: Math.abs(Number(amount)), reason: String(reason || ''), ...(schoolId ? { schoolId } : {}) });
+    const result = response && response.data ? response.data : {};
+    if (result.success !== true || !Array.isArray(result.results)) throw new Error('لم يؤكد الخادم نجاح العملية.');
+    const afterByName = new Map(result.results.map(row => [String(row.studentName), Number(row.after) || 0]));
+    names.forEach(name => {
+        const student = students.find(row => String(row.name || '').trim() === String(name).trim());
+        if (student && afterByName.has(name)) student.points = afterByName.get(name);
+        if (action === 'add' && student) updateMonthlyPoints(student.name, Math.abs(Number(amount)));
+    });
+    // Persist locally only. Do not send the legacy classData mirror write.
+    POINTS_SKIP_NEXT_CLOUD_SAVE = true;
+    saveCurrentStudents(students);
+    renderStudents();
+    return result;
+}
+
 function isApprovedFirebaseProfile(){
  return !!(firebaseCurrentUser&&firebaseProfile&&firebaseProfile.active===true&&firebaseProfile.approved===true);
 }
@@ -1201,6 +1271,7 @@ async function loadFirebaseData(){
  }
 }
 async function saveFirebaseData(){
+ if(POINTS_SKIP_NEXT_CLOUD_SAVE){POINTS_SKIP_NEXT_CLOUD_SAVE=false;return;}
  if(!firebaseSyncReady)return;
  // Staff accounts can write only the class mirror documents explicitly assigned in their profile.
  if(firebaseCurrentUser&&firebaseProfile&&firebaseProfile.role==='staff'&&firebaseProfile.active===true&&firebaseProfile.approved===true){
@@ -3660,33 +3731,33 @@ function renderRewardsGrid(gridId, rewardsArray, student) {
     }).join('');
 }
 
-function purchaseReward(rewardId, price, studentName) {
+async function purchaseReward(rewardId, price, studentName) {
     const student = getCurrentStudents().find(s => s.name === studentName);
-    if(!student) { alert('❌ الطالب غير موجود'); return; }
+    if (!student) { alert('❌ الطالب غير موجود'); return; }
+    const reward = allRewards.find(r => r.id === rewardId);
+    if (!reward) { alert('❌ الجائزة غير معروفة'); return; }
     const ownedRewards = (studentRewards[currentClass] && studentRewards[currentClass][student.name]) || [];
-    if(ownedRewards.includes(rewardId)) { alert('❌ حصلت عليها بالفعل!'); return; }
-    if(student.points < price) { alert('❌ نقاطك غير كافية!'); return; }
-    if(confirm('شراء هذه الجائزة مقابل ' + price + ' نقطة؟')) {
-        const students = getCurrentStudents();
-        const studentIndex = students.findIndex(s => s.name === student.name);
-        if(studentIndex !== -1) {
-            students[studentIndex].points -= price;
-            saveCurrentStudents(students);
-        }
-        if(!studentRewards[currentClass]) studentRewards[currentClass] = {};
-        if(!studentRewards[currentClass][student.name]) studentRewards[currentClass][student.name] = [];
-        studentRewards[currentClass][student.name].push(rewardId);
-        addPrizeToLibrary();
-        saveAllData();
-        const updatedStudent = getCurrentStudents().find(s => s.name === student.name);
-        document.getElementById('currentStudentPoints').innerHTML = updatedStudent.points;
-        document.getElementById('totalRewardsCount').innerHTML = studentRewards[currentClass][student.name].length;
-        const reward = allRewards.find(r => r.id === rewardId);
+    if (ownedRewards.includes(rewardId)) { alert('❌ حصل عليها بالفعل!'); return; }
+    if (!confirm('شراء هذه الجائزة مقابل ' + reward.price + ' نقطة؟')) return;
+    try {
+        const schoolId = getPointsSchoolId();
+        if (!schoolId && !isGlobalFirebaseAdmin()) throw new Error('تعذر تحديد المدرسة الحالية.');
+        const call = getPointsCallable('purchaseStudentReward');
+        const response = await call({ classId: currentClass, studentName, rewardId, ...(schoolId ? { schoolId } : {}) });
+        const result = response && response.data ? response.data : {};
+        if (result.success !== true) throw new Error('لم يؤكد الخادم نجاح الشراء.');
+        student.points = Number(result.points) || 0;
+        if (!studentRewards[currentClass]) studentRewards[currentClass] = {};
+        studentRewards[currentClass][studentName] = [...ownedRewards, rewardId];
+        document.getElementById('currentStudentPoints').innerHTML = student.points;
+        document.getElementById('totalRewardsCount').innerHTML = result.ownedCount;
         const msgDiv = document.getElementById('messageArea');
         msgDiv.innerHTML = '<div class="success-message">🎉 تم شراء ' + reward.icon + ' ' + reward.name + '</div>';
         setTimeout(() => { msgDiv.innerHTML = ''; }, 3000);
         renderStudents();
         alert('✅ تم شراء ' + reward.name + '!');
+    } catch (e) {
+        alert('❌ لم يتم الشراء: ' + (e.message || e));
     }
 }
 
@@ -3948,9 +4019,29 @@ function updateDateTime() {
     if(ct) ct.innerHTML = now.toLocaleTimeString('ar-EG');
 }
 
-function showDailyTrackerModal() {
+async function loadDailyTrackerFromServer(classId) {
+    if (!firebaseCurrentUser || !firebase.firestore || !firebase.app) return false;
+    const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('getDailyTrackerData');
+    const payload = { classId };
+    if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin() && firebaseProfile && firebaseProfile.schoolId) payload.schoolId = firebaseProfile.schoolId;
+    const result = await call(payload);
+    const remote = result && result.data && result.data.data ? result.data.data : {};
+    Object.keys(dailyTrackerData || {}).forEach(k => { if (k.startsWith(classId + '_')) delete dailyTrackerData[k]; });
+    Object.assign(dailyTrackerData, remote);
+    localStorage.setItem('dailyTrackerData', JSON.stringify(dailyTrackerData));
+    return true;
+}
+
+async function showDailyTrackerModal() {
     const students = getCurrentStudents();
     if(students.length === 0) { alert('⚠️ لا يوجد طلاب'); return; }
+    try {
+        await loadDailyTrackerFromServer(currentClass);
+    } catch (e) {
+        console.error('Daily tracker load failed:', e);
+        alert('تعذر تحميل المتابعة اليومية من الخادم. لم يتم فتح السجل حتى لا تظهر بيانات قديمة أو غير متزامنة.');
+        return;
+    }
     document.getElementById('trackerClassName').innerText = currentClass;
     updateDateTime();
     const todayKey = getTodayKey();
@@ -4022,7 +4113,28 @@ function addTrackerColumnSelectAll() {
 }
 
 function closeDailyTrackerModal() { document.getElementById('dailyTrackerModal').style.display = 'none'; }
-function saveDailyTracker() { saveAllData(); alert('✅ تم الحفظ'); closeDailyTrackerModal(); }
+async function saveDailyTracker() {
+    const btn = document.getElementById('saveTrackerBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ جارٍ الحفظ...'; }
+    try {
+        const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('saveDailyTrackerData');
+        const payload = { classId: currentClass, data: {} };
+        const prefix = currentClass + '_';
+        Object.keys(dailyTrackerData || {}).forEach(key => {
+            if (key.startsWith(prefix)) payload.data[key] = dailyTrackerData[key];
+        });
+        if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin() && firebaseProfile && firebaseProfile.schoolId) payload.schoolId = firebaseProfile.schoolId;
+        await call(payload);
+        localStorage.setItem('dailyTrackerData', JSON.stringify(dailyTrackerData));
+        alert('✅ تم حفظ المتابعة اليومية بأمان على الخادم');
+        closeDailyTrackerModal();
+    } catch (e) {
+        console.error('Daily tracker save failed:', e);
+        alert('❌ تعذر حفظ المتابعة على الخادم: ' + (e.message || e));
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 حفظ'; }
+    }
+}
 
 function showStudentReport(studentName) {
     if (isStudentDisconnected(studentName)) {
@@ -4101,44 +4213,41 @@ function showViolationsModal() {
 
 function closeViolationsModal() { document.getElementById('violationsModal').style.display = 'none'; }
 
-function saveViolation() {
+async function saveViolation() {
     const select = document.getElementById('violationStudentSelect');
     const selectedStudents = Array.from(select.selectedOptions).map(option => option.value).filter(Boolean);
     const violationType = document.getElementById('violationTypeSelect').value;
     const details = document.getElementById('violationDetails').value;
     if(!selectedStudents.length) { alert('❌ اختر طالباً واحداً أو أكثر'); return; }
     if(!violationType) { alert('❌ اختر نوع المخالفة'); return; }
-
-    const students = getCurrentStudents();
-    if(!violationsData[currentClass]) violationsData[currentClass] = {};
-    const now = new Date();
-    const date = now.toLocaleDateString('ar-EG');
-    const time = now.toLocaleTimeString('ar-EG');
-    let savedCount = 0;
-
-    selectedStudents.forEach(studentName => {
-        const studentIndex = students.findIndex(s => s.name === studentName);
-        if(studentIndex === -1) return;
-        if (isStudentDisconnected(studentName)) return;
-        students[studentIndex].points -= VIOLATION_POINTS;
-        if(!violationsData[currentClass][studentName]) violationsData[currentClass][studentName] = [];
-        violationsData[currentClass][studentName].push({
-            id: Date.now() + savedCount,
-            date: date,
-            time: time,
-            violation: violationType,
-            details: details || 'لا توجد تفاصيل',
-            pointsDeducted: VIOLATION_POINTS
-        });
-        savedCount++;
-    });
-
-    if(!savedCount) { alert('❌ لم يتم العثور على الطلاب المحددين'); return; }
-    saveCurrentStudents(students);
-    saveAllData();
-    alert('✅ تم تسجيل المخالفة لـ ' + savedCount + ' طالب وخصم ' + (VIOLATION_POINTS * savedCount) + ' نقطة إجمالاً');
-    renderStudents();
-    closeViolationsModal();
+    if(!firebaseSyncReady || !firebaseCurrentUser || !currentClass) { alert('⚠️ يجب تسجيل الدخول والاتصال بالخادم واختيار الفصل.'); return; }
+    const button = document.getElementById('saveViolationBtn');
+    button.disabled = true;
+    let savedCount = 0, totalDeducted = 0;
+    try {
+        const schoolId = getPointsSchoolId();
+        const call = getPointsCallable('mutateStudentViolation');
+        for (const studentName of selectedStudents) {
+            if (isStudentDisconnected(studentName)) continue;
+            const response = await call({ action:'add', classId:currentClass, studentName, violation:violationType, details, ...(schoolId ? {schoolId} : {}) });
+            const result = response && response.data ? response.data : {};
+            if (result.success !== true || !result.violation) throw new Error('لم يؤكد الخادم حفظ مخالفة ' + studentName);
+            const students = getCurrentStudents();
+            const student = students.find(s => String(s.name).trim() === studentName);
+            if (student) student.points = Number(result.after) || 0;
+            if (!violationsData[currentClass]) violationsData[currentClass] = {};
+            if (!violationsData[currentClass][studentName]) violationsData[currentClass][studentName] = [];
+            violationsData[currentClass][studentName].push(result.violation);
+            savedCount++; totalDeducted += Math.abs(Number(result.delta) || 0);
+        }
+        if (!savedCount) throw new Error('لم يتم العثور على طلاب صالحين للتسجيل.');
+        localStorage.setItem('violationsData', JSON.stringify(violationsData));
+        localStorage.setItem('allClassesData', JSON.stringify(allClassesData));
+        renderStudents();
+        alert('✅ تم تسجيل المخالفة لـ ' + savedCount + ' طالب وخصم ' + totalDeducted + ' نقطة إجمالاً');
+        closeViolationsModal();
+    } catch (e) { console.error(e); alert('⚠️ لم تكتمل العملية: ' + (e.message || e) + '\nراجع سجل الفصل قبل إعادة المحاولة لتجنب التكرار.'); }
+    finally { button.disabled = false; }
 }
 
 function showStudentViolations(studentName) {
@@ -4158,21 +4267,27 @@ function showStudentViolations(studentName) {
     document.getElementById('studentViolationsModal').style.display = 'flex';
 }
 
-function deleteViolation(studentName, violationId) {
+async function deleteViolation(studentName, violationId) {
     if(!confirm('حذف المخالفة؟ سيتم إرجاع 50 نقطة.')) return;
-    const violations = violationsData[currentClass] && violationsData[currentClass][studentName];
-    if(!violations) return;
-    const violationIndex = violations.findIndex(v => v.id === violationId);
-    if(violationIndex === -1) return;
-    const students = getCurrentStudents();
-    const studentIndex = students.findIndex(s => s.name === studentName);
-    if(studentIndex !== -1) { students[studentIndex].points += REFUND_POINTS; saveCurrentStudents(students); }
-    violations.splice(violationIndex, 1);
-    if(violations.length === 0) delete violationsData[currentClass][studentName];
-    saveAllData();
-    alert('✅ تم حذف المخالفة');
-    renderStudents();
-    showStudentViolations(studentName);
+    if(!firebaseSyncReady || !firebaseCurrentUser || !currentClass) { alert('⚠️ يجب الاتصال بالخادم واختيار الفصل.'); return; }
+    try {
+        const schoolId = getPointsSchoolId();
+        const call = getPointsCallable('mutateStudentViolation');
+        const response = await call({ action:'delete', classId:currentClass, studentName, violationId:String(violationId), ...(schoolId ? {schoolId} : {}) });
+        const result = response && response.data ? response.data : {};
+        if (result.success !== true) throw new Error('لم يؤكد الخادم حذف المخالفة.');
+        const students = getCurrentStudents();
+        const student = students.find(s => String(s.name).trim() === studentName);
+        if (student) student.points = Number(result.after) || 0;
+        if (!violationsData[currentClass]) violationsData[currentClass] = {};
+        if (result.violations && result.violations.length) violationsData[currentClass][studentName] = result.violations;
+        else delete violationsData[currentClass][studentName];
+        localStorage.setItem('violationsData', JSON.stringify(violationsData));
+        localStorage.setItem('allClassesData', JSON.stringify(allClassesData));
+        alert('✅ تم حذف المخالفة وإرجاع 50 نقطة');
+        renderStudents();
+        showStudentViolations(studentName);
+    } catch(e) { console.error(e); alert('⚠️ لم يتم حذف المخالفة: ' + (e.message || e)); }
 }
 
 function closeViolationsListModal() { document.getElementById('studentViolationsModal').style.display = 'none'; }
@@ -4219,7 +4334,7 @@ function saveParentContacts() {
     closeParentContactModal();
 }
 
-function editPhoneForStudent(idx, name) {
+async function editPhoneForStudent(idx, name) {
     const span = document.getElementById('phoneVal_' + idx);
     const current = span.innerText === 'لم يتم إدخال' ? '' : span.innerText;
     const newPhone = prompt('📞 رقم الهاتف:', current);
@@ -4227,12 +4342,12 @@ function editPhoneForStudent(idx, name) {
         const contacts = getCurrentParentContacts();
         if(!contacts[name]) contacts[name] = { phone: '', email: '' };
         contacts[name].phone = newPhone.trim();
-        saveParentContactsForClass(contacts);
-        span.innerText = newPhone.trim() || 'لم يتم إدخال';
+        try { await saveParentContactsForClass(contacts); span.innerText = newPhone.trim() || 'لم يتم إدخال'; }
+        catch(e) { alert('❌ تعذر حفظ رقم الهاتف: ' + (e.message || e)); }
     }
 }
 
-function editEmailForStudent(idx, name) {
+async function editEmailForStudent(idx, name) {
     const span = document.getElementById('emailVal_' + idx);
     const current = span.innerText === 'لم يتم إدخال' ? '' : span.innerText;
     const newEmail = prompt('📧 البريد:', current);
@@ -4240,8 +4355,8 @@ function editEmailForStudent(idx, name) {
         const contacts = getCurrentParentContacts();
         if(!contacts[name]) contacts[name] = { phone: '', email: '' };
         contacts[name].email = newEmail.trim();
-        saveParentContactsForClass(contacts);
-        span.innerText = newEmail.trim() || 'لم يتم إدخال';
+        try { await saveParentContactsForClass(contacts); span.innerText = newEmail.trim() || 'لم يتم إدخال'; }
+        catch(e) { alert('❌ تعذر حفظ البريد: ' + (e.message || e)); }
     }
 }
 
@@ -4524,24 +4639,88 @@ function showSelectClassModal() {
     document.getElementById('selectClassModal').style.display = 'flex';
 }
 function closeSelectClassModal() { document.getElementById('selectClassModal').style.display = 'none'; }
-function saveSelectedClass() {
+async function saveSelectedClass() {
     const c = document.getElementById('classSelect').value;
-    if(c){ currentClass=c; localStorage.setItem('currentClass',c); document.getElementById('selectedClassDisplay').innerHTML='📚 الصف: ' + currentClass; updateCurrentClassDisplayText(); renderStudents(); alert('✅ تم التبديل إلى ' + c); }
+    if(c){ currentClass=c; localStorage.setItem('currentClass',c); document.getElementById('selectedClassDisplay').innerHTML='📚 الصف: ' + currentClass; updateCurrentClassDisplayText(); try { await loadClassFeatureDatasetsForCurrentClass(); } catch(e) { console.warn('Feature sidecar load:',e); } renderStudents(); alert('✅ تم التبديل إلى ' + c); }
     closeSelectClassModal();
 }
 
 function showAddClassModal() { document.getElementById('classNameForAdd').innerText = currentClass; document.getElementById('studentsNamesInput').value = ''; document.getElementById('addClassModal').style.display = 'flex'; }
 function closeAddClassModal() { document.getElementById('addClassModal').style.display = 'none'; }
-function saveClassStudents() {
+
+
+// ==================== PHASE 23F: secure class dataset client ====================
+const POINTS_CLASS_DATASET_KEYS = ['parentContacts','studentLevels','medicalConditions'];
+function getClassDatasetSchoolId() {
+    const id = getPointsSchoolId();
+    if (!id && !isGlobalFirebaseAdmin()) throw new Error('تعذر تحديد المدرسة الحالية.');
+    return id;
+}
+async function loadClassFeatureDatasetsForCurrentClass() {
+    if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) return;
+    const schoolId = getClassDatasetSchoolId();
+    for (const dataset of POINTS_CLASS_DATASET_KEYS) {
+        try {
+            const call = getPointsCallable('getClassFeatureDataset');
+            const response = await call({ classId: currentClass, dataset, ...(schoolId ? {schoolId} : {}) });
+            const result = response && response.data ? response.data : {};
+            if (result.success === true && result.migrated === true && result.data && typeof result.data === 'object') {
+                if (dataset === 'parentContacts') parentContacts[currentClass] = result.data;
+                if (dataset === 'studentLevels') studentLevels[currentClass] = result.data;
+                if (dataset === 'medicalConditions') medicalConditions[currentClass] = result.data;
+            }
+        } catch (featureError) {
+            console.warn('Feature dataset unavailable:', dataset, featureError);
+        }
+    }
+    localStorage.setItem('parentContacts', JSON.stringify(parentContacts));
+    localStorage.setItem('studentLevels', JSON.stringify(studentLevels));
+    localStorage.setItem('medicalConditions', JSON.stringify(medicalConditions));
+}
+async function saveClassFeatureDatasetToServer(dataset, data) {
+    if (!firebaseSyncReady || !firebaseCurrentUser) throw new Error('يجب تسجيل الدخول أولاً.');
+    const schoolId = getClassDatasetSchoolId();
+    const call = getPointsCallable('saveClassFeatureDataset');
+    const response = await call({ classId: currentClass, dataset, data, ...(schoolId ? {schoolId} : {}) });
+    const result = response && response.data ? response.data : {};
+    if (result.success !== true) throw new Error('لم يؤكد الخادم حفظ البيانات.');
+    return true;
+}
+
+// ==================== PHASE 23D: server-controlled student roster client ==================
+async function mutateStudentRosterOnServer(action, studentName) {
+    if (!firebaseSyncReady || !firebaseCurrentUser) throw new Error('يجب تسجيل الدخول والمزامنة أولاً.');
+    const schoolId = getPointsSchoolId();
+    if (!schoolId && !isGlobalFirebaseAdmin()) throw new Error('تعذر تحديد المدرسة الحالية.');
+    const call = getPointsCallable('mutateStudentRoster');
+    const response = await call({ action, classId: currentClass, studentName, ...(schoolId ? { schoolId } : {}) });
+    const result = response && response.data ? response.data : {};
+    if (result.success !== true) throw new Error('لم يؤكد الخادم نجاح العملية.');
+    return result;
+}
+
+async function saveClassStudents() {
     const text = document.getElementById('studentsNamesInput').value;
-    const names = text.split(/\r?\n/).filter(l=>l.trim()).map(l=>l.trim());
-    if(!names.length){ alert('❌ أدخل أسماء'); return; }
-    const students = getCurrentStudents();
-    students.push(...names.map(n=>({name:n,points:0})));
-    saveCurrentStudents(students);
-    renderStudents();
-    alert('✅ تم إضافة ' + names.length + ' طالب');
-    closeAddClassModal();
+    const names = [...new Set(text.split(/\r?\n/).map(l => l.trim().replace(/\s+/g, ' ')).filter(Boolean))];
+    if (!names.length) { alert('❌ أدخل أسماء'); return; }
+    const button = document.querySelector('#addClassModal .confirm-btn');
+    if (button) { button.disabled = true; button.textContent = 'جارٍ الحفظ...'; }
+    let added = 0, failed = [];
+    try {
+        for (const name of names) {
+            try {
+                await mutateStudentRosterOnServer('add', name);
+                const list = getCurrentStudents();
+                if (!list.some(s => String(s.name).trim().toLowerCase() === name.toLowerCase())) list.push({name, points: 0});
+                added++;
+            } catch (e) { failed.push(name + ': ' + (e.message || e)); }
+        }
+        renderStudents();
+        if (added) closeAddClassModal();
+        alert('تمت إضافة ' + added + ' طالب من ' + names.length + (failed.length ? '\nتعذر إضافة:\n' + failed.join('\n') : ''));
+    } finally {
+        if (button) { button.disabled = false; button.textContent = 'حفظ'; }
+    }
 }
 
 function showDeleteStudentModal() { 
@@ -4552,18 +4731,28 @@ function showDeleteStudentModal() {
     document.getElementById('deleteStudentModal').style.display='flex'; 
 }
 function closeDeleteStudentModal() { document.getElementById('deleteStudentModal').style.display='none'; }
-function deleteStudent() { 
-    const idx = parseInt(document.getElementById('deleteStudentSelect').value); 
-    if(isNaN(idx)){ alert('❌ اختر طالباً'); return; } 
-    const students = getCurrentStudents(); 
-    const name = students[idx].name; 
-    if(confirm('⚠️ حذف ' + name + '؟')){ 
-        students.splice(idx,1); 
-        saveCurrentStudents(students); 
-        renderStudents(); 
-        alert('✅ تم حذف ' + name); 
-        closeDeleteStudentModal(); 
-    } 
+async function deleteStudent() {
+    const idx = parseInt(document.getElementById('deleteStudentSelect').value);
+    if (isNaN(idx)) { alert('❌ اختر طالباً'); return; }
+    const students = getCurrentStudents();
+    if (!students[idx]) { alert('❌ الطالب المحدد غير موجود'); return; }
+    const name = students[idx].name;
+    if (!confirm('⚠️ حذف ' + name + '؟')) return;
+    const button = document.getElementById('confirmDeleteBtn');
+    if (button) { button.disabled = true; button.textContent = 'جارٍ الحذف...'; }
+    try {
+        await mutateStudentRosterOnServer('delete', name);
+        const fresh = getCurrentStudents();
+        const at = fresh.findIndex(s => String(s.name).trim().toLowerCase() === String(name).trim().toLowerCase());
+        if (at >= 0) fresh.splice(at, 1);
+        renderStudents();
+        closeDeleteStudentModal();
+        alert('✅ تم حذف ' + name);
+    } catch (e) {
+        alert('❌ لم يتم الحذف: ' + (e.message || e));
+    } finally {
+        if (button) { button.disabled = false; button.textContent = '🗑️ حذف'; }
+    }
 }
 
 // ==================== الجوائز والصور ====================
@@ -4620,7 +4809,7 @@ function showLevelsModal() {
 
 function closeLevelsModal() { document.getElementById('levelsModal').style.display = 'none'; }
 
-function saveLevelsData() {
+async function saveLevelsData() {
     if (!studentLevels[currentClass]) studentLevels[currentClass] = {};
     document.querySelectorAll('#levelsTableBody .level-select').forEach(sel=>{
         const name = sel.getAttribute('data-name');
@@ -4628,9 +4817,12 @@ function saveLevelsData() {
         if(val) studentLevels[currentClass][name]=val;
         else delete studentLevels[currentClass][name];
     });
-    localStorage.setItem('studentLevels', JSON.stringify(studentLevels));
-    alert('✅ تم الحفظ');
-    closeLevelsModal();
+    try {
+        await saveClassFeatureDatasetToServer('studentLevels', studentLevels[currentClass]);
+        localStorage.setItem('studentLevels', JSON.stringify(studentLevels));
+        alert('✅ تم الحفظ');
+        closeLevelsModal();
+    } catch(e) { alert('❌ تعذر حفظ مستويات الطلاب: ' + (e.message || e)); }
 }
 
 // ==================== Multi Select ====================
@@ -4663,48 +4855,54 @@ function closePointsModal() { document.getElementById('pointsModal').style.displ
 function showWarningModal() { document.getElementById('warningModal').style.display = 'flex'; }
 function closeWarningModal() { document.getElementById('warningModal').style.display = 'none'; }
 
-function applyPointsToStudents(points, isAdd) {
-    const ids = getSelectedStudents();
-    if(!ids.length){ alert('❌ اختر طالباً'); return false; }
-    const students = getCurrentStudents();
-    const actual = isAdd ? Math.abs(points) : -Math.abs(points);
-    const blocked = ids.filter(id => students[id] && isStudentDisconnected(students[id].name));
-    if (blocked.length) { alert('🚫 ممنوع: لا يمكن إضافة أو خصم نقاط لطالب منقطع.'); return false; }
-    ids.forEach(id => {
-        students[id].points += actual;
-        if (isAdd && actual > 0) updateMonthlyPoints(students[id].name, actual);
-    });
-    saveCurrentStudents(students);
-    renderStudents();
-    alert('✅ تم ' + (isAdd?'إضافة':'خصم') + ' ' + Math.abs(points) + ' نقطة');
-    return true;
+async function applyPointsToStudents(points, isAdd) {
+    try {
+        const result = await applyServerPointsBatch(isAdd ? 'add' : 'deduct', Math.abs(points), isAdd ? 'إضافة نقاط' : 'خصم نقاط');
+        alert('✅ تم ' + (isAdd ? 'إضافة' : 'خصم') + ' ' + Math.abs(points) + ' نقطة لـ ' + result.count + ' طالب.');
+        return true;
+    } catch (e) {
+        console.error(e);
+        alert('⚠️ لم تُنفذ العملية: ' + (e.message || e));
+        return false;
+    }
 }
 
-function applyWarningToStudents(points, name) {
-    const ids = getSelectedStudents();
-    if(!ids.length){ alert('❌ اختر طالباً'); return false; }
-    const students = getCurrentStudents();
-    const blocked = ids.filter(id => students[id] && isStudentDisconnected(students[id].name));
-    if (blocked.length) { alert('🚫 ممنوع: لا يمكن إعطاء إنذار لطالب منقطع.'); return false; }
-    if(!warningsData[currentClass]) warningsData[currentClass] = {};
-    const now = new Date();
-    ids.forEach(id => {
-        students[id].points -= Math.abs(points);
-        const studentName = students[id].name;
-        if(!warningsData[currentClass][studentName]) warningsData[currentClass][studentName] = [];
-        warningsData[currentClass][studentName].push({
-            id: Date.now() + Math.random(),
-            name: name,
-            pointsDeducted: Math.abs(points),
-            date: now.toLocaleDateString('ar-EG'),
-            time: now.toLocaleTimeString('ar-EG')
+async function applyWarningToStudents(points, name) {
+    try {
+        if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) throw new Error('يجب الاتصال بحساب الموظف واختيار الفصل أولاً.');
+        const ids = getSelectedStudents();
+        const students = getCurrentStudents();
+        const names = ids.map(id => students[id] && students[id].name).filter(Boolean);
+        if (!names.length) throw new Error('اختر طالبًا واحدًا على الأقل.');
+        if (ids.some(id => students[id] && isStudentDisconnected(students[id].name))) throw new Error('لا يمكن تنفيذ الإنذار على طالب منقطع.');
+        const optionByName = { 'تأخير':'1', 'إزعاج':'2', 'عدم حل الواجب':'3', 'سلوك سيء':'4', 'عدم اكتمال الكتاب':'5', 'عدم الدرجة النهائية':'6', 'عدم الدرجة النهائية امتحان':'7' };
+        const warningId = optionByName[String(name || '').trim()];
+        if (!warningId) throw new Error('نوع الإنذار غير معروف.');
+        const schoolId = getPointsSchoolId();
+        const call = getPointsCallable('mutateStudentWarnings');
+        const response = await call({ classId: currentClass, studentNames: names, warningId, ...(schoolId ? { schoolId } : {}) });
+        const result = response && response.data ? response.data : {};
+        if (result.success !== true || !Array.isArray(result.results)) throw new Error('لم يؤكد الخادم نجاح تسجيل الإنذار.');
+        if (!warningsData[currentClass]) warningsData[currentClass] = {};
+        const afterByName = new Map(result.results.map(row => [String(row.studentName), row]));
+        names.forEach(studentName => {
+            const row = afterByName.get(studentName);
+            if (!row) return;
+            const student = students.find(s => String(s.name || '').trim() === studentName);
+            if (student) student.points = Number(row.after) || 0;
+            if (!warningsData[currentClass][studentName]) warningsData[currentClass][studentName] = [];
+            warningsData[currentClass][studentName].push(row.warning);
         });
-    });
-    saveCurrentStudents(students);
-    saveAllData();
-    renderStudents();
-    alert('🔔 إنذار (' + name + ') وخصم ' + Math.abs(points));
-    return true;
+        localStorage.setItem('warningsData', JSON.stringify(warningsData));
+        localStorage.setItem('allClassesData', JSON.stringify(allClassesData));
+        renderStudents();
+        alert('🔔 تم تسجيل الإنذار وخصم ' + result.pointsDeducted + ' نقطة لـ ' + result.count + ' طالب.');
+        return true;
+    } catch (e) {
+        console.error(e);
+        alert('⚠️ لم يُنفذ الإنذار: ' + (e.message || e));
+        return false;
+    }
 }
 
 function showUploadPhotosModal() {
@@ -5199,7 +5397,7 @@ function showMedicalConditionsModal() {
 
 function closeMedicalModal() { document.getElementById('medicalConditionsModal').style.display = 'none'; }
 
-function saveMedicalCondition() {
+async function saveMedicalCondition() {
     const studentName = document.getElementById('medicalStudentSelect').value;
     const condition = document.getElementById('medicalConditionText').value.trim();
     const facilities = document.getElementById('medicalFacilitiesText').value.trim();
@@ -5207,10 +5405,12 @@ function saveMedicalCondition() {
     if(!condition) { alert('❌ أدخل الحالة'); return; }
     if(!medicalConditions[currentClass]) medicalConditions[currentClass] = {};
     medicalConditions[currentClass][studentName] = { condition: condition, facilities: facilities || 'لا يوجد', date: new Date().toLocaleDateString('ar-EG'), time: new Date().toLocaleTimeString('ar-EG') };
-    localStorage.setItem('medicalConditions', JSON.stringify(medicalConditions));
-    saveAllData();
-    alert('✅ تم التسجيل');
-    closeMedicalModal();
+    try {
+        await saveClassFeatureDatasetToServer('medicalConditions', medicalConditions[currentClass]);
+        localStorage.setItem('medicalConditions', JSON.stringify(medicalConditions));
+        alert('✅ تم التسجيل');
+        closeMedicalModal();
+    } catch(e) { alert('❌ تعذر حفظ الحالة الطبية: ' + (e.message || e)); }
 }
 
 function showViewMedicalModal() {
@@ -5455,8 +5655,25 @@ function ensureDisconnectedAbsentForToday() {
     if (changed) saveAllData();
 }
 
-function showDisconnectedStudentsModal() {
+async function loadDisconnectedStudentsFromServer(classId) {
+    const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('getDisconnectedStudents');
+    const payload = { classId };
+    if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin() && firebaseProfile && firebaseProfile.schoolId) payload.schoolId = firebaseProfile.schoolId;
+    const result = await call(payload);
+    const names = result && result.data && Array.isArray(result.data.students) ? result.data.students : [];
+    disconnectedStudents[classId] = Object.fromEntries(names.map(name => [String(name), true]));
+    localStorage.setItem('disconnectedStudents', JSON.stringify(disconnectedStudents));
+}
+
+async function showDisconnectedStudentsModal() {
     const students = getCurrentStudents();
+    try {
+        await loadDisconnectedStudentsFromServer(currentClass);
+    } catch (e) {
+        console.error('Disconnected registry load failed:', e);
+        alert('تعذر تحميل سجل الطلاب المنقطعين من الخادم. لم يتم فتح السجل حتى لا يتم تعديل بيانات قديمة.');
+        return;
+    }
     const container = document.getElementById('disconnectedStudentsList');
     if (!students.length) { container.innerHTML = '<p style="text-align:center;color:#666;padding:25px;">لا يوجد طلاب.</p>'; }
     else {
@@ -5468,25 +5685,32 @@ function showDisconnectedStudentsModal() {
     document.getElementById('disconnectedStudentsModal').style.display = 'flex';
 }
 function closeDisconnectedStudentsModal() { document.getElementById('disconnectedStudentsModal').style.display = 'none'; }
-function saveDisconnectedStudents() {
+async function saveDisconnectedStudents() {
     const students = getCurrentStudents();
-    if (!disconnectedStudents[currentClass]) disconnectedStudents[currentClass] = {};
     const selected = new Set(Array.from(document.querySelectorAll('.disconnected-student-checkbox:checked')).map(cb => parseInt(cb.getAttribute('data-index'))));
-    students.forEach((student, i) => {
-        if (selected.has(i)) {
-            disconnectedStudents[currentClass][student.name] = true;
-            student.points = 0;
-        } else {
-            delete disconnectedStudents[currentClass][student.name];
-        }
-    });
-    ensureDisconnectedAbsentForToday();
-    saveCurrentStudents(students);
-    saveAllData();
-    renderStudents();
-    renderDisconnectedAwareTables();
-    closeDisconnectedStudentsModal();
-    alert('✅ تم حفظ سجل الطلاب المنقطعين.');
+    const selectedNames = students.filter((student, i) => selected.has(i)).map(student => student.name);
+    const button = document.getElementById('saveDisconnectedStudentsBtn');
+    if (button) { button.disabled = true; button.textContent = '⏳ جارٍ الحفظ...'; }
+    try {
+        const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('saveDisconnectedStudents');
+        const payload = { classId: currentClass, students: selectedNames, todayKey: getTodayKey() };
+        if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin() && firebaseProfile && firebaseProfile.schoolId) payload.schoolId = firebaseProfile.schoolId;
+        await call(payload);
+        if (!disconnectedStudents[currentClass]) disconnectedStudents[currentClass] = {};
+        disconnectedStudents[currentClass] = Object.fromEntries(selectedNames.map(name => [name, true]));
+        students.forEach(student => { if (selectedNames.includes(student.name)) student.points = 0; });
+        localStorage.setItem('disconnectedStudents', JSON.stringify(disconnectedStudents));
+        saveCurrentStudents(students);
+        renderStudents();
+        renderDisconnectedAwareTables();
+        closeDisconnectedStudentsModal();
+        alert('✅ تم حفظ سجل الطلاب المنقطعين وتحديث الغياب والنقاط على الخادم.');
+    } catch (e) {
+        console.error('Disconnected registry save failed:', e);
+        alert('❌ تعذر حفظ سجل المنقطعين: ' + (e.message || e));
+    } finally {
+        if (button) { button.disabled = false; button.textContent = '💾 حفظ'; }
+    }
 }
 function renderDisconnectedAwareTables() {
     if (document.getElementById('assessmentsModal')?.style.display === 'flex') renderAssessmentsTable();
@@ -5499,7 +5723,11 @@ function getCurrentPrizes() { return classPrizes[currentClass]; }
 function saveCurrentStudents(students) { allClassesData[currentClass].students = students; saveAllData(); }
 function saveCurrentPhotos(photos) { allClassesData[currentClass].photos = photos; saveAllData(); }
 function getCurrentParentContacts() { return parentContacts[currentClass]; }
-function saveParentContactsForClass(contacts) { parentContacts[currentClass] = contacts; saveAllData(); }
+async function saveParentContactsForClass(contacts) {
+    await saveClassFeatureDatasetToServer('parentContacts', contacts);
+    parentContacts[currentClass] = contacts;
+    localStorage.setItem('parentContacts', JSON.stringify(parentContacts));
+}
 
 function getLevel(points) { if(points >= 500) return 'أسطوري'; if(points >= 300) return 'متميز'; if(points >= 100) return 'نشيط'; if(points >= 0) return 'مبتدئ'; return 'تحذير'; }
 function getLevelClass(level) { switch(level) { case 'أسطوري': return 'level-legendary'; case 'متميز': return 'level-excellent'; case 'نشيط': return 'level-active'; case 'مبتدئ': return 'level-beginner'; default: return 'level-warning'; } }
@@ -5604,7 +5832,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.getElementById('selectClassDropdown').onclick = function() { showSelectClassModal(); };
     document.getElementById('addClassDropdown').onclick = function() { showAddClassModal(); };
-    document.getElementById('addStudentDropdown').onclick = function() { var n = prompt('📝 اسم الطالب'); if(!n) return; var p = parseInt(prompt('⭐ النقاط')) || 0; var students = getCurrentStudents(); students.push({name:n.trim(), points:p}); saveCurrentStudents(students); renderStudents(); alert('✅ تمت الإضافة'); };
+    document.getElementById('addStudentDropdown').onclick = async function() { var n = prompt('📝 اسم الطالب'); if(!n || !n.trim()) return; try { await mutateStudentRosterOnServer('add', n.trim()); var students = getCurrentStudents(); if(!students.some(s => String(s.name).trim().toLowerCase() === n.trim().toLowerCase())) students.push({name:n.trim(), points:0}); renderStudents(); alert('✅ تمت إضافة الطالب'); } catch(e) { alert('❌ لم تتم الإضافة: ' + (e.message || e)); } };
     document.getElementById('deleteStudentDropdown').onclick = function() { showDeleteStudentModal(); };
     document.getElementById('randomPickerDropdown').onclick = function() { showRandomPickerModal(); };
     document.getElementById('studentsLevelsDropdown').onclick = function() { showLevelsModal(); };
@@ -5691,17 +5919,17 @@ document.addEventListener('DOMContentLoaded', function() {
         else if(currentAction==='warning') showWarningModal(); 
     };
     document.getElementById('cancelMultiSelectBtn').onclick = closeMultiSelectModal;
-    document.getElementById('confirmPointsBtn').onclick = function() { 
+    document.getElementById('confirmPointsBtn').onclick = async function() { 
         var pts = parseInt(document.getElementById('pointsSelect').value); 
         if(isNaN(pts)){ alert('❌ اختر نقاطاً'); return; } 
         var isAdd = document.getElementById('pointsModalTitle').innerText.includes('إضافة'); 
-        if(applyPointsToStudents(pts,isAdd)){ closePointsModal(); currentAction=null; } 
+        if(await applyPointsToStudents(pts,isAdd)){ closePointsModal(); currentAction=null; } 
     };
     document.getElementById('cancelPointsBtn').onclick = closePointsModal;
-    document.getElementById('confirmWarningBtn').onclick = function() { 
+    document.getElementById('confirmWarningBtn').onclick = async function() { 
         var val = document.getElementById('warningSelect').value; 
         var map = {'1':{p:5,n:'تأخير'},'2':{p:10,n:'إزعاج'},'3':{p:15,n:'عدم حل الواجب'},'4':{p:25,n:'سلوك سيء'},'5':{p:75,n:'عدم اكتمال الكتاب'},'6':{p:50,n:'عدم الدرجة النهائية'},'7':{p:100,n:'عدم الدرجة النهائية امتحان'}}; 
-        if(map[val]){ if(applyWarningToStudents(map[val].p,map[val].n)){ closeWarningModal(); currentAction=null; } } 
+        if(map[val]){ if(await applyWarningToStudents(map[val].p,map[val].n)){ closeWarningModal(); currentAction=null; } } 
     };
     document.getElementById('cancelWarningBtn').onclick = closeWarningModal;
     
@@ -6077,6 +6305,12 @@ document.addEventListener('DOMContentLoaded', function() {
   } else {
     await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ نوع الحساب غير معروف.';return;
   }
+  try {
+   const pointsLoaded=await loadServerPointsForCurrentClass();
+   try { await loadServerWarningsForCurrentClass(); } catch(warningLoadError) { console.warn('Secure warnings sidecar not loaded:',warningLoadError); }
+   try { await loadClassFeatureDatasetsForCurrentClass(); } catch(datasetLoadError) { console.warn('Class feature datasets not loaded:',datasetLoadError); }
+   if(pointsLoaded&&typeof renderStudents==='function')renderStudents();
+  }catch(pointsLoadError){console.warn('Secure points sidecar not loaded:',pointsLoadError);}
   await applyCommercialMenuLocks();
   msgDiv.innerText='✅ تم تسجيل الدخول';msgDiv.style.color='#22c55e';
   setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ Connected';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent='☁️ تم تحميل الفصول المصرح بها';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}},400);
