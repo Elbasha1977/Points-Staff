@@ -6235,7 +6235,14 @@ document.addEventListener('DOMContentLoaded', function() {
             info.style.background='#ecfdf5';info.style.color='#166534';info.textContent='العميل: '+(data.customerName||'—')+' · '+(data.country||'')+' · '+(data.customerType==='individual'?'اشتراك فردي':'اشتراك مدرسة');
             if(!catalog.length){classesBox.innerHTML='<div style="color:#b91c1c;padding:10px;">لا يوجد كتالوج صفوف مرتبط بهذا الكود. يرجى التواصل مع إدارة النظام لتجهيز الصفوف والشُعب.</div>';return;}
             classesBox.innerHTML=catalog.map((classId,i)=>'<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;"><input type="checkbox" value="'+String(classId).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'" style="width:18px;height:18px;"><span>'+String(classId).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</span></label>').join('');
-          }catch(e){info.style.background='#fef2f2';info.style.color='#991b1b';info.textContent='تعذر التحقق: '+(e.message||e);classesBox.innerHTML='';}
+          }catch(e){
+            console.error('getRegistrationSchoolInfo failed', {code:e&&e.code,message:e&&e.message,details:e&&e.details});
+            info.style.background='#fef2f2';info.style.color='#991b1b';
+            const errorCode=(e&&e.code)?String(e.code):'unknown';
+            const errorMessage=(e&&e.message)?String(e.message):String(e||'حدث خطأ غير معروف');
+            info.textContent='تعذر التحقق ('+errorCode+'): '+errorMessage;
+            classesBox.innerHTML='';
+          }
           finally{button.disabled=false;}
         };
         document.getElementById('registerInviteCode').addEventListener('change',()=>{document.getElementById('registerSchoolInfo').textContent='تم تغيير الكود. اضغط زر التحقق مرة أخرى.';document.getElementById('registerClasses').innerHTML='';});
