@@ -6069,6 +6069,11 @@ document.addEventListener('DOMContentLoaded', function() {
     allClassesData=scoped;
     currentClass=permitted.find(id=>Object.prototype.hasOwnProperty.call(scoped,id))||Object.keys(scoped)[0];
     localStorage.setItem('allClassesData',JSON.stringify(allClassesData));
+    // Staff accounts load only their assigned class mirrors above; mark the scoped
+    // Firebase session ready so saveFirebaseData() can persist changes to those mirrors.
+    firebaseSyncReady=true;
+    const staffSyncStatus=document.getElementById('firebaseSyncStatus');
+    if(staffSyncStatus)staffSyncStatus.textContent='☁️ تم تحميل الفصول المصرح بها';
   } else {
     await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ نوع الحساب غير معروف.';return;
   }
