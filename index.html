@@ -6201,15 +6201,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 '<div id="registerPanel" style="display:none;text-align:right;margin-top:12px;border:1px solid #ddd;border-radius:12px;padding:12px;">' +
                   '<input type="password" id="registerPasswordConfirm" placeholder="تأكيد كلمة المرور">' +
                   '<label style="display:block;margin:8px 0;font-weight:bold;">🔑 كود الاشتراك</label>' +
-                  '<input type="text" id="registerInviteCode" placeholder="أدخل كود الاشتراك المرسل من إدارة النظام" required autocomplete="off" style="width:100%;padding:12px;margin:4px 0 10px;box-sizing:border-box;text-align:center;direction:ltr;font-weight:bold;letter-spacing:1px;">' +
+                  '<input type="text" id="registerInviteCode" placeholder="أدخل كود الاشتراك المرسل من إدارة النظام" required autocomplete="off" style="width:100%;padding:12px;margin:4px 0 6px;box-sizing:border-box;text-align:center;direction:ltr;font-weight:bold;letter-spacing:1px;">' +
+                  '<button id="verifyRegisterCodeBtn" type="button" style="background:#0f766e;margin:4px 0 10px;padding:10px;">التحقق من كود الاشتراك وجلب المدرسة والشُعب</button>' +
+                  '<div id="registerSchoolInfo" style="font-size:13px;margin:4px 0 10px;padding:8px;border-radius:8px;background:#f1f5f9;color:#334155;">أدخل كود الاشتراك ثم اضغط التحقق لعرض كتالوج المدرسة.</div>' +
                   '<label style="display:block;margin:8px 0;font-weight:bold;">المادة الدراسية</label>' +
                   '<select id="registerSubject" style="width:100%;padding:10px;">' +
                     '<option value="">-- اختر المادة --</option><option>اللغة الإنجليزية</option><option>اللغة العربية</option><option>الرياضيات</option><option>العلوم</option><option>التربية الإسلامية</option><option>الدراسات الاجتماعية</option><option>الحوسبة وتكنولوجيا المعلومات</option><option>التربية البدنية</option><option>الفنون</option>' +
                   '</select>' +
                   '<label style="display:block;margin:8px 0;font-weight:bold;">الفصول المطلوبة</label>' +
-                  '<div id="registerClasses" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">' +
-                    (['الأول','الثاني','الثالث','الرابع','الخامس','السادس']).map((g,gi)=>'<details class="grade-class-dropdown" style="border:1px solid #cbd5e1;border-radius:10px;padding:8px;margin:4px;min-width:0;"><summary style="cursor:pointer;font-weight:bold;color:#1e3a8a;padding:4px;">الصف '+g+' — اختر الشُعب</summary><div style="display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:8px;max-height:220px;overflow-y:auto;overflow-x:hidden;direction:rtl;">'+Array.from({length:15},(_,i)=>'<label style="display:flex;flex-direction:row;direction:rtl;align-items:center;justify-content:flex-start;gap:8px;width:100%;min-width:0;box-sizing:border-box;white-space:normal;line-height:1.4;"><input type="checkbox" value="'+g+' '+(i+1)+'" style="flex:0 0 18px;width:18px;height:18px;margin:0;"> <span style="display:block;flex:1;min-width:0;text-align:right;">'+g+' '+(i+1)+'</span></label>').join('')+'</div></details>').join('') +
-                  '</div>' +
+                  '<div id="registerClasses" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;"><div style="color:#64748b;padding:10px;">سيظهر هنا كتالوج الصفوف بعد التحقق من كود الاشتراك.</div></div>' +
                   '<button id="submitRegisterBtn" type="button" style="background:#2563eb;margin-top:10px;">إرسال طلب التسجيل</button>' +
                   '<div id="registerMessage" style="font-size:13px;margin-top:8px;"></div>' +
                 '</div>' +
@@ -6223,6 +6223,22 @@ document.addEventListener('DOMContentLoaded', function() {
           const panel=document.getElementById('registerPanel');
           panel.style.display=panel.style.display==='none'?'block':'none';
         };
+        document.getElementById('verifyRegisterCodeBtn').onclick=async function(){
+          const code=document.getElementById('registerInviteCode').value.trim();
+          const info=document.getElementById('registerSchoolInfo'),classesBox=document.getElementById('registerClasses'),button=this;
+          if(!code){info.textContent='أدخل كود الاشتراك أولاً.';return;}
+          button.disabled=true;info.textContent='جارٍ التحقق من الكود...';classesBox.innerHTML='';
+          try{
+            const call=firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('getRegistrationSchoolInfo');
+            const response=await call({inviteCode:code}),data=response&&response.data?response.data:{};
+            const catalog=Array.isArray(data.classCatalog)?data.classCatalog:[];
+            info.style.background='#ecfdf5';info.style.color='#166534';info.textContent='العميل: '+(data.customerName||'—')+' · '+(data.country||'')+' · '+(data.customerType==='individual'?'اشتراك فردي':'اشتراك مدرسة');
+            if(!catalog.length){classesBox.innerHTML='<div style="color:#b91c1c;padding:10px;">لا يوجد كتالوج صفوف مرتبط بهذا الكود. يرجى التواصل مع إدارة النظام لتجهيز الصفوف والشُعب.</div>';return;}
+            classesBox.innerHTML=catalog.map((classId,i)=>'<label style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;"><input type="checkbox" value="'+String(classId).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'" style="width:18px;height:18px;"><span>'+String(classId).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))+'</span></label>').join('');
+          }catch(e){info.style.background='#fef2f2';info.style.color='#991b1b';info.textContent='تعذر التحقق: '+(e.message||e);classesBox.innerHTML='';}
+          finally{button.disabled=false;}
+        };
+        document.getElementById('registerInviteCode').addEventListener('change',()=>{document.getElementById('registerSchoolInfo').textContent='تم تغيير الكود. اضغط زر التحقق مرة أخرى.';document.getElementById('registerClasses').innerHTML='';});
         document.getElementById('submitRegisterBtn').onclick=async function(){
           const email=document.getElementById('loginEmail').value.trim().toLowerCase();
           const password=document.getElementById('loginPassword').value;
