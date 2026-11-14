@@ -4118,11 +4118,19 @@ function updateDateTime() {
     if(ct) ct.innerHTML = now.toLocaleTimeString('ar-EG');
 }
 
+function getDailyTrackerSchoolId() {
+    // المدير العام يعمل على مساحة مدرسته الرئيسية schoolData/main.
+    // ملف حسابه العام قد لا يحتوي schoolId، لذلك نستخدم معرف مساحة المدرسة الفعلية.
+    if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin()) return 'main';
+    return getPointsSchoolId();
+}
+
 async function loadDailyTrackerFromServer(classId) {
-    if (!firebaseCurrentUser || !firebase.firestore || !firebase.app) return false;
+    if (!firebaseCurrentUser || !firebase.firestore || !firebase.app) throw new Error('يجب تسجيل الدخول والاتصال بالخادم أولاً.');
     const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('getDailyTrackerData');
-    const payload = { classId };
-    if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin() && firebaseProfile && firebaseProfile.schoolId) payload.schoolId = firebaseProfile.schoolId;
+    const schoolId = getDailyTrackerSchoolId();
+    if (!schoolId) throw new Error('تعذر تحديد معرّف المدرسة الحالية.');
+    const payload = { classId, schoolId };
     const result = await call(payload);
     const remote = result && result.data && result.data.data ? result.data.data : {};
     Object.keys(dailyTrackerData || {}).forEach(k => { if (k.startsWith(classId + '_')) delete dailyTrackerData[k]; });
@@ -4216,13 +4224,15 @@ async function saveDailyTracker() {
     const btn = document.getElementById('saveTrackerBtn');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ جارٍ الحفظ...'; }
     try {
+        if (!firebaseCurrentUser || !firebase.app) throw new Error('يجب تسجيل الدخول والاتصال بالخادم أولاً.');
         const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('saveDailyTrackerData');
-        const payload = { classId: currentClass, data: {} };
+        const schoolId = getDailyTrackerSchoolId();
+        if (!schoolId) throw new Error('تعذر تحديد معرّف المدرسة الحالية.');
+        const payload = { classId: currentClass, schoolId, data: {} };
         const prefix = currentClass + '_';
         Object.keys(dailyTrackerData || {}).forEach(key => {
             if (key.startsWith(prefix)) payload.data[key] = dailyTrackerData[key];
         });
-        if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin() && firebaseProfile && firebaseProfile.schoolId) payload.schoolId = firebaseProfile.schoolId;
         await call(payload);
         localStorage.setItem('dailyTrackerData', JSON.stringify(dailyTrackerData));
         alert('✅ تم حفظ المتابعة اليومية بأمان على الخادم');
