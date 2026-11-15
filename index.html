@@ -1318,6 +1318,19 @@ async function loadServerWarningsForCurrentClass() {
     return true;
 }
 
+async function applyServerPointsActionForStudent(action, studentName, amount, reason) {
+    if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) throw new Error('يجب الاتصال بالخادم واختيار الفصل أولاً.');
+    const schoolId = getPointsSchoolId();
+    const call = getPointsCallable('applyStudentPointsAction');
+    const response = await call({ action, classId: currentClass, studentName, amount: Math.abs(Number(amount)), reason: String(reason || ''), ...(schoolId ? { schoolId } : {}) });
+    const result = response && response.data ? response.data : {};
+    if (result.success !== true || !Number.isFinite(Number(result.after))) throw new Error('لم يؤكد الخادم تنفيذ عملية النقاط.');
+    const student = getCurrentStudents().find(row => String(row.name || '').trim() === String(studentName || '').trim());
+    if (student) student.points = Number(result.after);
+    localStorage.setItem('allClassesData', JSON.stringify(allClassesData));
+    return result;
+}
+
 async function applyServerPointsBatch(action, amount, reason) {
     if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) {
         throw new Error('يجب الاتصال بحساب الموظف واختيار الفصل أولاً.');
@@ -3497,7 +3510,7 @@ function updateGroupMembersPreview() {
     previewDiv.innerHTML = membersHtml;
 }
 
-function applyGroupPoints() {
+async function applyGroupPoints() {
     const groupIdx = parseInt(document.getElementById('selectGroupForPoints').value);
     const pointsValue = document.getElementById('groupPointsReasonSelect').value;
     if (isNaN(groupIdx)) { alert('❌ اختر المجموعة'); return; }
@@ -3506,18 +3519,18 @@ function applyGroupPoints() {
     if (!group || group.length === 0) { alert('❌ المجموعة فارغة'); return; }
     const points = parseInt(pointsValue);
     const students = getCurrentStudents();
-    let applied = 0;
-    group.forEach(groupStudent => {
-        const studentIndex = students.findIndex(s => s.name === groupStudent.name);
-        if (studentIndex !== -1) {
-            students[studentIndex].points += points;
-            if (points > 0) updateMonthlyPoints(students[studentIndex].name, points);
+    let applied = 0, failed = [];
+    for (const groupStudent of group) {
+        const student = students.find(s => s.name === groupStudent.name);
+        if (!student) continue;
+        try {
+            await applyServerPointsActionForStudent(points > 0 ? 'add' : 'deduct', student.name, Math.abs(points), 'نقاط المجموعة');
+            if (points > 0) updateMonthlyPoints(student.name, points);
             applied++;
-        }
-    });
-    saveCurrentStudents(students);
+        } catch (e) { failed.push(student.name + ': ' + (e.message || e)); }
+    }
     renderStudents();
-    alert('✅ تم تطبيق ' + (points > 0 ? '+' : '') + points + ' نقطة على ' + applied + ' طالب');
+    alert('تم تنفيذ العملية على ' + applied + ' طالب' + (failed.length ? '\nتعذر التنفيذ على:\n' + failed.join('\n') : ''));
     document.getElementById('groupPointsReasonSelect').value = '';
 }
 
@@ -3999,7 +4012,7 @@ function getSurpriseVerificationData(studentName) {
     };
 }
 
-function verifySurpriseEligibility(studentName) {
+async function verifySurpriseEligibility(studentName) {
     const students = getCurrentStudents();
     const studentIndex = students.findIndex(s => s.name === studentName);
     if (studentIndex === -1) { alert('❌ الطالب غير موجود'); return; }
@@ -4011,8 +4024,7 @@ function verifySurpriseEligibility(studentName) {
 
     // يتم تطبيق خصم التحقق مرة واحدة عند الضغط على Verify.
     if (verification.totalDeduction > 0) {
-        students[studentIndex].points = finalPoints;
-        saveCurrentStudents(students);
+        await applyServerPointsActionForStudent('deduct', studentName, verification.totalDeduction, 'خصم التحقق من أهلية الجائزة المفاجئة');
     }
 
     const eligible = verification.rewardCount >= 10 && finalPoints >= 2000;
