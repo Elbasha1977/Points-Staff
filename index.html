@@ -1260,8 +1260,10 @@ function getPointsCallable(name) {
     return firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable(name);
 }
 function getPointsSchoolId() {
+    // يجب حسم مساحة المدير العام أولاً؛ قد يحمل ملفه schoolId قديماً أو غير مرتبط
+    // بقاعدة المدرسة الرئيسية. الموظف فقط يستخدم schoolId المسجل في ملفه.
+    if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin()) return 'main';
     if (firebaseProfile && typeof firebaseProfile.schoolId === 'string' && firebaseProfile.schoolId.trim()) return firebaseProfile.schoolId.trim();
-    if (isGlobalFirebaseAdmin()) return 'main';
     return '';
 }
 async function loadServerPointsForCurrentClass() {
@@ -5735,8 +5737,9 @@ function ensureDisconnectedAbsentForToday() {
 
 async function loadDisconnectedStudentsFromServer(classId) {
     const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('getDisconnectedStudents');
-    const payload = { classId };
-    if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin() && firebaseProfile && firebaseProfile.schoolId) payload.schoolId = firebaseProfile.schoolId;
+    const schoolId = getDailyTrackerSchoolId();
+    if (!schoolId) throw new Error('تعذر تحديد معرّف المدرسة الحالية.');
+    const payload = { classId, schoolId };
     const result = await call(payload);
     const names = result && result.data && Array.isArray(result.data.students) ? result.data.students : [];
     disconnectedStudents[classId] = Object.fromEntries(names.map(name => [String(name), true]));
@@ -5771,8 +5774,9 @@ async function saveDisconnectedStudents() {
     if (button) { button.disabled = true; button.textContent = '⏳ جارٍ الحفظ...'; }
     try {
         const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('saveDisconnectedStudents');
-        const payload = { classId: currentClass, students: selectedNames, todayKey: getTodayKey() };
-        if (typeof isGlobalFirebaseAdmin === 'function' && isGlobalFirebaseAdmin() && firebaseProfile && firebaseProfile.schoolId) payload.schoolId = firebaseProfile.schoolId;
+        const schoolId = getDailyTrackerSchoolId();
+        if (!schoolId) throw new Error('تعذر تحديد معرّف المدرسة الحالية.');
+        const payload = { classId: currentClass, schoolId, students: selectedNames, todayKey: getTodayKey() };
         await call(payload);
         if (!disconnectedStudents[currentClass]) disconnectedStudents[currentClass] = {};
         disconnectedStudents[currentClass] = Object.fromEntries(selectedNames.map(name => [name, true]));
