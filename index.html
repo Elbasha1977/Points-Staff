@@ -1260,7 +1260,8 @@ function getPointsCallable(name) {
     return firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable(name);
 }
 function getPointsSchoolId() {
-    if (firebaseProfile && typeof firebaseProfile.schoolId === 'string') return firebaseProfile.schoolId.trim();
+    if (firebaseProfile && typeof firebaseProfile.schoolId === 'string' && firebaseProfile.schoolId.trim()) return firebaseProfile.schoolId.trim();
+    if (isGlobalFirebaseAdmin()) return 'main';
     return '';
 }
 async function loadServerPointsForCurrentClass() {
