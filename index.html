@@ -31,6 +31,52 @@ body { background: linear-gradient(135deg, #dbeafe, #c7d2fe); padding: 20px; }
 .datetime-rectangle .day-text { color: #f59e0b; font-size: 10px; margin-top: 3px; }
 .header-top h1 { color: #4338ca; margin-bottom: 8px; font-size: 28px; }
 .header-top p { color: #555; font-size: 16px; }
+
+/* تثبيت مربع التاريخ/الساعة ومربع المطور داخل رأس الصفحة على الهاتف */
+@media (max-width: 600px) {
+  .header-top {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    padding: 6px 0 10px !important;
+    overflow: visible !important;
+  }
+  .header-top .datetime-rectangle {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    transform: none !important;
+    float: none !important;
+    display: block !important;
+    width: min(100%, 320px) !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 8px) !important;
+    margin: 0 auto !important;
+    order: 1 !important;
+  }
+  .header-top .developer-corner {
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    transform: none !important;
+    float: none !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    order: 2 !important;
+  }
+  .header-top h1 { order: 0 !important; width: 100% !important; }
+  .header-top p { order: 3 !important; width: 100% !important; }
+}
+
 .selected-class-badge { background: linear-gradient(135deg, #4338ca, #8b5cf6); color: white; padding: 8px 20px; border-radius: 30px; display: inline-block; margin-top: 10px; font-size: 16px; font-weight: bold; text-align: center; }
 .header-buttons { display: flex; flex-direction: column; gap: 15px; }
 .button-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
@@ -495,6 +541,8 @@ body{overscroll-behavior-y:auto}
         <div class="compact-brand-school" id="brandTenantName">اسم المدرسة</div>
         <div class="compact-brand-license-line">النسخة مرخصة لـ <strong id="brandLicensedTeacher">اسم المعلم</strong></div>
         <div class="compact-brand-expiry">انتهاء الترخيص في <strong id="brandLicenseExpiry">—</strong></div>
+        <div class="compact-brand-expiry">رقم الترخيص <strong id="brandLicenseNumber">—</strong></div>
+        <div class="compact-brand-expiry">رقم الإصدار <strong id="brandAppVersion">—</strong></div>
       </div>
       <div class="compact-brand-divider" aria-hidden="true"></div>
       <div class="compact-brand-side compact-brand-author" dir="rtl">
@@ -1185,6 +1233,8 @@ function updatePointsBrandTenantName(){
  const schoolEl=document.getElementById('brandTenantName');
  const teacherEl=document.getElementById('brandLicensedTeacher');
  const expiryEl=document.getElementById('brandLicenseExpiry');
+ const licenseNumberEl=document.getElementById('brandLicenseNumber');
+ const versionEl=document.getElementById('brandAppVersion');
  const p=firebaseProfile||{};
  const license=window.POINTS_STAFF_CUSTOMER_LICENSE||{};
  const schoolName=String(p.schoolName||license.schoolName||license.customerName||'اسم المدرسة');
@@ -1192,6 +1242,8 @@ function updatePointsBrandTenantName(){
  if(schoolEl){schoolEl.textContent=schoolName;schoolEl.title=schoolName;}
  if(teacherEl){teacherEl.textContent=teacherName;teacherEl.title=teacherName;}
  if(expiryEl){const raw=license.customerExpiresAt||p.customerExpiresAt||'';let formatted='—';if(raw){const d=new Date(raw);if(!isNaN(d.getTime()))formatted=d.toLocaleDateString('ar-QA');}expiryEl.textContent=formatted;}
+ if(licenseNumberEl){const id=String(license.customerLicenseId||p.licenseId||'').trim();licenseNumberEl.textContent=id||'—';licenseNumberEl.title=id;}
+ if(versionEl){const version=String(license.publishedAppVersion||'').trim();versionEl.textContent=version||'—';}
 }
 function showPointsIntroAfterLogin(){
  const intro=document.getElementById('pointsIntroScreen');
