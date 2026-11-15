@@ -540,7 +540,7 @@ body{overscroll-behavior-y:auto}
       <div class="compact-brand-side compact-brand-license" dir="rtl">
         <div class="compact-brand-school" id="brandTenantName">اسم المدرسة</div>
         <div class="compact-brand-license-line">النسخة مرخصة لـ <strong id="brandLicensedTeacher">اسم المعلم</strong></div>
-        <div class="compact-brand-expiry">انتهاء الترخيص في <strong id="brandLicenseExpiry">—</strong></div>
+        <div class="compact-brand-expiry">انتهاء الترخيص <strong id="brandLicenseExpiry">—</strong></div>
         <div class="compact-brand-expiry">رقم الترخيص <strong id="brandLicenseNumber">—</strong></div>
         <div class="compact-brand-expiry">رقم الإصدار <strong id="brandAppVersion">—</strong></div>
       </div>
@@ -1229,6 +1229,8 @@ async function verifyPointsStaffLicense(){
  return result;
 }
 
+const POINTS_PROGRAM_OWNER_UID = 'hwPgzTQbdfUJa45G2Wwc79ANNJE2';
+
 function updatePointsBrandTenantName(){
  const schoolEl=document.getElementById('brandTenantName');
  const teacherEl=document.getElementById('brandLicensedTeacher');
@@ -1237,13 +1239,33 @@ function updatePointsBrandTenantName(){
  const versionEl=document.getElementById('brandAppVersion');
  const p=firebaseProfile||{};
  const license=window.POINTS_STAFF_CUSTOMER_LICENSE||{};
+ const isProgramOwner=!!(firebaseCurrentUser && firebaseCurrentUser.uid===POINTS_PROGRAM_OWNER_UID);
  const schoolName=String(p.schoolName||license.schoolName||license.customerName||'اسم المدرسة');
  const teacherName=String(p.teacherName||p.displayName||p.name||p.email||'اسم المعلم');
  if(schoolEl){schoolEl.textContent=schoolName;schoolEl.title=schoolName;}
- if(teacherEl){teacherEl.textContent=teacherName;teacherEl.title=teacherName;}
- if(expiryEl){const raw=license.customerExpiresAt||p.customerExpiresAt||'';let formatted='—';if(raw){const d=new Date(raw);if(!isNaN(d.getTime()))formatted=d.toLocaleDateString('ar-QA');}expiryEl.textContent=formatted;}
- if(licenseNumberEl){const id=String(license.customerLicenseId||p.licenseId||'').trim();licenseNumberEl.textContent=id||'—';licenseNumberEl.title=id;}
- if(versionEl){const version=String(license.publishedAppVersion||'').trim();versionEl.textContent=version||'—';}
+ if(teacherEl){
+   teacherEl.textContent=isProgramOwner?'a.atia1201@education.qa':teacherName;
+   teacherEl.title=teacherEl.textContent;
+ }
+ if(expiryEl){
+   if(isProgramOwner){
+     expiryEl.textContent='غير منتهي';
+   }else{
+     const raw=license.customerExpiresAt||p.customerExpiresAt||'';
+     let formatted='—';
+     if(raw){const d=new Date(raw);if(!isNaN(d.getTime()))formatted=d.toLocaleDateString('ar-QA');}
+     expiryEl.textContent=formatted;
+   }
+ }
+ if(licenseNumberEl){
+   const id=isProgramOwner?'مالك البرنامج':String(license.customerLicenseId||p.licenseId||'').trim();
+   licenseNumberEl.textContent=id||'—';
+   licenseNumberEl.title=id;
+ }
+ if(versionEl){
+   const version=String(license.publishedAppVersion||'1.0.0').trim();
+   versionEl.textContent=version||'1.0.0';
+ }
 }
 function showPointsIntroAfterLogin(){
  const intro=document.getElementById('pointsIntroScreen');
