@@ -1276,6 +1276,7 @@ function showPointsIntroAfterLogin(){
 
 // ==================== PHASE 23C: server-backed points client ====================
 let POINTS_SKIP_NEXT_CLOUD_SAVE = false;
+let POINTS_SECURE_POINTS_LOAD_ERROR = "";
 function getPointsCallable(name) {
     if (!firebaseAuth.currentUser) throw new Error('يجب تسجيل الدخول أولاً.');
     if (typeof firebase.app().functions !== 'function') throw new Error('مكتبة Firebase Functions غير متاحة.');
@@ -1289,38 +1290,39 @@ function getPointsSchoolId() {
     return '';
 }
 async function loadServerPointsForCurrentClass() {
+    POINTS_SECURE_POINTS_LOAD_ERROR = "";
     if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) return false;
     const schoolId = getPointsSchoolId();
     if (!schoolId && !isGlobalFirebaseAdmin()) return false;
-    const call = getPointsCallable('getStudentPointsData');
-    const payload = { classId: currentClass, ...(schoolId ? { schoolId } : {}) };
-    let response = await call(payload);
-    let data = response && response.data ? response.data : {};
-    // First visit after deployment: initialize the secure sidecar from the
-    // already-saved server class mirror. The callable creates a durable backup
-    // before seeding and preserves balances if the sidecar already exists.
-    // Staff tenant is derived server-side from users/{uid}; only global admin
-    // sends the fixed main tenant explicitly.
-    if (data.migrated !== true || !Array.isArray(data.students)) {
-        const roster = (allClassesData[currentClass] && Array.isArray(allClassesData[currentClass].students))
-            ? allClassesData[currentClass].students : [];
-        if (!roster.length) return false;
-        const syncRoster = getPointsCallable('syncClassPointsRoster');
-        await syncRoster({ classId: currentClass, studentNames: roster.map(row => row && row.name || ''),
-            ...(isGlobalFirebaseAdmin() ? { schoolId: 'main' } : {}) });
-        response = await call(payload);
-        data = response && response.data ? response.data : {};
-    }
-    if (data.migrated !== true || !Array.isArray(data.students)) return false;
-    const pointsByName = new Map(data.students.map(row => [String(row.name || '').trim(), Number(row.points) || 0]));
-    const students = (allClassesData[currentClass] && Array.isArray(allClassesData[currentClass].students))
+
+    // Always reconcile the secure roster, not only when the sidecar is absent.
+    // New staff approvals may create an empty sidecar before the class roster is
+    // mirrored; checking only `migrated` would then mistake that empty document
+    // for a fully initialized roster and leave every student without a points row.
+    const roster = (allClassesData[currentClass] && Array.isArray(allClassesData[currentClass].students))
         ? allClassesData[currentClass].students : [];
-    students.forEach(student => {
-        if (pointsByName.has(String(student.name || '').trim())) student.points = pointsByName.get(String(student.name || '').trim());
+    const syncRoster = getPointsCallable('syncClassPointsRoster');
+    await syncRoster({
+        classId: currentClass,
+        studentNames: roster.map(row => row && row.name || ''),
+        ...(isGlobalFirebaseAdmin() ? { schoolId: 'main' } : {})
+    });
+
+    const call = getPointsCallable('getStudentPointsData');
+    const response = await call({ classId: currentClass, ...(schoolId ? { schoolId } : {}) });
+    const data = response && response.data ? response.data : {};
+    if (data.success !== true || data.migrated !== true || !Array.isArray(data.students)) {
+        throw new Error(data.message || 'لم يكتمل تهيئة سجل نقاط هذا الفصل على الخادم.');
+    }
+    const pointsByName = new Map(data.students.map(row => [String(row.name || '').trim(), Number(row.points) || 0]));
+    roster.forEach(student => {
+        const name = String(student.name || '').trim();
+        if (pointsByName.has(name)) student.points = pointsByName.get(name);
     });
     localStorage.setItem('allClassesData', JSON.stringify(allClassesData));
     return true;
 }
+
 async function loadServerWarningsForCurrentClass() {
     if (!firebaseSyncReady || !firebaseCurrentUser || !currentClass) return false;
     const schoolId = getPointsSchoolId();
@@ -6489,11 +6491,16 @@ document.addEventListener('DOMContentLoaded', function() {
    try { await loadServerWarningsForCurrentClass(); } catch(warningLoadError) { console.warn('Secure warnings sidecar not loaded:',warningLoadError); }
    try { await loadClassFeatureDatasetsForCurrentClass(); } catch(datasetLoadError) { console.warn('Class feature datasets not loaded:',datasetLoadError); }
    if(pointsLoaded&&typeof renderStudents==='function')renderStudents();
-  }catch(pointsLoadError){console.warn('Secure points sidecar not loaded:',pointsLoadError);}
+  }catch(pointsLoadError){
+   POINTS_SECURE_POINTS_LOAD_ERROR = String(pointsLoadError && pointsLoadError.message || pointsLoadError || 'تعذر تحميل النقاط');
+   console.warn('Secure points sidecar not loaded:',pointsLoadError);
+   const pointsStatus=document.getElementById('firebaseSyncStatus');
+   if(pointsStatus)pointsStatus.textContent='⚠️ تعذر مزامنة سجل النقاط: '+POINTS_SECURE_POINTS_LOAD_ERROR;
+  }
   await applyCommercialMenuLocks();
   updatePointsBrandTenantName();
   msgDiv.innerText='✅ تم تسجيل الدخول';msgDiv.style.color='#22c55e';
-  setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();updatePointsBrandTenantName();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ Connected';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent='☁️ تم تحميل الفصول المصرح بها';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}showPointsIntroAfterLogin();},400);
+  setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();updatePointsBrandTenantName();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ Connected';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent=POINTS_SECURE_POINTS_LOAD_ERROR?('⚠️ تعذر مزامنة سجل النقاط: '+POINTS_SECURE_POINTS_LOAD_ERROR):'☁️ تم تحميل الفصول المصرح بها ومزامنة سجل النقاط';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}showPointsIntroAfterLogin();},400);
  }catch(e){console.error(e);msgDiv.innerText='❌ تعذر تسجيل الدخول: '+(e.message||e);msgDiv.style.color='#dc2626';}
 };
 
