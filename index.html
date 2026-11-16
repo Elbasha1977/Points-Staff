@@ -1329,6 +1329,8 @@ async function applyServerPointsBatch(action, amount, reason) {
     const blocked = ids.filter(id => students[id] && isStudentDisconnected(students[id].name));
     if (blocked.length) throw new Error('لا يمكن تنفيذ العملية على طالب منقطع.');
     const schoolId = getPointsSchoolId();
+    const syncRoster = getPointsCallable('syncClassPointsRoster');
+    await syncRoster({ classId: currentClass, ...(schoolId ? { schoolId } : {}), studentNames: students.map(s => s && s.name || '') });
     const call = getPointsCallable('applyStudentPointsBatch');
     const response = await call({ action, classId: currentClass, studentNames: names, amount: Math.abs(Number(amount)), reason: String(reason || ''), ...(schoolId ? { schoolId } : {}) });
     const result = response && response.data ? response.data : {};
@@ -1463,7 +1465,7 @@ async function saveFirebaseData(){
     const students=Array.isArray(classData.students)?classData.students:[];
     // Secure sidecar is reconciled first. Existing balances are retained server-side;
     // new students start at zero. Do not write the mirror if this step fails.
-    await syncRoster({classId,studentNames:students.map(s=>s&&s.name||'')});
+    await syncRoster({classId,schoolId:tenant,studentNames:students.map(s=>s&&s.name||'')});
     const mirror={classId,classData,schoolId:tenant,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
     batch.set(firestoreDb.collection('schoolClasses').doc(tenant+'__'+classId),mirror,{merge:true});
    }
@@ -1483,14 +1485,22 @@ async function saveFirebaseData(){
   for(let start=0;start<classIds.length;start+=400){
     const batch=firestoreDb.batch();
     classIds.slice(start,start+400).forEach(classId=>{
-      const docId=tenant?(tenant+'__'+classId):classId;
-      const mirror={classId:classId,classData:allClassesData[classId],updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
-      if(tenant)mirror.schoolId=tenant;
+      const effectiveTenant=tenant||'main';
+      const docId=effectiveTenant+'__'+classId;
+      const mirror={classId:classId,classData:allClassesData[classId],schoolId:effectiveTenant,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
       batch.set(firestoreDb.collection('schoolClasses').doc(docId),mirror,{merge:true});
     });
     await batch.commit();
   }
-  const b=document.getElementById('firebaseSyncStatus');if(b)b.textContent='☁️ تمت المزامنة';
+  // Reconcile every saved class with its secure points roster (main for global admin).
+  const effectiveTenant=tenant||'main';
+  const syncRoster=firebase.app().functions('us-central1').httpsCallable('syncClassPointsRoster');
+  for(const classId of Object.keys(allClassesData||{})){
+    const classData=allClassesData[classId]||{};
+    const students=Array.isArray(classData.students)?classData.students:[];
+    await syncRoster({classId,schoolId:effectiveTenant,studentNames:students.map(s=>s&&s.name||'')});
+  }
+  const b=document.getElementById('firebaseSyncStatus');if(b)b.textContent='☁️ تمت المزامنة مع سجل النقاط الآمن';
  }catch(e){console.error(e);const b=document.getElementById('firebaseSyncStatus');if(b)b.textContent='⚠️ تعذرت المزامنة: '+(e.message||e);}
 }
 
@@ -4213,6 +4223,9 @@ async function loadDailyTrackerFromServer(classId) {
     const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('getDailyTrackerData');
     const schoolId = getDailyTrackerSchoolId();
     if (!schoolId) throw new Error('تعذر تحديد معرّف المدرسة الحالية.');
+    const students = getCurrentStudents();
+    const syncRoster = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('syncClassPointsRoster');
+    await syncRoster({ classId, schoolId, studentNames: students.map(s => s && s.name || '') });
     const payload = { classId, schoolId };
     const result = await call(payload);
     const remote = result && result.data && result.data.data ? result.data.data : {};
@@ -4311,6 +4324,9 @@ async function saveDailyTracker() {
         const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('saveDailyTrackerData');
         const schoolId = getDailyTrackerSchoolId();
         if (!schoolId) throw new Error('تعذر تحديد معرّف المدرسة الحالية.');
+        const students = getCurrentStudents();
+        const syncRoster = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('syncClassPointsRoster');
+        await syncRoster({ classId: currentClass, schoolId, studentNames: students.map(s => s && s.name || '') });
         const payload = { classId: currentClass, schoolId, data: {} };
         const prefix = currentClass + '_';
         Object.keys(dailyTrackerData || {}).forEach(key => {
@@ -5767,6 +5783,9 @@ async function loadDisconnectedStudentsFromServer(classId) {
     const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('getDisconnectedStudents');
     const schoolId = getDailyTrackerSchoolId();
     if (!schoolId) throw new Error('تعذر تحديد معرّف المدرسة الحالية.');
+    const students = getCurrentStudents();
+    const syncRoster = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('syncClassPointsRoster');
+    await syncRoster({ classId, schoolId, studentNames: students.map(s => s && s.name || '') });
     const payload = { classId, schoolId };
     const result = await call(payload);
     const names = result && result.data && Array.isArray(result.data.students) ? result.data.students : [];
