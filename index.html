@@ -614,8 +614,7 @@ body{overscroll-behavior-y:auto}
                         <a id="warningDropdown" data-feature="menuWarning">⚠️ إعطاء إنذار</a>
                         <a id="groupPointsDropdown" data-feature="menuGroupPoints">🎯 نقاط المجموعات</a>
                         <a id="studentsPointsDropdown" data-feature="menuStudentPoints">📊 نقاط الطلاب</a>
-                        <a id="homeworkResultsDropdown" data-feature="menuHomeworkResults">📢 نتائج الواجبات المنزلية</a>
-                        <a id="homeworkPointsDropdown" data-feature="menuHomeworkPoints">⭐ نقاط الواجبات المنزلية</a>
+                        <a id="homeworkResultsDropdown" data-feature="menuHomeworkResults">⭐ نقاط الواجبات المنزلية</a>
                     </div>
                 </div>
 
@@ -1191,8 +1190,7 @@ body{overscroll-behavior-y:auto}
 <div id="uploadPhotosModal" class="modal"><div class="modal-content" style="max-width:600px; position: relative;"><button class="modal-close-x" onclick="closeUploadPhotosModal(); event.stopPropagation();">✕</button><h2>📸 رفع صور الفائقين</h2><div class="upload-area"><label>🥇 المركز الأول</label><input type="file" id="photo1Input" accept="image/*"><div id="preview1"></div></div><div class="upload-area"><label>🥈 المركز الثاني</label><input type="file" id="photo2Input" accept="image/*"><div id="preview2"></div></div><div class="upload-area"><label>🥉 المركز الثالث</label><input type="file" id="photo3Input" accept="image/*"><div id="preview3"></div></div><div style="display:flex;justify-content:center;gap:10px;"><button class="close-modal confirm-btn" id="savePhotosBtn">💾 حفظ</button><button class="close-modal cancel-btn" id="cancelPhotosBtn">إلغاء</button></div></div></div>
 
 
-<div id="homeworkResultsModal" class="modal"><div class="modal-content" style="max-width:1100px;width:96%;max-height:90vh;overflow:auto;position:relative"><button class="modal-close-x" onclick="document.getElementById('homeworkResultsModal').style.display='none'">✕</button><h2>📢 نتائج الواجبات المنزلية</h2><div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0"><select id="homeworkResultsClass" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px"><option value="">كل الفصول المصرح بها</option></select><button class="close-modal confirm-btn" id="refreshHomeworkResults">🔄 تحديث النتائج</button></div><div id="homeworkResultsStats" style="font-weight:bold;margin:10px 0"></div><div style="overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#1e3a8a;color:white"><th style="padding:9px">الطالب</th><th>الصف</th><th>ورقة العمل</th><th>الدرجة</th><th>حالة النقاط</th><th>تاريخ الاعتماد</th></tr></thead><tbody id="homeworkResultsBody"></tbody></table></div><p style="color:#64748b;font-size:13px">تظهر هنا النتائج التي تم اعتمادها وإضافة نقاطها فعليًا إلى رصيد الطالب.</p></div></div>
-<div id="homeworkPointsModal" class="modal"><div class="modal-content" style="max-width:1250px;width:96%;max-height:90vh;overflow:auto;position:relative"><button class="modal-close-x" onclick="document.getElementById('homeworkPointsModal').style.display='none'">✕</button><h2 style="text-align:center;color:#1e3a8a">⭐ نقاط الواجبات المنزلية</h2><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0"><select id="homeworkPointsClass" style="padding:10px;border:1px solid #cbd5e1;border-radius:9px;min-width:190px"><option value="">كل الفصول المصرح بها</option></select><button class="close-modal confirm-btn" id="refreshHomeworkPoints">🔄 تحديث الجدول</button></div><div id="homeworkPointsStats" style="font-weight:bold;color:#334155;margin:10px 0"></div><div style="overflow:auto;border:1px solid #dbeafe;border-radius:12px"><table style="width:100%;border-collapse:collapse;min-width:850px"><thead><tr style="background:#1e3a8a;color:white"><th style="padding:12px">م</th><th style="padding:12px">اسم الطالب</th><th style="padding:12px">الصف</th><th style="padding:12px">الواجب المنزلي</th><th style="padding:12px">الدرجة</th><th style="padding:12px">النقاط المضافة</th><th style="padding:12px">الحالة</th><th style="padding:12px">تاريخ الاعتماد</th></tr></thead><tbody id="homeworkPointsBody"></tbody></table></div><p style="color:#64748b;font-size:13px;margin-top:10px">يعرض هذا الجدول الواجبات التي تم اعتمادها وإضافة نقاطها فعليًا، ويظهر كل طالب في صف مستقل لكل واجب.</p></div></div>
+<div id="homeworkResultsModal" class="modal"><div class="modal-content" style="max-width:1100px;width:96%;max-height:90vh;overflow:auto;position:relative"><button class="modal-close-x" onclick="document.getElementById('homeworkResultsModal').style.display='none'">✕</button><h2>⭐ نقاط الواجبات المنزلية</h2><div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0"><select id="homeworkResultsClass" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px"><option value="">كل الفصول المصرح بها</option></select><button class="close-modal confirm-btn" id="refreshHomeworkResults">🔄 تحديث النتائج</button></div><div id="homeworkResultsStats" style="font-weight:bold;margin:10px 0"></div><div style="overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#1e3a8a;color:white"><th style="padding:9px">الطالب</th><th>الصف</th><th>ورقة العمل</th><th>الدرجة</th><th>حالة النقاط</th><th>تاريخ الاعتماد</th></tr></thead><tbody id="homeworkResultsBody"></tbody></table></div><p style="color:#64748b;font-size:13px">تظهر هنا النتائج التي تم اعتمادها وإضافة نقاطها فعليًا إلى رصيد الطالب.</p></div></div>
 <div id="studentsPointsModal" class="modal"><div class="modal-content" style="position: relative;"><button class="modal-close-x" onclick="closeStudentsPointsModal(); event.stopPropagation();">✕</button><h2>📊 نقاط الطلاب</h2><div style="overflow-x: auto;"><table class="students-table-modal"><thead><tr><th>الترتيب</th><th>الطالب</th><th>المستوى</th><th>النقاط</th></tr></thead><tbody id="studentsPointsTableBody"></tbody></table></div><button class="close-modal cancel-btn" id="closeStudentsPointsModalBtn" style="margin-top: 20px;">إغلاق</button></div></div>
 
 <div id="levelsModal" class="modal"><div class="modal-content" style="position: relative;"><button class="modal-close-x" onclick="closeLevelsModal(); event.stopPropagation();">✕</button><h2>📊 مستويات الطلاب</h2><div style="max-height: 500px; overflow-y: auto;"><table style="width:100%"><thead><tr style="background:#4338ca;color:white"><th>#</th><th>الطالب</th><th>المستوى</th></tr></thead><tbody id="levelsTableBody"></tbody></table></div><div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;"><button class="close-modal" id="exportLevelsExcelBtn" style="background: #16a34a;">📊 Excel</button><button class="close-modal confirm-btn" id="saveLevelsBtn">💾 حفظ</button><button class="close-modal cancel-btn" id="closeLevelsBtn">إلغاء</button></div></div></div>
@@ -5942,9 +5940,22 @@ function renderStudents() {
 async function openHomeworkResultsModal(){
  const modal=document.getElementById('homeworkResultsModal'); modal.style.display='flex';
  const sel=document.getElementById('homeworkResultsClass'); sel.innerHTML='<option value="">كل الفصول المصرح بها</option>';
- const permitted=(firebaseProfile&&firebaseProfile.role==='staff'&&Array.isArray(firebaseProfile.classIds))?firebaseProfile.classIds:Object.keys(allClassesData||{});
+ const isStaff = !!(firebaseProfile && firebaseProfile.role === 'staff');
+ const isSchoolManager = !!(firebaseProfile && firebaseProfile.role === 'schoolAdmin');
+ const isGlobalAdmin = !!(firebaseProfile && firebaseProfile.role === 'admin');
+ const permitted = isStaff
+   ? (Array.isArray(firebaseProfile.classIds) ? firebaseProfile.classIds.map(String) : [])
+   : (isSchoolManager ? (typeof getManagerTeacherClasses === 'function' ? getManagerTeacherClasses().map(String) : [])
+      : (isGlobalAdmin ? Object.keys(allClassesData || {}) : []));
+ if ((isStaff || isSchoolManager) && !permitted.length) {
+   sel.innerHTML = '<option value="">لا توجد صفوف مصرح بها لهذا الحساب</option>';
+   document.getElementById('homeworkResultsBody').innerHTML =
+     '<tr><td colspan="6" style="padding:18px;text-align:center;color:#b91c1c">لا توجد صفوف مرتبطة بحسابك. يرجى مراجعة المدير.</td></tr>';
+   document.getElementById('homeworkResultsStats').textContent = '';
+   return;
+ }
  permitted.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
- if(firebaseProfile&&firebaseProfile.role==='staff'&&permitted.length)sel.value=permitted[0];
+ if (isStaff && permitted.length) sel.value = permitted[0];
  await loadHomeworkResults();
 }
 async function loadHomeworkResults(){
@@ -5955,7 +5966,7 @@ async function loadHomeworkResults(){
   const school=(firebaseProfile&&firebaseProfile.schoolId)||'global';
   q=q.where('schoolId','==',school);
   let cls=document.getElementById('homeworkResultsClass').value;
-  if(firebaseProfile&&firebaseProfile.role==='staff'){const allowed=Array.isArray(firebaseProfile.classIds)?firebaseProfile.classIds:[];if(!cls)cls=allowed[0]||'';if(!allowed.includes(cls))throw new Error('لا تملك صلاحية عرض نتائج هذا الفصل.');}
+  if(firebaseProfile&&(firebaseProfile.role==='staff'||firebaseProfile.role==='schoolAdmin')){const allowed=firebaseProfile.role==='staff'?(Array.isArray(firebaseProfile.classIds)?firebaseProfile.classIds.map(String):[]):(typeof getManagerTeacherClasses==='function'?getManagerTeacherClasses().map(String):[]);if(!allowed.length)throw new Error('لا توجد صفوف مصرح بها لهذا الحساب.');if(!cls)cls=allowed[0];if(!allowed.includes(cls))throw new Error('لا تملك صلاحية عرض نتائج هذا الفصل.');}
   if(cls)q=q.where('studentClass','==',cls);
   const snap=await q.get(); let rows=snap.docs.map(d=>({id:d.id,...d.data()}));
   rows.sort((a,b)=>((b.awardedAt&&b.awardedAt.toMillis)?b.awardedAt.toMillis():0)-((a.awardedAt&&a.awardedAt.toMillis)?a.awardedAt.toMillis():0));
@@ -5964,37 +5975,6 @@ async function loadHomeworkResults(){
   body.innerHTML=rows.map(a=>'<tr style="border-bottom:1px solid #e2e8f0;text-align:center"><td style="padding:9px;font-weight:bold">'+escapeHomeworkResult(a.studentName)+'</td><td>'+escapeHomeworkResult(a.studentClass)+'</td><td>'+escapeHomeworkResult(a.worksheetTitle)+'</td><td>'+Number(a.score||0)+' / '+Number(a.maxScore||0)+'</td><td style="color:#047857;font-weight:bold">✔ تم احتساب النقاط</td><td>'+((a.awardedAt&&a.awardedAt.toDate)?a.awardedAt.toDate().toLocaleString('ar-QA'):'—')+'</td></tr>').join('');
  }catch(e){body.innerHTML='<tr><td colspan="6" style="color:#b91c1c;padding:12px">تعذر تحميل النتائج: '+escapeHomeworkResult(e.message||e)+'</td></tr>';stats.textContent='';}
 }
-async function openHomeworkPointsModal(){
- const modal=document.getElementById('homeworkPointsModal'); modal.style.display='flex';
- const sel=document.getElementById('homeworkPointsClass');
- sel.innerHTML='<option value="">كل الفصول المصرح بها</option>';
- const permitted=(firebaseProfile&&firebaseProfile.role==='staff'&&Array.isArray(firebaseProfile.classIds))?firebaseProfile.classIds:Object.keys(allClassesData||{});
- permitted.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
- if(firebaseProfile&&firebaseProfile.role==='staff'&&permitted.length)sel.value=permitted[0];
- await loadHomeworkPointsTable();
-}
-async function loadHomeworkPointsTable(){
- const body=document.getElementById('homeworkPointsBody'), stats=document.getElementById('homeworkPointsStats');
- body.innerHTML='<tr><td colspan="8" style="padding:18px;text-align:center">⏳ جارٍ تحميل نقاط الواجبات...</td></tr>';
- try{
-  let q=firestoreDb.collection('homework_results');
-  const school=(firebaseProfile&&firebaseProfile.schoolId)||'global'; q=q.where('schoolId','==',school);
-  let cls=document.getElementById('homeworkPointsClass').value;
-  if(firebaseProfile&&firebaseProfile.role==='staff'){
-   const allowed=Array.isArray(firebaseProfile.classIds)?firebaseProfile.classIds:[];
-   if(!cls)cls=allowed[0]||'';
-   if(!allowed.includes(cls))throw new Error('لا تملك صلاحية عرض نتائج هذا الفصل.');
-  }
-  if(cls)q=q.where('studentClass','==',cls);
-  const snap=await q.get();
-  const rows=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.status==='credited');
-  rows.sort((a,b)=>String(a.studentClass||'').localeCompare(String(b.studentClass||''),'ar') || String(a.studentName||'').localeCompare(String(b.studentName||''),'ar') || ((b.awardedAt&&b.awardedAt.toMillis)?b.awardedAt.toMillis():0)-((a.awardedAt&&a.awardedAt.toMillis)?a.awardedAt.toMillis():0));
-  stats.textContent='عدد سجلات الواجبات المعتمدة: '+rows.length;
-  if(!rows.length){body.innerHTML='<tr><td colspan="8" style="padding:18px;text-align:center;color:#64748b">لا توجد نقاط واجبات معتمدة لهذا الفصل حتى الآن.</td></tr>';return;}
-  body.innerHTML=rows.map((a,i)=>'<tr style="border-bottom:1px solid #e2e8f0;text-align:center;background:'+(i%2?'#f8fafc':'#ffffff')+'"><td style="padding:11px">'+(i+1)+'</td><td style="padding:11px;font-weight:bold;color:#1e3a8a">'+escapeHomeworkResult(a.studentName)+'</td><td style="padding:11px">'+escapeHomeworkResult(a.studentClass)+'</td><td style="padding:11px">'+escapeHomeworkResult(a.worksheetTitle)+'</td><td style="padding:11px;font-weight:bold">'+Number(a.score||0)+' / '+Number(a.maxScore||0)+'</td><td style="padding:11px;color:#047857;font-weight:bold">+'+Number(a.score||0)+'</td><td style="padding:11px;color:#047857;font-weight:bold">✔ معتمد</td><td style="padding:11px">'+((a.awardedAt&&a.awardedAt.toDate)?a.awardedAt.toDate().toLocaleString('ar-QA'):'—')+'</td></tr>').join('');
- }catch(e){body.innerHTML='<tr><td colspan="8" style="color:#b91c1c;padding:14px">تعذر تحميل الجدول: '+escapeHomeworkResult(e.message||e)+'</td></tr>';stats.textContent='';}
-}
-
 function escapeHomeworkResult(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 // ==================== ربط الأحداث ====================
@@ -6025,9 +6005,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('groupPointsDropdown').onclick = function() { showGroupPointsSetup(); };
     document.getElementById('studentsPointsDropdown').onclick = function() { showStudentsPointsModal(); };
     document.getElementById('homeworkResultsDropdown').onclick = function() { openHomeworkResultsModal(); };
-    document.getElementById('homeworkPointsDropdown').onclick = function() { openHomeworkPointsModal(); };
-    document.getElementById('refreshHomeworkPoints').onclick = function() { loadHomeworkPointsTable(); };
-    document.getElementById('homeworkPointsClass').onchange = function() { loadHomeworkPointsTable(); };
     document.getElementById('refreshHomeworkResults').onclick = function() { loadHomeworkResults(); };
     document.getElementById('rewardsShopDropdown').onclick = function() { showCandidatesCelebration(); };
     document.getElementById('surpriseDropdown').onclick = function() { showAutoSurprise(); };
