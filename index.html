@@ -1293,8 +1293,24 @@ async function loadServerPointsForCurrentClass() {
     const schoolId = getPointsSchoolId();
     if (!schoolId && !isGlobalFirebaseAdmin()) return false;
     const call = getPointsCallable('getStudentPointsData');
-    const response = await call({ classId: currentClass, ...(schoolId ? { schoolId } : {}) });
-    const data = response && response.data ? response.data : {};
+    const payload = { classId: currentClass, ...(schoolId ? { schoolId } : {}) };
+    let response = await call(payload);
+    let data = response && response.data ? response.data : {};
+    // First visit after deployment: initialize the secure sidecar from the
+    // already-saved server class mirror. The callable creates a durable backup
+    // before seeding and preserves balances if the sidecar already exists.
+    // Staff tenant is derived server-side from users/{uid}; only global admin
+    // sends the fixed main tenant explicitly.
+    if (data.migrated !== true || !Array.isArray(data.students)) {
+        const roster = (allClassesData[currentClass] && Array.isArray(allClassesData[currentClass].students))
+            ? allClassesData[currentClass].students : [];
+        if (!roster.length) return false;
+        const syncRoster = getPointsCallable('syncClassPointsRoster');
+        await syncRoster({ classId: currentClass, studentNames: roster.map(row => row && row.name || ''),
+            ...(isGlobalFirebaseAdmin() ? { schoolId: 'main' } : {}) });
+        response = await call(payload);
+        data = response && response.data ? response.data : {};
+    }
     if (data.migrated !== true || !Array.isArray(data.students)) return false;
     const pointsByName = new Map(data.students.map(row => [String(row.name || '').trim(), Number(row.points) || 0]));
     const students = (allClassesData[currentClass] && Array.isArray(allClassesData[currentClass].students))
@@ -1330,20 +1346,9 @@ async function applyServerPointsBatch(action, amount, reason) {
     if (blocked.length) throw new Error('لا يمكن تنفيذ العملية على طالب منقطع.');
     const schoolId = getPointsSchoolId();
     const syncRoster = getPointsCallable('syncClassPointsRoster');
-    try {
-        await syncRoster({ classId: currentClass, ...(schoolId ? { schoolId } : {}), studentNames: students.map(s => s && s.name || '') });
-    } catch (error) {
-        error.pointsStage = 'مزامنة قائمة الطلاب';
-        throw error;
-    }
+    await syncRoster({ classId: currentClass, ...(schoolId ? { schoolId } : {}), studentNames: students.map(s => s && s.name || '') });
     const call = getPointsCallable('applyStudentPointsBatch');
-    let response;
-    try {
-        response = await call({ action, classId: currentClass, studentNames: names, amount: Math.abs(Number(amount)), reason: String(reason || ''), ...(schoolId ? { schoolId } : {}) });
-    } catch (error) {
-        error.pointsStage = 'تنفيذ إضافة/خصم النقاط';
-        throw error;
-    }
+    const response = await call({ action, classId: currentClass, studentNames: names, amount: Math.abs(Number(amount)), reason: String(reason || ''), ...(schoolId ? { schoolId } : {}) });
     const result = response && response.data ? response.data : {};
     if (result.success !== true || !Array.isArray(result.results)) throw new Error('لم يؤكد الخادم نجاح العملية.');
     const afterByName = new Map(result.results.map(row => [String(row.studentName), Number(row.after) || 0]));
@@ -4996,17 +5001,8 @@ async function applyPointsToStudents(points, isAdd) {
         alert('✅ تم ' + (isAdd ? 'إضافة' : 'خصم') + ' ' + Math.abs(points) + ' نقطة لـ ' + result.count + ' طالب.');
         return true;
     } catch (e) {
-        console.error('POINTS_OPERATION_DIAGNOSTIC', {
-            stage: e && e.pointsStage ? e.pointsStage : 'غير محددة',
-            code: e && e.code ? e.code : 'unknown',
-            message: e && e.message ? e.message : String(e),
-            details: e && e.details ? e.details : null
-        }, e);
-        const details = e && e.details && typeof e.details === 'object' ? e.details : {};
-        const stage = (e && e.pointsStage) || details.stage || 'غير محددة';
-        const original = details.originalMessage ? ('\nالتفاصيل: ' + details.originalMessage) : '';
-        const code = e && e.code ? ('\nالرمز: ' + e.code) : '';
-        alert('⚠️ لم تُنفذ العملية.\nالمرحلة: ' + stage + code + '\nالسبب: ' + (e.message || e) + original);
+        console.error(e);
+        alert('⚠️ لم تُنفذ العملية: ' + (e.message || e));
         return false;
     }
 }
