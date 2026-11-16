@@ -530,7 +530,7 @@ body{overscroll-behavior-y:auto}
 <div id="pointsLicenseBlocker" style="display:none;position:fixed;inset:0;z-index:200000;background:rgba(8,20,45,.94);align-items:center;justify-content:center;padding:20px;">
  <div style="max-width:520px;width:100%;background:#fff;border:3px solid #d4af37;border-radius:22px;padding:28px;text-align:center;box-shadow:0 20px 60px #0005;">
   <div style="font-size:42px;margin-bottom:12px;">🔒</div><h2 style="color:#102c60;margin-bottom:12px;">تم إيقاف الوصول مؤقتًا</h2><p data-license-message style="color:#475569;line-height:1.8;margin-bottom:18px;">تعذر التحقق من الترخيص أو الباقة.</p>
-  <button onclick="applyCommercialMenuLocks(true)" style="background:#173b72;color:white;border:0;border-radius:10px;padding:11px 20px;font-weight:bold;cursor:pointer;">إعادة التحقق</button>
+  <button onclick="window.applyCommercialMenuLocks(true)" style="background:#173b72;color:white;border:0;border-radius:10px;padding:11px 20px;font-weight:bold;cursor:pointer;">إعادة التحقق</button>
   <button onclick="firebaseAuth.signOut().then(()=>location.reload())" style="background:#64748b;color:white;border:0;border-radius:10px;padding:11px 20px;font-weight:bold;cursor:pointer;margin-right:8px;">تسجيل الخروج</button>
  </div>
 </div>
@@ -6513,7 +6513,7 @@ document.addEventListener('DOMContentLoaded', function() {
    const pointsStatus=document.getElementById('firebaseSyncStatus');
    if(pointsStatus)pointsStatus.textContent='⚠️ تعذر مزامنة سجل النقاط: '+POINTS_SECURE_POINTS_LOAD_ERROR;
   }
-  await applyCommercialMenuLocks();
+  await window.applyCommercialMenuLocks();
   updatePointsBrandTenantName();
   msgDiv.innerText='✅ تم تسجيل الدخول';msgDiv.style.color='#22c55e';
   setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();updatePointsBrandTenantName();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ Connected';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent=POINTS_SECURE_POINTS_LOAD_ERROR?('⚠️ تعذر مزامنة سجل النقاط: '+POINTS_SECURE_POINTS_LOAD_ERROR):'☁️ تم تحميل الفصول المصرح بها ومزامنة سجل النقاط';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}showPointsIntroAfterLogin();},400);
@@ -7023,7 +7023,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <script>
 // Independent commercial entitlement for every dropdown item.
-async function applyCommercialMenuLocks(forceCloseOnChange=false){
+window.applyCommercialMenuLocks = async function(forceCloseOnChange=false){
   try{
     if(!firebaseAuth || !firebaseAuth.currentUser) return;
     if(firebaseProfile && (firebaseProfile.role==='admin' || firebaseCurrentUser?.uid==='hwPgzTQbdfUJa45G2Wwc79ANNJE2')) return;
@@ -7050,4 +7050,18 @@ async function applyCommercialMenuLocks(forceCloseOnChange=false){
     console.error('POINTS entitlement refresh failed:',err);
     const entries=Array.from(document.querySelectorAll('.dropdown-content a[data-feature]'));
     entries.forEach(el=>{el.classList.add('feature-locked');el.setAttribute('aria-disabled','true');el.title='تعذر التحقق من صلاحية هذه الميزة';});
-    const bl
+    const blocker=document.getElementById('pointsLicenseBlocker');if(blocker){blocker.style.display='flex';const message=blocker.querySelector('[data-license-message]');if(message)message.textContent=(err&&err.message)||'تعذر التحقق من الترخيص أو الباقة. تم إيقاف استخدام النظام احترازيًا حتى عودة التحقق.';}
+  }
+};
+
+let pointsEntitlementRefreshBusy=false;
+setInterval(async()=>{
+  if(pointsEntitlementRefreshBusy||!firebaseAuth||!firebaseAuth.currentUser||!firebaseProfile||firebaseProfile.role==='admin')return;
+  pointsEntitlementRefreshBusy=true;
+  try{await window.applyCommercialMenuLocks(true);}finally{pointsEntitlementRefreshBusy=false;}
+},15000);
+window.addEventListener('focus',()=>{if(firebaseAuth&&firebaseAuth.currentUser)window.applyCommercialMenuLocks(true);});
+</script>
+
+</body>
+</html>
