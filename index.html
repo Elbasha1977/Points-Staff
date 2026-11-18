@@ -511,7 +511,35 @@ body{overscroll-behavior-y:auto}
 #registerClasses{padding-bottom:6px}
 #submitRegisterBtn{margin-bottom:10px!important}
 
-</style></head>
+</style>
+<style id="homework-honor-board-style">
+#homeworkHonorBoardModal .modal-content{max-width:1500px;width:98vw;height:94vh;max-height:94vh;padding:0;overflow:auto;border:3px solid #d4af37;background:radial-gradient(circle at top,#263b66 0,#101a33 48%,#080f20 100%);color:#fff;border-radius:24px}
+#homeworkHonorBoardModal .hhb-head{padding:28px 22px 18px;text-align:center;background:linear-gradient(135deg,rgba(212,175,55,.22),rgba(255,255,255,.04));border-bottom:1px solid rgba(212,175,55,.45)}
+#homeworkHonorBoardModal .hhb-title{font-size:clamp(25px,4vw,44px);font-weight:900;color:#ffe08a;text-shadow:0 3px 16px rgba(255,196,0,.28)}
+#homeworkHonorBoardModal .hhb-subtitle{color:#dbeafe;margin-top:8px;font-size:clamp(14px,2vw,20px)}
+#homeworkHonorBoardModal .hhb-controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:18px}
+#homeworkHonorBoardModal select,#homeworkHonorBoardModal button{font:inherit}
+#homeworkHonorBoardModal .hhb-select{padding:12px 16px;border-radius:12px;border:2px solid #d4af37;background:#fff;color:#172554;font-weight:800;min-width:170px}
+#homeworkHonorBoardModal .hhb-period{padding:12px 18px;border:1px solid #facc15;border-radius:12px;background:#1e3a5f;color:#fff;font-weight:900;cursor:pointer}
+#homeworkHonorBoardModal .hhb-period.active{background:linear-gradient(135deg,#facc15,#b8860b);color:#1e293b}
+#homeworkHonorBoardModal .hhb-stage{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:14px;max-width:1000px;margin:8px auto 22px;padding:0 16px}
+#homeworkHonorBoardModal .hhb-winner{border:2px solid rgba(250,204,21,.65);border-radius:20px;padding:18px 12px;text-align:center;background:linear-gradient(160deg,rgba(255,255,255,.14),rgba(255,255,255,.04));box-shadow:0 10px 28px rgba(0,0,0,.2);overflow-wrap:anywhere}
+#homeworkHonorBoardModal .hhb-winner.first{min-height:230px;background:linear-gradient(160deg,rgba(250,204,21,.3),rgba(255,255,255,.07));border-color:#facc15}
+#homeworkHonorBoardModal .hhb-winner.second{min-height:185px}
+#homeworkHonorBoardModal .hhb-winner.third{min-height:160px}
+#homeworkHonorBoardModal .hhb-medal{font-size:clamp(38px,6vw,70px)}
+#homeworkHonorBoardModal .hhb-name{font-size:clamp(16px,2.4vw,25px);font-weight:900;color:#fff;margin:8px 0}
+#homeworkHonorBoardModal .hhb-points{font-size:clamp(20px,3vw,34px);font-weight:900;color:#ffe08a}
+#homeworkHonorBoardModal .hhb-table-wrap{padding:0 18px 24px;overflow:auto}
+#homeworkHonorBoardModal .hhb-table{width:100%;border-collapse:collapse;background:rgba(255,255,255,.97);color:#172554;border-radius:14px;overflow:hidden}
+#homeworkHonorBoardModal .hhb-table th{background:#d4af37;color:#1e293b;padding:12px}
+#homeworkHonorBoardModal .hhb-table td{padding:11px;border-bottom:1px solid #e2e8f0;text-align:center;font-weight:700}
+#homeworkHonorBoardModal .hhb-empty{text-align:center;padding:40px 15px;color:#ffe08a;font-size:22px;font-weight:800}
+#homeworkHonorBoardModal .hhb-close{position:sticky;top:10px;float:left;margin:10px 10px 0 0;border:0;border-radius:50%;width:42px;height:42px;background:#dc2626;color:white;font-size:22px;font-weight:900;cursor:pointer;z-index:4}
+@media(max-width:650px){#homeworkHonorBoardModal .hhb-stage{gap:6px;padding:0 8px}#homeworkHonorBoardModal .hhb-winner{padding:12px 6px}#homeworkHonorBoardModal .hhb-winner.first{min-height:185px}#homeworkHonorBoardModal .hhb-winner.second{min-height:155px}#homeworkHonorBoardModal .hhb-winner.third{min-height:130px}#homeworkHonorBoardModal .hhb-table th,#homeworkHonorBoardModal .hhb-table td{padding:8px;font-size:13px}}
+</style>
+
+</head>
 <body>
 
 <div id="pointsIntroScreen" role="dialog" aria-label="الصفحة الافتتاحية للبرنامج" style="display:flex">
@@ -615,6 +643,7 @@ body{overscroll-behavior-y:auto}
                         <a id="groupPointsDropdown" data-feature="menuGroupPoints">🎯 نقاط المجموعات</a>
                         <a id="studentsPointsDropdown" data-feature="menuStudentPoints">📊 نقاط الطلاب</a>
                         <a id="homeworkResultsDropdown" data-feature="menuHomeworkResults">📢 نتائج الواجبات المنزلية</a>
+<a id="homeworkHonorBoardDropdown" data-feature="menuHomeworkResults">🏆 لوحة الشرف في واجبات النقاط المنزلية</a>
                     </div>
                 </div>
 
@@ -1189,6 +1218,26 @@ body{overscroll-behavior-y:auto}
 
 <div id="uploadPhotosModal" class="modal"><div class="modal-content" style="max-width:600px; position: relative;"><button class="modal-close-x" onclick="closeUploadPhotosModal(); event.stopPropagation();">✕</button><h2>📸 رفع صور الفائقين</h2><div class="upload-area"><label>🥇 المركز الأول</label><input type="file" id="photo1Input" accept="image/*"><div id="preview1"></div></div><div class="upload-area"><label>🥈 المركز الثاني</label><input type="file" id="photo2Input" accept="image/*"><div id="preview2"></div></div><div class="upload-area"><label>🥉 المركز الثالث</label><input type="file" id="photo3Input" accept="image/*"><div id="preview3"></div></div><div style="display:flex;justify-content:center;gap:10px;"><button class="close-modal confirm-btn" id="savePhotosBtn">💾 حفظ</button><button class="close-modal cancel-btn" id="cancelPhotosBtn">إلغاء</button></div></div></div>
 
+
+
+<div id="homeworkHonorBoardModal" class="modal" style="z-index:1200;">
+  <div class="modal-content">
+    <button class="hhb-close" type="button" onclick="closeHomeworkHonorBoard()">✕</button>
+    <div class="hhb-head">
+      <div style="font-size:48px;margin-bottom:8px">🏆 ✨ 🎉</div>
+      <div class="hhb-title">لوحة الشرف في واجبات النقاط المنزلية</div>
+      <div class="hhb-subtitle" id="homeworkHonorBoardSubtitle">تكريم أبطال الواجبات المنزلية</div>
+    </div>
+    <div class="hhb-controls">
+      <select id="homeworkHonorBoardClass" class="hhb-select" aria-label="اختر الصف"></select>
+      <button type="button" class="hhb-period active" data-period="weekly" onclick="selectHomeworkHonorPeriod('weekly')">الأسبوعية</button>
+      <button type="button" class="hhb-period" data-period="monthly" onclick="selectHomeworkHonorPeriod('monthly')">الشهرية</button>
+      <button type="button" class="hhb-period" data-period="all" onclick="selectHomeworkHonorPeriod('all')">الإجمالية</button>
+      <button type="button" class="hhb-period" onclick="loadHomeworkHonorBoard()">🔄 تحديث</button>
+    </div>
+    <div id="homeworkHonorBoardContent"><div class="hhb-empty">⏳ جارٍ تحميل لوحة الشرف...</div></div>
+  </div>
+</div>
 
 <div id="homeworkResultsModal" class="modal"><div class="modal-content" style="max-width:1100px;width:96%;max-height:90vh;overflow:auto;position:relative"><button class="modal-close-x" onclick="document.getElementById('homeworkResultsModal').style.display='none'">✕</button><h2>📢 نتائج الواجبات المنزلية</h2><div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0"><select id="homeworkResultsClass" style="padding:10px;border:1px solid #cbd5e1;border-radius:8px"><option value="">كل الفصول المصرح بها</option></select><button class="close-modal confirm-btn" id="refreshHomeworkResults">🔄 تحديث النتائج</button></div><div id="homeworkResultsStats" style="font-weight:bold;margin:10px 0"></div><div style="overflow:auto"><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#1e3a8a;color:white"><th style="padding:9px">الطالب</th><th>الصف</th><th>ورقة العمل</th><th>الدرجة</th><th>حالة النقاط</th><th>تاريخ الاعتماد</th></tr></thead><tbody id="homeworkResultsBody"></tbody></table></div><p style="color:#64748b;font-size:13px">تظهر هنا النتائج التي تم اعتمادها وإضافة نقاطها فعليًا إلى رصيد الطالب.</p></div></div>
 <div id="studentsPointsModal" class="modal"><div class="modal-content" style="position: relative;"><button class="modal-close-x" onclick="closeStudentsPointsModal(); event.stopPropagation();">✕</button><h2>📊 نقاط الطلاب</h2><div style="overflow-x: auto;"><table class="students-table-modal"><thead><tr><th>الترتيب</th><th>الطالب</th><th>المستوى</th><th>النقاط</th></tr></thead><tbody id="studentsPointsTableBody"></tbody></table></div><button class="close-modal cancel-btn" id="closeStudentsPointsModalBtn" style="margin-top: 20px;">إغلاق</button></div></div>
@@ -5986,6 +6035,91 @@ function renderStudents() {
 }
 
 
+
+// ==================== لوحة الشرف في واجبات النقاط المنزلية ====================
+let currentHomeworkHonorPeriod = 'weekly';
+function closeHomeworkHonorBoard() {
+  const modal = document.getElementById('homeworkHonorBoardModal');
+  if (modal) modal.style.display = 'none';
+}
+function selectHomeworkHonorPeriod(period) {
+  currentHomeworkHonorPeriod = ['weekly','monthly','all'].includes(period) ? period : 'weekly';
+  document.querySelectorAll('#homeworkHonorBoardModal .hhb-period[data-period]').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-period') === currentHomeworkHonorPeriod);
+  });
+  loadHomeworkHonorBoard();
+}
+async function openHomeworkHonorBoard() {
+  const modal = document.getElementById('homeworkHonorBoardModal');
+  const select = document.getElementById('homeworkHonorBoardClass');
+  const permitted = getHomeworkResultsPermittedClasses();
+  modal.style.display = 'flex';
+  select.innerHTML = '';
+  permitted.forEach(classId => {
+    const option = document.createElement('option');
+    option.value = classId;
+    option.textContent = classId;
+    select.appendChild(option);
+  });
+  if (!permitted.length) {
+    document.getElementById('homeworkHonorBoardContent').innerHTML = '<div class="hhb-empty">لا توجد صفوف مسموح بعرضها لهذا الحساب.</div>';
+    return;
+  }
+  if (currentClass && permitted.includes(currentClass)) select.value = currentClass;
+  select.onchange = loadHomeworkHonorBoard;
+  currentHomeworkHonorPeriod = 'weekly';
+  document.querySelectorAll('#homeworkHonorBoardModal .hhb-period[data-period]').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-period') === 'weekly');
+  });
+  await loadHomeworkHonorBoard();
+}
+async function loadHomeworkHonorBoard() {
+  const classId = document.getElementById('homeworkHonorBoardClass')?.value || '';
+  const content = document.getElementById('homeworkHonorBoardContent');
+  if (!classId) { content.innerHTML = '<div class="hhb-empty">اختر الصف أولاً.</div>'; return; }
+  content.innerHTML = '<div class="hhb-empty">⏳ جارٍ تجهيز لوحة الأبطال...</div>';
+  try {
+    const call = firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('getHomeworkHonorBoard');
+    const payload = { classId, period: currentHomeworkHonorPeriod };
+    if (typeof getDailyTrackerSchoolId === 'function') payload.schoolId = getDailyTrackerSchoolId();
+    const response = await call(payload);
+    const data = response?.data || {};
+    if (data.success !== true) throw new Error('لم يؤكد الخادم تحميل لوحة الشرف.');
+    const students = Array.isArray(data.students) ? data.students : [];
+    const periodLabel = currentHomeworkHonorPeriod === 'weekly' ? 'الأسبوع الحالي' :
+      currentHomeworkHonorPeriod === 'monthly' ? 'الشهر الحالي' : 'إجمالي نقاط الواجبات المنزلية';
+    document.getElementById('homeworkHonorBoardSubtitle').textContent = `${classId} — ${periodLabel}`;
+    if (!students.length) {
+      content.innerHTML = '<div class="hhb-empty">🌟 لم تُسجل نقاط واجبات منزلية لهذه الفترة بعد. ابدأوا المنافسة!</div>';
+      return;
+    }
+    const podium = [
+      { item: students[1], cls: 'second', medal: '🥈' },
+      { item: students[0], cls: 'first', medal: '🏆' },
+      { item: students[2], cls: 'third', medal: '🥉' }
+    ];
+    const podiumHtml = podium.filter(x => x.item).map(x => `
+      <div class="hhb-winner ${x.cls}">
+        <div class="hhb-medal">${x.medal}</div>
+        <div class="hhb-name">${escapeHtml(String(x.item.name || ''))}</div>
+        <div class="hhb-points">${Number(x.item.points || 0)} نقطة</div>
+        <div style="color:#dbeafe;font-weight:800;margin-top:5px">${x.cls === 'first' ? 'المركز الأول' : x.cls === 'second' ? 'المركز الثاني' : 'المركز الثالث'}</div>
+      </div>`).join('');
+    const tableRows = students.map((s, i) => `
+      <tr><td>${i + 1}</td><td style="text-align:right">${escapeHtml(String(s.name || ''))}</td><td>${Number(s.points || 0)} نقطة</td></tr>
+    `).join('');
+    content.innerHTML = `
+      <div style="text-align:center;color:#ffe08a;font-size:18px;font-weight:900;margin:8px 0 4px">🎊 نحتفل بجهدكم وإنجازكم 🎊</div>
+      <div class="hhb-stage">${podiumHtml}</div>
+      <div class="hhb-table-wrap">
+        <table class="hhb-table"><thead><tr><th>الترتيب</th><th>اسم الطالب</th><th>نقاط الواجبات المنزلية</th></tr></thead><tbody>${tableRows}</tbody></table>
+      </div>`;
+  } catch (error) {
+    content.innerHTML = '<div class="hhb-empty" style="color:#fecaca">تعذر تحميل لوحة الشرف: ' + escapeHtml(error.message || error) + '</div>';
+  }
+}
+
+
 // سجل النتائج المنشورة: يعرض النتائج المعتمدة للفصول المصرح بها للحساب فقط.
 function getHomeworkResultsPermittedClasses(){
  const profile=typeof firebaseProfile!=='undefined'&&firebaseProfile?firebaseProfile:{};
@@ -6097,6 +6231,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('groupPointsDropdown').onclick = function() { showGroupPointsSetup(); };
     document.getElementById('studentsPointsDropdown').onclick = function() { showStudentsPointsModal(); };
     document.getElementById('homeworkResultsDropdown').onclick = function() { openHomeworkResultsModal(); };
+    document.getElementById('homeworkHonorBoardDropdown').onclick = function() { openHomeworkHonorBoard(); };
     document.getElementById('refreshHomeworkResults').onclick = function() { loadHomeworkResults(); };
     document.getElementById('homeworkResultsClass').onchange = function() { loadHomeworkResults(); };
     document.getElementById('rewardsShopDropdown').onclick = function() { showCandidatesCelebration(); };
