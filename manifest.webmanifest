@@ -30,5 +30,20 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "إدارة تحدي اليوم",
+      "short_name": "تحدي اليوم",
+      "description": "إعداد تحديات يومية للطلاب",
+      "url": "daily-challenge.html",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }
