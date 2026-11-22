@@ -21,7 +21,7 @@
   }
   let analysisFeatureAllowed=false;
   function createButton(){
-    if(!analysisFeatureAllowed || !firebase?.auth || !firebase.auth().currentUser)return;
+    if(!analysisFeatureAllowed || !window.firebase || !firebase.auth || !firebase.auth().currentUser)return;
     const isVisible=el=>{
       if(!el)return false;
       const cs=getComputedStyle(el);
@@ -29,24 +29,35 @@
     };
     if(isVisible(document.querySelector(".login-overlay"))||
        isVisible(document.getElementById("pointsIntroScreen")))return;
-    if(document.getElementById(LINK_ID))return;
-    installStyle();
-    const host=document.querySelector(".header-buttons")||
-      document.querySelector(".buttons-grid")||
-      document.querySelector("#mainApp .buttons-grid")||
-      document.querySelector(".container:not(.login-overlay)");
+    const candidates=[
+      document.querySelector(".header-buttons"),
+      document.querySelector("#mainApp .buttons-grid"),
+      document.querySelector(".buttons-grid"),
+      document.querySelector("#mainApp")
+    ];
+    const host=candidates.find(el=>isVisible(el));
     if(!host)return;
-    const row=document.createElement("div");
-    row.className="ga-launch-row";
-    row.id=LINK_ID+"-row";
-    const link=document.createElement("a");
-    link.id=LINK_ID;link.href="./grade-analysis.html";link.target="_blank";link.rel="noopener";
-    link.setAttribute("aria-label","فتح تحليل درجات الطلاب");
-    link.title="تحليل درجات الطلاب";
-    link.innerHTML='<span class="ga-icon">📊</span><span>تحليل درجات الطلاب</span>';
-    link.className="ga-dashboard";
-    row.appendChild(link);
-    host.appendChild(row);
+    installStyle();
+    let row=document.getElementById(LINK_ID+"-row");
+    let link=document.getElementById(LINK_ID);
+    if(!row){
+      row=document.createElement("div");
+      row.className="ga-launch-row";
+      row.id=LINK_ID+"-row";
+    }
+    if(!link){
+      link=document.createElement("a");
+      link.id=LINK_ID;
+      link.href="./grade-analysis.html";
+      link.target="_blank";
+      link.rel="noopener";
+      link.setAttribute("aria-label","فتح تحليل درجات الطلاب");
+      link.title="تحليل درجات الطلاب";
+      link.innerHTML='<span class="ga-icon">📊</span><span>تحليل درجات الطلاب</span>';
+      link.className="ga-dashboard";
+      row.appendChild(link);
+    }
+    if(row.parentElement!==host)host.appendChild(row);
   }
   function removeButton(){document.getElementById(LINK_ID+"-row")?.remove();document.getElementById(LINK_ID)?.remove();}
   function hideAllOptionalFeatureLaunchers(){
@@ -147,14 +158,32 @@
       setTimeout(boot,300);return;
     }
     let uiObserver=null;
+    let syncTimer=null;
+    let currentUserId=null;
+    const scheduleButtonRetry=()=>{
+      clearTimeout(syncTimer);
+      syncTimer=setTimeout(()=>{
+        const activeUser=firebase.auth().currentUser;
+        if(!activeUser||activeUser.uid!==currentUserId){removeButton();return;}
+        createButton();
+      },250);
+    };
     firebase.auth().onAuthStateChanged(async user=>{
       analysisFeatureAllowed=false;
+      currentUserId=user?.uid||null;
       removeButton();
       if(uiObserver){uiObserver.disconnect();uiObserver=null;}
       if(!user)return;
+      if(document.body&&window.MutationObserver){
+        uiObserver=new MutationObserver(scheduleButtonRetry);
+        uiObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["style","class"]});
+      }
       try{
-        analysisFeatureAllowed=await featureEnabled("gradeAnalysis");
+        const allowed=await featureEnabled("gradeAnalysis");
+        if(!firebase.auth().currentUser||firebase.auth().currentUser.uid!==user.uid)return;
+        analysisFeatureAllowed=allowed===true;
         if(analysisFeatureAllowed)createButton();
+        else removeButton();
         let isGlobalAdmin=false;
         try{
           const snap=await firebase.firestore().collection("users").doc(user.uid).get();
@@ -165,23 +194,12 @@
         }
         if(isGlobalAdmin)await syncNewUiFeatureCatalog(true);
         await syncFeatureLaunchers(isGlobalAdmin);
-        if(document.body&&window.MutationObserver){
-          let syncTimer=null;
-          const scheduleSync=()=>{
-            clearTimeout(syncTimer);
-            syncTimer=setTimeout(()=>{
-              if(!firebase.auth().currentUser){removeButton();return;}
-              createButton();
-              syncFeatureLaunchers(isGlobalAdmin);
-            },400);
-          };
-          uiObserver=new MutationObserver(scheduleSync);
-          uiObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["style","class"]});
-          window.addEventListener("focus",scheduleSync);
-        }
+        createButton();
+        window.addEventListener("focus",scheduleButtonRetry);
       }catch(error){
+        analysisFeatureAllowed=false;
         removeButton();
-        console.warn("POINTS feature visibility check unavailable:",error);
+        console.warn("POINTS grade analysis entitlement check unavailable:",error);
       }
     });
   }
