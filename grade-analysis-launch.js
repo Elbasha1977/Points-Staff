@@ -31,15 +31,16 @@
       const cs=getComputedStyle(el);
       return cs.display!=="none"&&cs.visibility!=="hidden"&&Number(cs.opacity||1)>0&&el.getClientRects().length>0;
     };
-    if(isVisible(document.querySelector(".login-overlay"))||
-       isVisible(document.getElementById("pointsIntroScreen")))return;
+    // حالة Firebase Auth هي الحاجز الوحيد: لا نظهر الزر قبل تسجيل الدخول.
+    // لا نمنع إنشاءه بسبب طبقة تمهيدية قد تبقى ظاهرة بعد اكتمال الدخول.
     const candidates=[
       document.querySelector(".header-buttons"),
       document.querySelector("#mainApp .buttons-grid"),
       document.querySelector(".buttons-grid"),
       document.querySelector("#mainApp")
     ];
-    const host=candidates.find(el=>isVisible(el)) || document.querySelector("#mainApp") || document.body;
+    // لا نضع الزر داخل #mainApp إذا كان مخفيًا؛ استخدم body كمسار احتياطي مرئي.
+    const host=candidates.find(el=>isVisible(el)) || document.body;
     if(!host)return;
     installStyle();
     let row=document.getElementById(LINK_ID+"-row");
@@ -68,7 +69,7 @@
   function showDiagnostic(error,attempt=0){
     if(!firebase.auth().currentUser)return;
     const isVisible=el=>!!el&&getComputedStyle(el).display!=="none"&&getComputedStyle(el).visibility!=="hidden"&&el.getClientRects().length>0;
-    if(isVisible(document.querySelector(".login-overlay"))||isVisible(document.getElementById("pointsIntroScreen")))return;
+    // التشخيص لا يتوقف بسبب طبقات الدخول/الترحيب؛ وجود مستخدم موثق تحقق أعلاه.
     const host=[document.querySelector(".header-buttons"),document.querySelector("#mainApp .buttons-grid"),document.querySelector(".buttons-grid"),document.querySelector("#mainApp")].find(isVisible) || document.body;
     if(!host)return;
     installStyle();
