@@ -517,6 +517,33 @@
         return oldInitialPlan.call(this, kind, silent);
       };
     }
+    if (typeof window.showPage === "function" && !window.showPage.__gradeAnalysisServerWrapped) {
+      const originalShowPage = window.showPage;
+      const wrappedShowPage = function (pageId) {
+        const result = originalShowPage.apply(this, arguments);
+        if (pageId === "analysis-page") {
+          setTimeout(() => gradeAnalysisScheduleOverview(), 250);
+        }
+        if (pageId === "initial-classification-page") {
+          setTimeout(() => gradeAnalysisRefreshInitialClassification().catch(error =>
+            gradeAnalysisShowMessage("تعذر تحميل التصنيف الأولي من الخادم: " + (error.message || error), "error")
+          ), 250);
+        }
+        return result;
+      };
+      wrappedShowPage.__gradeAnalysisServerWrapped = true;
+      window.showPage = wrappedShowPage;
+    }
+    ["initialGradeSelect","initialSectionSelect","initialTermSelect","initialTeacherSelect","initialCoordinatorSelect","initialEvalCount"].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || el.__gradeAnalysisServerListener) return;
+      el.__gradeAnalysisServerListener = true;
+      el.addEventListener("change", () => {
+        setTimeout(() => gradeAnalysisRefreshInitialClassification().catch(error =>
+          gradeAnalysisShowMessage("تعذر تحديث التصنيف الأولي على الخادم: " + (error.message || error), "error")
+        ), 350);
+      });
+    });
     window.gradeAnalysisScheduleOverview = gradeAnalysisScheduleOverview;
   }
 
