@@ -26,6 +26,7 @@
   let assignedClasses = [], hydrating = false, pendingContexts = null, pendingSettings = {};
   let saveTimer = null, calcTimer = null, calcInFlight = false, calcAgain = false, initialTimer = null;
   let lastOverview = null, failingData = [], enrichmentCache = null, originalOnload = null;
+  let legacyContexts = null, legacySettings = {}, migratedSettings = new Set();
   const memory = Object.create(null);
 
   window.gradeAnalysisStore = {
@@ -165,10 +166,35 @@
     if (data.success !== true) throw new Error("لم يؤكد الخادم تحميل مساحة تحليل الدرجات.");
     activeSchoolId = String(data.schoolId || activeSchoolId);
     activeClassId = String(data.classId || classId);
+    const remoteContexts = Object.assign({}, data.contexts || {});
+    // One-time migration of this assigned class's browser-only legacy records.
+    const missingLegacy = {};
+    if (legacyContexts) {
+      Object.entries(legacyContexts).forEach(([key, value]) => {
+        const parts = String(key).split("|");
+        if (parts.length !== 5) return;
+        const canonical = gradeAnalysisCanonicalClass(parts[3] + " " + parts[4]);
+        if (canonical === activeClassId && !Object.prototype.hasOwnProperty.call(remoteContexts, key) && value && typeof value === "object") missingLegacy[key] = value;
+      });
+      if (Object.keys(missingLegacy).length) {
+        await callable("gradeAnalysisSaveContexts")({ contexts: missingLegacy });
+        Object.assign(remoteContexts, missingLegacy);
+        gradeAnalysisShowMessage("تم نقل بيانات هذه الشعبة القديمة إلى الحفظ الآمن على الخادم.", "success");
+      }
+    }
+    const legacySettingsToSave = {};
+    Object.entries(legacySettings || {}).forEach(([key, value]) => {
+      if (ALLOWED_SETTINGS.includes(key) && !migratedSettings.has(key) &&
+          (data.settings || {})[key] === undefined && value !== null && value !== undefined) legacySettingsToSave[key] = String(value);
+    });
+    if (Object.keys(legacySettingsToSave).length) {
+      await callable("gradeAnalysisSaveSettings")({ classId: activeClassId, settings: legacySettingsToSave });
+      Object.keys(legacySettingsToSave).forEach(key => migratedSettings.add(key));
+    }
     let current = {};
     try { current = JSON.parse(gradeAnalysisStore.getItem(KEY_DATA) || "{}"); } catch (_) {}
-    Object.assign(current, data.contexts || {});
-    gradeAnalysisStore._hydrate(Object.assign(gradeAnalysisCurrentSettings(), data.settings || {}), current);
+    Object.assign(current, remoteContexts);
+    gradeAnalysisStore._hydrate(Object.assign(gradeAnalysisCurrentSettings(), data.settings || {}, legacySettingsToSave), current);
     gradeAnalysisSetContextClass(activeClassId);
     const select = document.getElementById("gradeAnalysisClassSelect");
     if (select) select.value = activeClassId;
@@ -223,6 +249,15 @@
       return false;
     }
     currentUser = user;
+    // Capture old local browser records once, before the app uses the server-backed store.
+    if (legacyContexts === null) {
+      try { legacyContexts = JSON.parse(window.localStorage.getItem(KEY_DATA) || "{}"); }
+      catch (_) { legacyContexts = {}; }
+      ALLOWED_SETTINGS.forEach(key => {
+        try { const value = window.localStorage.getItem(key); if (value !== null) legacySettings[key] = value; }
+        catch (_) {}
+      });
+    }
     const snap = await db.collection("users").doc(user.uid).get();
     if (!snap.exists) throw new Error("حساب المستخدم غير موجود في POINTS.");
     currentProfile = snap.data() || {};
@@ -479,10 +514,12 @@
     originalOnload = window.onload;
     window.onload = async function (event) {
       try {
+        // Install back-end handlers before any original page initialization can calculate locally.
+        gradeAnalysisInstallServerOverrides();
         const ok = await gradeAnalysisBoot();
         if (!ok) return;
         if (typeof originalOnload === "function") originalOnload.call(this, event);
-        gradeAnalysisInstallServerOverrides();
+        gradeAnalysisScheduleOverview();
       } catch (error) {
         console.error("Grade Analysis boot failed:", error);
         const container = document.querySelector(".container");
