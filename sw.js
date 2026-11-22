@@ -21,7 +21,7 @@ self.addEventListener("fetch", event => {
       const contentType = response.headers.get("content-type") || "";
       if (!response.ok || !contentType.includes("text/html")) return response;
       let html = await response.clone().text();
-      const launcherVersion = "20261122-feature-registry-v5";
+      const launcherVersion = "20261122-grade-analysis-admin-fix-v6";
       if (!html.includes("grade-analysis-launch.js")) {
         const script = '<script src="./grade-analysis-launch.js?v=' + launcherVersion + '" defer></script>';
         const closingIndex = html.toLowerCase().lastIndexOf("</body>");
@@ -29,7 +29,7 @@ self.addEventListener("fetch", event => {
         else html += script;
       } else {
         html = html.replaceAll(
-          "grade-analysis-launch.js?v=20261122-feature-registry-v4",
+          "grade-analysis-launch.js?v=20261122-grade-analysis-admin-fix-v6",
           "grade-analysis-launch.js?v=" + launcherVersion
         );
       }
