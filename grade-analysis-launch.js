@@ -2,6 +2,7 @@
   "use strict";
   const STYLE_ID="points-grade-analysis-launch-style";
   const LINK_ID="points-grade-analysis-launch";
+  const DIAG_ID="points-grade-analysis-diagnostic";
   const VISIBILITY_HINTS={
     gradeAnalysis:{href:["grade-analysis.html"],text:["تحليل درجات الطلاب"]},
     dailyChallenge:{href:["daily-challenge.html"],text:["تحدي اليوم","التحدي اليومي"]},
@@ -16,7 +17,9 @@
       "#"+LINK_ID+":hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(15,62,102,.32)}"+
       "#"+LINK_ID+" .ga-icon{font-size:22px}"+
       "#"+LINK_ID+".ga-dashboard{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:12px 20px;border:0;border-radius:14px;background:linear-gradient(135deg,#0f3e66,#1976d2);color:#fff!important;text-decoration:none!important;font-family:Tahoma,Arial,sans-serif;font-size:15px;font-weight:900;box-shadow:0 6px 18px rgba(15,62,102,.20);cursor:pointer;white-space:nowrap;margin:6px auto}"+
-      ".ga-launch-row{display:flex;justify-content:center;align-items:center;width:100%;margin:14px auto 4px}";
+      ".ga-launch-row{display:flex;justify-content:center;align-items:center;width:100%;margin:14px auto 4px}"+
+      "#"+DIAG_ID+"{direction:rtl;max-width:760px;margin:12px auto;padding:14px 16px;border:1px solid #d97706;border-radius:12px;background:#fff7ed;color:#7c2d12;font:14px/1.8 Tahoma,Arial,sans-serif;text-align:right;white-space:normal}"+
+      "#"+DIAG_ID+" strong{display:block;margin-bottom:4px}";
     document.head.appendChild(style);
   }
   let analysisFeatureAllowed=false;
@@ -60,6 +63,25 @@
     if(row.parentElement!==host)host.appendChild(row);
   }
   function removeButton(){document.getElementById(LINK_ID+"-row")?.remove();document.getElementById(LINK_ID)?.remove();}
+  function removeDiagnostic(){document.getElementById(DIAG_ID)?.remove();}
+  function showDiagnostic(error){
+    if(!firebase.auth().currentUser)return;
+    const isVisible=el=>!!el&&getComputedStyle(el).display!=="none"&&getComputedStyle(el).visibility!=="hidden"&&el.getClientRects().length>0;
+    if(isVisible(document.querySelector(".login-overlay"))||isVisible(document.getElementById("pointsIntroScreen")))return;
+    const host=[document.querySelector(".header-buttons"),document.querySelector("#mainApp .buttons-grid"),document.querySelector(".buttons-grid"),document.querySelector("#mainApp")].find(isVisible);
+    if(!host)return;
+    installStyle();
+    let panel=document.getElementById(DIAG_ID);
+    if(!panel){panel=document.createElement("div");panel.id=DIAG_ID;panel.setAttribute("role","status");}
+    const code=String(error?.code||"").replace(/^functions\//,"");
+    const message=String(error?.message||"لم يُرجع الخادم تفاصيل إضافية.").slice(0,260);
+    panel.innerHTML="";
+    const heading=document.createElement("strong");heading.textContent="تعذر إظهار أيقونة تحليل الدرجات";
+    const detail=document.createElement("div");detail.textContent=(code?"رمز الخطأ: "+code+" — ":"")+message;
+    const note=document.createElement("div");note.textContent="الباقة PRO يفترض أن تدعم الميزة. أرسل صورة هذه الرسالة لتحديد إعداد الحساب أو الترخيص الذي يحتاج إلى تصحيح.";
+    panel.append(heading,detail,note);
+    if(panel.parentElement!==host)host.appendChild(panel);
+  }
   function hideAllOptionalFeatureLaunchers(){
     const keys=new Set(Object.keys(VISIBILITY_HINTS));
     document.querySelectorAll("[data-feature]").forEach(el=>{
