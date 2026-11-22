@@ -686,7 +686,7 @@ body{overscroll-behavior-y:auto}
                     </div>
                 </div>
 
-                <a href="daily-challenge.html" class="daily-challenge-direct-btn" aria-label="فتح إدارة تحدي اليوم" style="background:linear-gradient(135deg,#f97316,#dc2626);color:#fff;padding:10px 20px;border:0;border-radius:16px;font-size:14px;font-weight:800;cursor:pointer;transition:.3s;min-width:150px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;box-shadow:0 4px 12px rgba(220,38,38,.2);">🔥 تحدي اليوم</a>
+                <a href="daily-challenge.html" data-feature="dailyChallenge" class="daily-challenge-direct-btn" aria-label="فتح إدارة تحدي اليوم" style="background:linear-gradient(135deg,#f97316,#dc2626);color:#fff;padding:10px 20px;border:0;border-radius:16px;font-size:14px;font-weight:800;cursor:pointer;transition:.3s;min-width:150px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;box-shadow:0 4px 12px rgba(220,38,38,.2);">🔥 تحدي اليوم</a>
                 <button class="developer-direct-btn" id="aboutBtnDirect">👨‍💻 عن المطور</button>
             </div>
         </div>
@@ -7253,7 +7253,7 @@ async function applyCommercialMenuLocks(forceCloseOnChange=false){
     if(firebaseProfile && (firebaseProfile.role==='admin' || firebaseCurrentUser?.uid==='hwPgzTQbdfUJa45G2Wwc79ANNJE2')) return;
     const response=await verifyPointsStaffLicense();
     const features=response.features||{};
-    const entries=Array.from(document.querySelectorAll('.dropdown-content a[data-feature]'));
+    const entries=Array.from(document.querySelectorAll('a[data-feature]'));
     const previous=window.__POINTS_LAST_ENTITLEMENT||null;
     const changed=!!previous && (previous.plan!==response.plan || JSON.stringify(previous.features||{})!==JSON.stringify(features));
     entries.forEach(el=>{
@@ -7287,5 +7287,6 @@ setInterval(async()=>{
 window.addEventListener('focus',()=>{if(firebaseAuth&&firebaseAuth.currentUser)applyCommercialMenuLocks(true);});
 </script>
 
+<script src="./grade-analysis-launch.js?v=20261122-registry" defer></script>
 </body>
 </html>
