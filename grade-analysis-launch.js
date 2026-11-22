@@ -3,6 +3,7 @@
   const STYLE_ID="points-grade-analysis-launch-style";
   const LINK_ID="points-grade-analysis-launch";
   const DIAG_ID="points-grade-analysis-diagnostic";
+  window.__pointsGradeAnalysisLauncherLoaded=true;
   const VISIBILITY_HINTS={
     gradeAnalysis:{href:["grade-analysis.html"],text:["تحليل درجات الطلاب"]},
     dailyChallenge:{href:["daily-challenge.html"],text:["تحدي اليوم","التحدي اليومي"]},
@@ -18,7 +19,7 @@
       "#"+LINK_ID+" .ga-icon{font-size:22px}"+
       "#"+LINK_ID+".ga-dashboard{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:12px 20px;border:0;border-radius:14px;background:linear-gradient(135deg,#0f3e66,#1976d2);color:#fff!important;text-decoration:none!important;font-family:Tahoma,Arial,sans-serif;font-size:15px;font-weight:900;box-shadow:0 6px 18px rgba(15,62,102,.20);cursor:pointer;white-space:nowrap;margin:6px auto}"+
       ".ga-launch-row{display:flex;justify-content:center;align-items:center;width:100%;margin:14px auto 4px}"+
-      "#"+DIAG_ID+"{direction:rtl;max-width:760px;margin:12px auto;padding:14px 16px;border:1px solid #d97706;border-radius:12px;background:#fff7ed;color:#7c2d12;font:14px/1.8 Tahoma,Arial,sans-serif;text-align:right;white-space:normal}"+
+      "#"+DIAG_ID+"{position:fixed;z-index:2147483647;right:12px;left:12px;bottom:12px;max-width:760px;margin:0 auto;padding:14px 16px;border:2px solid #d97706;border-radius:12px;background:#fff7ed;color:#7c2d12;font:14px/1.8 Tahoma,Arial,sans-serif;text-align:right;white-space:normal;box-shadow:0 8px 30px rgba(0,0,0,.22)}"+
       "#"+DIAG_ID+" strong{display:block;margin-bottom:4px}";
     document.head.appendChild(style);
   }
