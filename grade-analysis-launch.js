@@ -58,6 +58,17 @@
     keys.forEach(key=>applyFeatureLauncherVisibility(key,false));
   }
   async function featureEnabled(featureKey){
+    // استخدم مصدر صلاحيات نسخة الموظفين نفسه حتى تتطابق أيقونة التحليل
+    // مع ترخيص Classic/Pro الذي تتحقق منه بقية قوائم البرنامج.
+    if(typeof window.verifyPointsStaffLicense==="function"){
+      const license=await window.verifyPointsStaffLicense();
+      const features=license&&license.features&&typeof license.features==="object"
+        ? license.features : {};
+      if(Object.prototype.hasOwnProperty.call(features,featureKey)){
+        return features[featureKey]===true;
+      }
+    }
+    // توافق رجعي عند تشغيل الصفحة على نسخة لا تعرض كتالوج ميزات الترخيص.
     const check=firebase.app().functions("us-central1").httpsCallable("checkCustomerFeature");
     const response=await check({feature:featureKey});
     return response.data?.success===true && response.data?.allowed===true;
