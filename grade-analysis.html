@@ -3,6 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+    (function () {
+      "use strict";
+      var officialOrigin = "https://points-staff.abuhazem.com";
+      if (window.location.origin !== officialOrigin || window.location.protocol !== "https:") {
+        document.documentElement.innerHTML = '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>POINTS</title><style>body{font-family:Tahoma,Arial,sans-serif;background:#f3f6fa;display:grid;place-items:center;min-height:100vh;margin:0;padding:20px;box-sizing:border-box}.blocked{max-width:520px;background:white;border-radius:18px;padding:28px;text-align:center;box-shadow:0 8px 30px #0002;color:#243447;line-height:2}.blocked h2{color:#b42318}</style></head><body><main class="blocked"><h2>تشغيل البرنامج غير متاح</h2><p>يعمل تحليل الدرجات من خلال منصة POINTS الرسمية فقط. افتح البرنامج من حسابك المعتمد داخل المنصة.</p></main></body>';
+        throw new Error("Grade Analysis is restricted to the official POINTS staff origin.");
+      }
+    })();
+    </script>
     <title>نظام إدارة وتحليل درجات الاختبار</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
