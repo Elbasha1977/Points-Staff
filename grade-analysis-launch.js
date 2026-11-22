@@ -15,7 +15,7 @@
     style.textContent="#"+LINK_ID+"{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 18px;border:0;border-radius:14px;background:linear-gradient(135deg,#0f3e66,#1976d2);color:#fff!important;text-decoration:none!important;font-family:Tahoma,Arial,sans-serif;font-size:15px;font-weight:900;box-shadow:0 6px 18px rgba(15,62,102,.25);cursor:pointer;transition:transform .2s,box-shadow .2s;white-space:nowrap}"+
       "#"+LINK_ID+":hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(15,62,102,.32)}"+
       "#"+LINK_ID+" .ga-icon{font-size:22px}"+
-      "#"+LINK_ID+".ga-floating{position:fixed;left:18px;bottom:20px;z-index:99990;max-width:calc(100vw - 36px)}"+
+      "#"+LINK_ID+".ga-floating{position:fixed;left:18px;bottom:20px;z-index:2147483647!important;max-width:calc(100vw - 36px);visibility:visible!important;opacity:1!important;pointer-events:auto!important}"+
       "@media(max-width:600px){#"+LINK_ID+".ga-floating{left:10px;right:10px;bottom:10px;width:auto}}";
     document.head.appendChild(style);
   }
@@ -24,10 +24,15 @@
     installStyle();
     const link=document.createElement("a");
     link.id=LINK_ID;link.href="./grade-analysis.html";link.target="_blank";link.rel="noopener";
+    link.setAttribute("aria-label","فتح تحليل درجات الطلاب");
+    link.title="تحليل درجات الطلاب";
     link.innerHTML='<span class="ga-icon">📊</span><span>تحليل درجات الطلاب</span>';
-    const host=document.querySelector(".buttons-grid")||document.querySelector(".grid-container")||document.querySelector(".bottom-row");
-    if(host){link.style.minHeight="48px";host.appendChild(link);}
-    else{link.classList.add("ga-floating");document.body.appendChild(link);}
+    link.classList.add("ga-floating");
+    link.style.setProperty("display","inline-flex","important");
+    link.style.setProperty("z-index","2147483647","important");
+    link.style.setProperty("visibility","visible","important");
+    link.style.setProperty("opacity","1","important");
+    (document.body||document.documentElement).appendChild(link);
   }
   function removeButton(){document.getElementById(LINK_ID)?.remove();}
   function hideAllOptionalFeatureLaunchers(){
