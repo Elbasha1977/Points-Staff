@@ -3730,6 +3730,10 @@
                     img.src = PRINCIPAL_SIGNATURE;
                 }
             }, 200);
+            } catch (error) {
+                console.error("Grade Analysis classification failed:", error);
+                alert("تعذر إنشاء التصنيف المحسوب على الخادم: " + (error.message || error));
+            }
         }
 
         function exportAfterClassifyPlanPDF() {
@@ -5818,10 +5822,14 @@
             return {label:'عالي الأداء',color:'#fff',bg:'#2e7d32'};
         }
         async function generateParentAcademicReport() {
-            const chosen = document.getElementById('parentReportStudentSelect')?.v            const reports = await window.gradeAnalysisRunCalculation("parentReports", { selectedName: chosen || "__ALL__" });
+            const chosen = document.getElementById('parentReportStudentSelect')?.value || '__ALL__';
+            const reports = await window.gradeAnalysisRunCalculation("parentReports", { selectedName: chosen });
             if (!Array.isArray(reports) || !reports.length) { alert('لا توجد درجات للطالب المحدد.'); return; }
-            const selected = reports.map(report => ({ name: report.studentName, marks: report.marks || [], serverReport: report }));
-rn; }
+            const selected = reports.map(report => ({
+                name: report.studentName,
+                marks: report.marks || [],
+                serverReport: report
+            }));
             const examTitle = document.getElementById('examTitleSelect')?.selectedOptions[0]?.textContent.trim() || 'الاختبار';
             const subject = document.getElementById('subjectSelect')?.value || 'اللغة الإنجليزية';
             const year = document.getElementById('yearSelect')?.value || '';
