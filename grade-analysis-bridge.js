@@ -263,10 +263,10 @@
     currentProfile = snap.data() || {};
     if (currentProfile.active !== true || currentProfile.approved !== true) throw new Error("الحساب غير نشط أو غير معتمد.");
     if (user.uid === GLOBAL_ADMIN_UID && currentProfile.role === "admin") assignedClasses = ["السادس 2", "السادس 4", "السادس 6"];
-    else if (currentProfile.role === "staff") {
+    else if (currentProfile.role === "staff" || currentProfile.role === "schoolAdmin") {
       assignedClasses = Array.from(new Set((Array.isArray(currentProfile.classIds) ? currentProfile.classIds : [])
         .map(gradeAnalysisCanonicalClass).filter(value => /^(الخامس|السادس)\s+\d+$/.test(value))));
-    } else throw new Error("هذه الأداة متاحة للمدير العام ومعلمي POINTS المعتمدين.");
+    } else throw new Error("هذه الأداة متاحة لمدير المدرسة ومعلمي POINTS المعتمدين.");
     if (!assignedClasses.length) throw new Error("لا توجد شعب مسندة إلى حسابك.");
     const classSelect = document.getElementById("gradeAnalysisClassSelect");
     classSelect.innerHTML = assignedClasses.map(value => '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>').join("");
