@@ -39,7 +39,7 @@
       document.querySelector("#mainApp")
     ];
     const host=candidates.find(el=>isVisible(el));
-    if(!host)return;
+    if(!host){if(attempt<12)setTimeout(()=>showDiagnostic(error,attempt+1),500);return;}
     installStyle();
     let row=document.getElementById(LINK_ID+"-row");
     let link=document.getElementById(LINK_ID);
@@ -64,7 +64,7 @@
   }
   function removeButton(){document.getElementById(LINK_ID+"-row")?.remove();document.getElementById(LINK_ID)?.remove();}
   function removeDiagnostic(){document.getElementById(DIAG_ID)?.remove();}
-  function showDiagnostic(error){
+  function showDiagnostic(error,attempt=0){
     if(!firebase.auth().currentUser)return;
     const isVisible=el=>!!el&&getComputedStyle(el).display!=="none"&&getComputedStyle(el).visibility!=="hidden"&&el.getClientRects().length>0;
     if(isVisible(document.querySelector(".login-overlay"))||isVisible(document.getElementById("pointsIntroScreen")))return;
