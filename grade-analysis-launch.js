@@ -194,6 +194,7 @@
       analysisFeatureAllowed=false;
       currentUserId=user?.uid||null;
       removeButton();
+      removeDiagnostic();
       if(uiObserver){uiObserver.disconnect();uiObserver=null;}
       if(!user)return;
       if(document.body&&window.MutationObserver){
@@ -204,8 +205,8 @@
         const allowed=await featureEnabled("gradeAnalysis");
         if(!firebase.auth().currentUser||firebase.auth().currentUser.uid!==user.uid)return;
         analysisFeatureAllowed=allowed===true;
-        if(analysisFeatureAllowed)createButton();
-        else removeButton();
+        if(analysisFeatureAllowed){removeDiagnostic();createButton();}
+        else {removeButton();showDiagnostic(new Error("الخادم لم يمنح صلاحية gradeAnalysis لهذا الحساب رغم تسجيل الدخول."));}
         let isGlobalAdmin=false;
         try{
           const snap=await firebase.firestore().collection("users").doc(user.uid).get();
@@ -221,6 +222,7 @@
       }catch(error){
         analysisFeatureAllowed=false;
         removeButton();
+        showDiagnostic(error);
         console.warn("POINTS grade analysis entitlement check unavailable:",error);
       }
     });
