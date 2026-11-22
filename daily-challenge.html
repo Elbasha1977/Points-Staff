@@ -51,7 +51,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
   <div style="font-size:38px">🔥</div>
   <h1>إدارة تحدي اليوم</h1>
   <div class="sub">جهّز سؤالًا يوميًا لطلابك، وحدد وقت المشاركة ومكافأة الإجابة الصحيحة</div>
-  <a href="question-hunter.html" style="display:inline-block;margin-top:14px;padding:12px 20px;background:linear-gradient(135deg,#0284c7,#0f766e);color:white;border-radius:12px;text-decoration:none;font-weight:bold">🎯 فتح إدارة لعبة صائد الأسئلة</a>
+  <a id="questionHunterAdminLink" href="question-hunter.html" style="display:inline-block;margin-top:14px;padding:12px 20px;background:linear-gradient(135deg,#0284c7,#0f766e);color:white;border-radius:12px;text-decoration:none;font-weight:bold">🎯 فتح إدارة لعبة صائد الأسئلة</a>
  </div>
  <section class="card" id="loginView">
   <h2>تسجيل الدخول</h2>
@@ -77,7 +77,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
    </div>
    <div id="statusMsg" class="notice" style="display:none"></div>
   </section>
-  <section class="card">
+  <section class="card" id="dailyChallengeEditor">
    <h2>إنشاء تحدي جديد</h2>
    <label>عنوان التحدي</label><input id="title" maxlength="100" value="تحدي اليوم">
    <label>نوع السؤال</label><select id="challengeType" style="width:100%">
@@ -129,11 +129,11 @@ button:disabled{opacity:.55;cursor:not-allowed}
    </div>
    <p class="small">يمكن إعداد تحدٍ لليوم أو خلال الثلاثين يومًا القادمة. بعد بدء أول محاولة طالب، يُقفل السؤال وإجابته لمنع تغيير نتيجة التحدي.</p>
   </section>
-  <section class="card">
+  <section class="card" id="dailyChallengeHistory">
    <h2>التحديات السابقة والقادمة</h2>
    <div id="challengeList" class="sub">اختر الشعبة لعرض التحديات.</div>
   </section>
-  <section class="card"><h2>✍️ مراجعة موضوعات الطلاب الكتابية</h2>
+  <section class="card" id="dailyChallengeWriting"><h2>✍️ مراجعة موضوعات الطلاب الكتابية</h2>
    <p class="small">راجع الجمل السبع وحدد النقاط المستحقة لاعتمادها في رصيد الطالب ولوحة الشرف المنزلية.</p>
    <button class="gray" id="loadWritingBtn" style="margin:12px 0">🔄 عرض الموضوعات المرسلة</button>
    <div id="writingReviewList" class="sub">اضغط عرض الموضوعات لتحميل الإجابات التي تنتظر المراجعة.</div></section>
@@ -183,15 +183,28 @@ async function openApp(user){
  }else{
    throw new Error("إدارة التحديات متاحة للمدير العام والمعلمين المعتمدين فقط.");
  }
+ const [dailyGate,hunterGate]=await Promise.all([
+   callable("checkCustomerFeature")({feature:"dailyChallenge"}).then(r=>r.data||{}).catch(()=>({})),
+   callable("checkCustomerFeature")({feature:"questionHunter"}).then(r=>r.data||{}).catch(()=>({}))
+ ]);
+ const dailyEnabled=dailyGate.success===true&&dailyGate.allowed===true;
+ const hunterEnabled=hunterGate.success===true&&hunterGate.allowed===true;
+ $("questionHunterAdminLink").style.display=hunterEnabled?"inline-block":"none";
+ ["dailyChallengeEditor","dailyChallengeHistory","dailyChallengeWriting"].forEach(id=>{const el=$(id);if(el)el.style.display=dailyEnabled?"":"none";});
+ $("refreshBtn").style.display=dailyEnabled?"":"none";
+ $("copyStudentLinkBtn").style.display=dailyEnabled?"":"none";
+ $("classId").disabled=!dailyEnabled;
+ $("dateKey").disabled=!dailyEnabled;
+ if(!dailyEnabled&&!hunterEnabled)throw new Error("الألعاب التعليمية (التحدي اليومي وصائد الأسئلة) غير مفعّلة في باقة مدرستك.");
  assignedClasses=Array.from(new Set(classes.map(x=>String(x).trim()).filter(Boolean)));
   $("classId").innerHTML=classes.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join("");
  $("saveAllBtn").textContent="🔥 نشر لجميع صفوفي ("+assignedClasses.length+")";
- $("saveAllBtn").style.display=assignedClasses.length>1?"":"none";
+ $("saveAllBtn").style.display=assignedClasses.length>1&&dailyEnabled?"":"none";
  $("userLabel").textContent=user.email||"حساب POINTS";
  $("roleLabel").textContent=isGlobalAdmin?"المدير العام":"المعلم — "+String(profile.schoolName||"");
  $("dateKey").value=qatarDate();
  $("loginView").style.display="none";$("appView").style.display="block";
- await loadChallenges();
+ if(dailyEnabled)await loadChallenges();
 }
 async function loadChallenges(){
  const cls=$("classId").value;if(!cls)return;
