@@ -25,7 +25,7 @@
   let currentUser = null, currentProfile = null, activeSchoolId = "", activeClassId = "";
   let assignedClasses = [], hydrating = false, pendingContexts = null, pendingSettings = {};
   let saveTimer = null, calcTimer = null, calcInFlight = false, calcAgain = false, initialTimer = null;
-  let lastOverview = null, failingData = [], enrichmentCache = null, originalOnload = null;
+  let lastOverview = null, failingData = [], enrichmentCache = null, originalOnload = null, initialClassificationCache = null;
   let legacyContexts = null, legacySettings = {}, migratedSettings = new Set();
   const memory = Object.create(null);
 
@@ -383,6 +383,11 @@
     });
     const result = response.data?.result;
     if (!result) throw new Error("لم يرجع الخادم نتيجة التصنيف الأولي.");
+    initialClassificationCache = result;
+    window.gradeAnalysisInitialMeta = {
+      high: Number(result.averageByGroup?.veryHigh || 0),
+      medium: Number(result.averageByGroup?.medium || 0)
+    };
     const rows = Array.from(document.querySelectorAll("#initialClassificationTbody tr"));
     rows.forEach(row => {
       const name = row.querySelector(".initial-student-name")?.innerText.trim() || "";
@@ -399,10 +404,15 @@
         if (level && student.level?.key) level.style.background = ({ weak:"#ffcdd2", low:"#ffe0b2", medium:"#fff9c4", high:"#dcedc8", veryHigh:"#2e7d32" })[student.level.key] || "";
       }
     });
+    return result;
   }
   window.gradeAnalysisRefreshInitialClassification = gradeAnalysisRefreshInitialClassification;
 
   function gradeAnalysisInstallServerOverrides() {
+    window.getInitialProactiveStudents = function (kind) {
+      const key = kind === "high" ? "veryHigh" : "medium";
+      return initialClassificationCache?.groups?.[key] || [];
+    };
     window.updateRowTotalAndStatus = function () {};
     window.calculateStats = function () { gradeAnalysisScheduleOverview(); };
     window.updateAllTotalsAndStats = function () { gradeAnalysisScheduleOverview(); };
