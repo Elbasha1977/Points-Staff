@@ -39,8 +39,8 @@
       document.querySelector(".buttons-grid"),
       document.querySelector("#mainApp")
     ];
-    const host=candidates.find(el=>isVisible(el));
-    if(!host){if(attempt<12)setTimeout(()=>showDiagnostic(error,attempt+1),500);return;}
+    const host=candidates.find(el=>isVisible(el)) || document.querySelector("#mainApp") || document.body;
+    if(!host)return;
     installStyle();
     let row=document.getElementById(LINK_ID+"-row");
     let link=document.getElementById(LINK_ID);
@@ -69,7 +69,7 @@
     if(!firebase.auth().currentUser)return;
     const isVisible=el=>!!el&&getComputedStyle(el).display!=="none"&&getComputedStyle(el).visibility!=="hidden"&&el.getClientRects().length>0;
     if(isVisible(document.querySelector(".login-overlay"))||isVisible(document.getElementById("pointsIntroScreen")))return;
-    const host=[document.querySelector(".header-buttons"),document.querySelector("#mainApp .buttons-grid"),document.querySelector(".buttons-grid"),document.querySelector("#mainApp")].find(isVisible);
+    const host=[document.querySelector(".header-buttons"),document.querySelector("#mainApp .buttons-grid"),document.querySelector(".buttons-grid"),document.querySelector("#mainApp")].find(isVisible) || document.body;
     if(!host)return;
     installStyle();
     let panel=document.getElementById(DIAG_ID);
