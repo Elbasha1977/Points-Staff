@@ -108,8 +108,8 @@
       const href=String(el.getAttribute("href")||"").toLowerCase();
       const text=String(el.innerText||el.textContent||"").replace(/\s+/g," ").trim();
       const dataMatch=String(el.dataset?.feature||"")===featureKey;
-      const linkMatch=!!hints && hints.href.some(x=>href.includes(x));
-      const textMatch=!!hints && text.length>0 && text.length<=90 && hints.text.some(x=>text.includes(x));
+      const linkMatch=!!hints && Array.isArray(hints.href) && hints.href.some(x=>href.includes(x));
+      const textMatch=!!hints && Array.isArray(hints.text) && text.length>0 && text.length<=90 && hints.text.some(x=>text.includes(x));
       const matches=dataMatch||linkMatch||textMatch;
       if(!matches)return;
       if(!enabled){
