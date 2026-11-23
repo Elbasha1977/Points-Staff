@@ -14,7 +14,7 @@
   const db = firebase.firestore();
   const functions = firebase.app().functions("us-central1");
   const callable = name => functions.httpsCallable(name);
-  const GLOBAL_ADMIN_UID = "hwPgzTQbdfUJa45G2Wwc79ANNJE";
+  const GLOBAL_ADMIN_UID = "hwPgzTQbdfUJa45G2Wwc79ANNJE2";
   const KEY_DATA = "gradesSystemDataByContext_v1";
   const ALLOWED_SETTINGS = [
     "gradesSystemData_v1", "individualPlansSettings_v1", "gradesStudentStatus_v1",
