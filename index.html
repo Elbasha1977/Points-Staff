@@ -997,8 +997,7 @@ body{overscroll-behavior-y:auto}
                                 <th style="padding: 8px; border: 1px solid #3730a3;">المستوى الجديد</th>
                             </tr>
                         </thead>
-                        <tbody id="classificationPreviewBody"></tbody>
-                    </table>
+                        <tbody id="classificationPreviewBody"></tbody>                    </table>
                 </div>
                 <div id="classificationPreviewSummary" style="margin-top: 12px; padding: 10px; border-radius: 10px; text-align: center; font-weight: bold;"></div>
             </div>
@@ -1997,7 +1996,6 @@ function getStudentMessages(studentName) {
     const messages = messagesLog[currentClass] || [];
     return messages.filter(m => m.studentName === studentName).sort((a, b) => b.timestamp - a.timestamp);
 }
-
 function generateStudentMessagesReportHTML(student) {
     const messages = getStudentMessages(student.name);
     
@@ -2997,8 +2995,7 @@ function exportAcademicToExcel() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, exam.name);
     const now = new Date();
-    const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-    const fileName = exam.name.replace(/\s+/g, '_') + '_' + currentClass.replace(/\s+/g, '_') + '_' + dateStr + '.xlsx';
+    const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');    const fileName = exam.name.replace(/\s+/g, '_') + '_' + currentClass.replace(/\s+/g, '_') + '_' + dateStr + '.xlsx';
     try { XLSX.writeFile(workbook, fileName, { bookType: 'xlsx', type: 'binary' }); alert('✅ تم تصدير Excel!'); } catch (error) { alert('❌ خطأ'); }
 }
 
@@ -3997,8 +3994,7 @@ async function purchaseReward(rewardId, price, studentName) {
     const reward = allRewards.find(r => r.id === rewardId);
     if (!reward) { alert('❌ الجائزة غير معروفة'); return; }
     const ownedRewards = (studentRewards[currentClass] && studentRewards[currentClass][student.name]) || [];
-    if (ownedRewards.includes(rewardId)) { alert('❌ حصل عليها بالفعل!'); return; }
-    if (!confirm('شراء هذه الجائزة مقابل ' + reward.price + ' نقطة؟')) return;
+    if (ownedRewards.includes(rewardId)) { alert('❌ حصل عليها بالفعل!'); return; }    if (!confirm('شراء هذه الجائزة مقابل ' + reward.price + ' نقطة؟')) return;
     try {
         const schoolId = getPointsSchoolId();
         if (!schoolId && !isGlobalFirebaseAdmin()) throw new Error('تعذر تحديد المدرسة الحالية.');
@@ -4511,7 +4507,7 @@ function showParentContactModal() {
     const contacts = getCurrentParentContacts();
     students.forEach((student, idx) => {
         const c = contacts[student.name] || { phone: '', email: '' };
-        tbody.innerHTML += '<tr><td style="font-weight:bold">' + student.name + '</td><td><div class="split-cell"><div class="phone-field"><span>📞 الهاتف:</span><span id="phoneVal_' + idx + '">' + (c.phone || 'لم يتم إدخال') + '</span><button class="edit-contact-btn" onclick="editPhoneForStudent(' + idx + ', \'' + student.name.replace(/'/g, "\\'") + '\')">✏️</button><button class="action-icon-btn whatsapp-btn" onclick="openMessageForStudent(\'' + student.name.replace(/'/g, "\\'") + '\', \'whatsapp\')">💬</button></div><div class="email-field"><span>📧 البريد:</span><span id="emailVal_' + idx + '">' + (c.email || 'لم يتم إدخال') + '</span><button class="edit-contact-btn" onclick="editEmailForStudent(' + idx + ', \'' + student.name.replace(/'/g, "\\'") + '\')">✏️</button><button class="action-icon-btn email-action-btn" onclick="openMessageForStudent(\'' + student.name.replace(/'/g, "\\'") + '\', \'email\')">📧</button></div></div></td></tr>';
+        tbody.innerHTML += '<tr><td style="font-weight:bold">' + student.name + '<div style="margin-top:7px;"><button class="action-icon-btn" style="background:#0f766e;color:#fff;padding:5px 10px;border-radius:16px;" title="رسالة عبر منصة قطر للتعليم" onclick="openMessageForStudent(\'' + student.name.replace(/'/g, "\\'") + '\', \'qeducation\')">🎓 تعليم قطر</button></div></td><td><div class="split-cell"><div class="phone-field"><span>📞 الهاتف:</span><span id="phoneVal_' + idx + '">' + (c.phone || 'لم يتم إدخال') + '</span><button class="edit-contact-btn" onclick="editPhoneForStudent(' + idx + ', \'' + student.name.replace(/'/g, "\\'") + '\')">✏️</button><button class="action-icon-btn whatsapp-btn" onclick="openMessageForStudent(\'' + student.name.replace(/'/g, "\\'") + '\', \'whatsapp\')">💬</button></div><div class="email-field"><span>📧 البريد:</span><span id="emailVal_' + idx + '">' + (c.email || 'لم يتم إدخال') + '</span><button class="edit-contact-btn" onclick="editEmailForStudent(' + idx + ', \'' + student.name.replace(/'/g, "\\'") + '\')">✏️</button><button class="action-icon-btn email-action-btn" onclick="openMessageForStudent(\'' + student.name.replace(/'/g, "\\'") + '\', \'email\')">📧</button></div></div></td></tr>';
     });
     document.getElementById('parentContactModal').style.display = 'flex';
 }
@@ -4579,8 +4575,16 @@ function selectEmotion(emotion) {
     const contacts = getCurrentParentContacts();
     const contact = contacts[currentMessageStudent.name] || {};
     const infoDiv = document.getElementById('contactInfoDisplay');
-    if(currentMessageType === 'whatsapp') { document.getElementById('sendMessageTitle').innerHTML = '📱 واتساب'; infoDiv.innerHTML = '📞 ' + (contact.phone || 'غير مسجل'); }
-    else { document.getElementById('sendMessageTitle').innerHTML = '📧 بريد'; infoDiv.innerHTML = '📧 ' + (contact.email || 'غير مسجل'); }
+    if(currentMessageType === 'whatsapp') {
+        document.getElementById('sendMessageTitle').innerHTML = '📱 واتساب';
+        infoDiv.innerHTML = '📞 ' + (contact.phone || 'غير مسجل');
+    } else if(currentMessageType === 'email') {
+        document.getElementById('sendMessageTitle').innerHTML = '📧 بريد';
+        infoDiv.innerHTML = '📧 ' + (contact.email || 'غير مسجل');
+    } else {
+        document.getElementById('sendMessageTitle').innerHTML = '🎓 منصة قطر للتعليم';
+        infoDiv.innerHTML = '🎓 سيتم نسخ الرسالة وفتح صندوق الرسائل في منصة قطر للتعليم';
+    }
     document.getElementById('messageStudentName').innerHTML = currentMessageStudent.name;
     document.getElementById('sendMessageModal').style.display = 'flex';
 }
@@ -4594,59 +4598,65 @@ function updateMessageText() {
     document.getElementById('messageText').value = msg;
 }
 
-async function openQEducationDraft() {
+function openQEducationDraft() {
     if (!currentMessageStudent || !currentMessageStudent.name) {
         alert('❌ لم يتم تحديد الطالب');
         return;
     }
-
     const message = (document.getElementById('messageText')?.value || '').trim();
     if (!message) {
         alert('❌ اكتب نص الرسالة أولاً');
         return;
     }
 
-    // افتح علامة التبويب فور النقر حتى لا يمنعها مانع النوافذ المنبثقة.
-    const opened = window.open('about:blank', '_blank');
-    if (!opened) {
-        alert('⚠️ منع المتصفح فتح نافذة جديدة. اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة.');
+    // افتح المنصة مباشرة من نقرة المستخدم حتى لا يمنع المتصفح النافذة المنبثقة.
+    const portalWindow = window.open('https://qeducation.edu.gov.qa/inbox', '_blank');
+    if (!portalWindow) {
+        alert('⚠️ منع المتصفح فتح المنصة. اسمح بالنوافذ المنبثقة لموقع POINTS ثم أعد المحاولة.');
         return;
     }
 
-    let copied = false;
-    try {
-        if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(message);
-            copied = true;
+    const contacts = getCurrentParentContacts();
+    const contact = contacts[currentMessageStudent.name] || {};
+    const reason = document.getElementById('messageReasonSelect').value || 'غير محدد';
+
+    const copyMessage = async () => {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(message);
+            } else {
+                const temp = document.createElement('textarea');
+                temp.value = message;
+                temp.style.position = 'fixed';
+                temp.style.opacity = '0';
+                document.body.appendChild(temp);
+                temp.select();
+                const copied = document.execCommand('copy');
+                temp.remove();
+                if (!copied) throw new Error('copy_failed');
+            }
+
+            try {
+                logParentMessage(
+                    currentMessageStudent.name,
+                    contact.phone || '',
+                    contact.email || '',
+                    message,
+                    reason,
+                    currentMessageEmotion,
+                    'qeducation'
+                );
+            } catch (logError) {
+                console.warn('تعذر تسجيل رسالة منصة قطر للتعليم:', logError);
+            }
+
+            closeSendMessageModal();
+            alert('✅ تم نسخ الرسالة وفتح منصة قطر للتعليم.\nاختر ولي الأمر، ثم الصق الرسالة وراجعها قبل الإرسال.');
+        } catch (error) {
+            alert('⚠️ فُتحت منصة قطر للتعليم، لكن تعذر نسخ الرسالة تلقائيًا.\nارجع إلى POINTS وانسخ نص الرسالة من مربع النص يدويًا.');
         }
-    } catch (error) {
-        copied = false;
-    }
-
-    // بديل للمتصفحات التي لا تتيح Clipboard API.
-    if (!copied) {
-        const helper = document.createElement('textarea');
-        helper.value = message;
-        helper.setAttribute('readonly', '');
-        helper.style.position = 'fixed';
-        helper.style.opacity = '0';
-        helper.style.pointerEvents = 'none';
-        document.body.appendChild(helper);
-        helper.select();
-        try { copied = document.execCommand('copy'); } catch (error) { copied = false; }
-        helper.remove();
-    }
-
-    // لا نمرر أي بيانات في رابط المنصة؛ الرسالة تُنقل عبر الحافظة فقط.
-    opened.location.href = 'https://qeducation.edu.gov.qa/inbox';
-
-    if (copied) {
-        alert('✅ تم نسخ رسالة الطالب: ' + currentMessageStudent.name + '\n' +
-              'المادة: اللغة الإنجليزية\n\n' +
-              'فُتحت منصة قطر للتعليم. اختر ولي الأمر، ثم الصق الرسالة في مربع المحتوى، وأدخل المادة إذا طُلبت، وراجعها قبل الإرسال اليدوي.');
-    } else {
-        alert('⚠️ فُتحت منصة قطر للتعليم، لكن تعذّر النسخ التلقائي. ارجع إلى POINTS وانسخ نص الرسالة يدويًا من مربع الرسالة، ثم الصقه في المنصة.');
-    }
+    };
+    copyMessage();
 }
 
 function sendWhatsApp() {
@@ -4983,8 +4993,7 @@ async function saveClassFeatureDatasetToServer(dataset, data) {
 }
 
 // ==================== PHASE 23D: server-controlled student roster client ==================
-async function mutateStudentRosterOnServer(action, studentName) {
-    if (!firebaseSyncReady || !firebaseCurrentUser) throw new Error('يجب تسجيل الدخول والمزامنة أولاً.');
+async function mutateStudentRosterOnServer(action, studentName) {    if (!firebaseSyncReady || !firebaseCurrentUser) throw new Error('يجب تسجيل الدخول والمزامنة أولاً.');
     const schoolId = getPointsSchoolId();
     if (!schoolId && !isGlobalFirebaseAdmin()) throw new Error('تعذر تحديد المدرسة الحالية.');
     const call = getPointsCallable('mutateStudentRoster');
@@ -5983,8 +5992,7 @@ async function showDisconnectedStudentsModal() {
     }
     document.getElementById('disconnectedStudentsModal').style.display = 'flex';
 }
-function closeDisconnectedStudentsModal() { document.getElementById('disconnectedStudentsModal').style.display = 'none'; }
-async function saveDisconnectedStudents() {
+function closeDisconnectedStudentsModal() { document.getElementById('disconnectedStudentsModal').style.display = 'none'; }async function saveDisconnectedStudents() {
     const students = getCurrentStudents();
     const selected = new Set(Array.from(document.querySelectorAll('.disconnected-student-checkbox:checked')).map(cb => parseInt(cb.getAttribute('data-index'))));
     const selectedNames = students.filter((student, i) => selected.has(i)).map(student => student.name);
@@ -6983,8 +6991,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const r=doc.data(), card=document.createElement('div');card.style.cssText='border-top:1px solid #e2e8f0;padding:10px 2px;margin-top:8px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;';
                     const info=document.createElement('div');info.style.cssText='min-width:180px;flex:1;overflow-wrap:anywhere;';
                     info.innerHTML='<b>📧 '+(r.email||'—')+'</b><div style="color:#475569;font-size:13px;">📚 '+(r.subject||'—')+' · الشعب: '+(Array.isArray(r.requestedClassIds)?r.requestedClassIds.join('، '):'—')+'</div>';
-                    const actions=document.createElement('div');actions.style.cssText='display:flex;gap:6px;align-items:center;';
-                    actions.innerHTML='<button style="background:#16a34a;color:white;border:0;border-radius:8px;padding:7px 10px;">اعتماد</button><button style="background:#dc2626;color:white;border:0;border-radius:8px;padding:7px 10px;">رفض</button>';
+                    const actions=document.createElement('div');actions.style.cssText='display:flex;gap:6px;align-items:center;';                    actions.innerHTML='<button style="background:#16a34a;color:white;border:0;border-radius:8px;padding:7px 10px;">اعتماد</button><button style="background:#dc2626;color:white;border:0;border-radius:8px;padding:7px 10px;">رفض</button>';
                     actions.children[0].onclick=async()=>{const requested=Array.isArray(r.requestedClassIds)?r.requestedClassIds:[];if(!requested.length){alert('هذا الطلب لا يحتوي على صفوف مطلوبة.');return;}const chosen=prompt('حدد الصفوف التي ستُعتمد لهذا الموظف فقط، مفصولة بفاصلة.\nالصفوف المطلوبة: '+requested.join('، ')+'\nاتركها كما هي لاعتماد جميع الصفوف المطلوبة.',requested.join(', '));if(chosen===null)return;const selected=chosen.split(',').map(x=>x.trim()).filter(Boolean);if(selected.some(id=>!requested.includes(id))){alert('تم إدخال صف غير موجود ضمن طلب الموظف.');return;}if(!confirm('اعتماد '+r.email+' للصفوف: '+selected.join('، ')+'؟'))return;try{await approveOne(doc,card,selected);}catch(e){alert('تعذر الاعتماد: '+(e.code||e.message));}};
                     actions.children[1].onclick=async()=>{if(!confirm('رفض '+r.email+'؟'))return;try{await rejectOne(doc,card);}catch(e){alert('تعذر الرفض: '+(e.code||e.message));}};
                     card.append(info,actions);schoolBox.appendChild(card);
