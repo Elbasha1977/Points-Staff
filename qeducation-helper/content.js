@@ -132,17 +132,39 @@
     return true;
   }
 
+  async function waitForComposeAfterLogin() {
+    const deadline = Date.now() + 120000;
+    let clickedNewMessage = false;
+    while (Date.now() < deadline) {
+      const popup = document.querySelector('.messageSendPopup, .facebox-content.messageSendPopup, [id*="messageSendPopup"]');
+      if (popup) return true;
+
+      if (!clickedNewMessage) {
+        const candidates = Array.from(document.querySelectorAll('a,button,[role="button"]'));
+        const button = candidates.find(el => visible(el) && /رسالة\\s*جديدة/.test((el.innerText || el.textContent || '').trim()));
+        if (button) {
+          clickedNewMessage = true;
+          button.click();
+          await new Promise(resolve => setTimeout(resolve, 700));
+          continue;
+        }
+      }
+
+      toast('سجّل الدخول إلى منصة قطر للتعليم إذا طُلب منك ذلك؛ سأتابع تجهيز الرسالة تلقائيًا بعد ظهور صندوق الرسائل.');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    return false;
+  }
+
   async function runDraft(draft) {
     if (started) return;
     started = true;
     toast('POINTS: جارٍ فتح نافذة رسالة جديدة…');
-    if (!clickNewMessageIfNeeded()) {
-      const onInbox = location.pathname === INBOX_URL || location.pathname.endsWith('/inbox');
-      if (onInbox) {
-        toast('افتح «رسالة جديدة» من صندوق الرسائل، وسأكمل تجهيز المسودة.', 'error');
-        started = false;
-        return;
-      }
+    const composeReady = await waitForComposeAfterLogin();
+    if (!composeReady) {
+      toast('لم تظهر نافذة «رسالة جديدة» خلال دقيقتين. افتحها يدويًا ثم أعد المحاولة من POINTS.', 'error');
+      await chrome.storage.local.remove(STORAGE_KEY);
+      return;
     }
     await new Promise(resolve => setTimeout(resolve, 500));
     const recipient = await chooseRecipient(draft.studentName);
