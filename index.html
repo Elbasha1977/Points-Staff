@@ -1188,7 +1188,7 @@ body{overscroll-behavior-y:auto}
 
 <div id="emotionChoiceModal" class="modal"><div class="modal-content" style="position: relative;"><button class="modal-close-x" onclick="closeEmotionModal(); event.stopPropagation();">✕</button><h2>📨 نوع الرسالة لـ <span id="emotionStudentName"></span></h2><div class="emotion-choice"><div class="emotion-option" id="positiveEmotion"><div class="emotion-emoji">😊</div><div class="emotion-label">إيجابية</div></div><div class="emotion-option" id="negativeEmotion"><div class="emotion-emoji">😠</div><div class="emotion-label">سلبية</div></div></div><button class="close-modal cancel-btn" id="cancelEmotionBtn">إلغاء</button></div></div>
 
-<div id="sendMessageModal" class="modal"><div class="modal-content message-modal-content" style="position: relative;"><button class="modal-close-x" onclick="closeSendMessageModal(); event.stopPropagation();">✕</button><h2 id="sendMessageTitle">📱 رسالة واتساب</h2><div class="message-student-name" id="messageStudentName"></div><div class="select-group"><label>📌 السبب:</label><select id="messageReasonSelect"><option value="">-- اختر --</option></select></div><div class="textarea-group"><label>✏️ النص:</label><textarea id="messageText" rows="8" class="message-textarea"></textarea></div><div class="contact-info" id="contactInfoDisplay"></div><div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;"><button class="send-btn" id="sendWhatsAppBtn">💬 واتساب</button><button class="send-btn email-send-btn" id="sendEmailBtn">📧 بريد</button><button class="close-modal cancel-btn" id="cancelSendMessageBtn">إلغاء</button></div></div></div>
+<div id="sendMessageModal" class="modal"><div class="modal-content message-modal-content" style="position: relative;"><button class="modal-close-x" onclick="closeSendMessageModal(); event.stopPropagation();">✕</button><h2 id="sendMessageTitle">📱 رسالة واتساب</h2><div class="message-student-name" id="messageStudentName"></div><div class="select-group"><label>📌 السبب:</label><select id="messageReasonSelect"><option value="">-- اختر --</option></select></div><div class="textarea-group"><label>✏️ النص:</label><textarea id="messageText" rows="8" class="message-textarea"></textarea></div><div class="contact-info" id="contactInfoDisplay"></div><div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;"><button class="send-btn" id="sendWhatsAppBtn">💬 واتساب</button><button class="send-btn email-send-btn" id="sendEmailBtn">📧 بريد</button><button class="send-btn" id="sendQEducationBtn" style="background:#0f766e;">🎓 منصة قطر للتعليم</button><button class="close-modal cancel-btn" id="cancelSendMessageBtn">إلغاء</button></div></div></div>
 
 <div id="randomPickerModal" class="modal"><div class="modal-content random-picker" style="position: relative;"><button class="modal-close-x" onclick="closeRandomPickerModal(); event.stopPropagation();">✕</button><h2>🎲 اختيار طالب عشوائي</h2><div class="names-rolling" id="rollingNames">🎲 اضغط زر البدء</div><div class="random-result" id="randomResult" style="display: none;"></div><div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;"><button class="random-button" id="startRandomBtn">🎯 ابدأ</button><button class="close-modal cancel-btn" id="closeRandomModalBtn">إلغاء</button></div></div></div>
 
@@ -4594,6 +4594,32 @@ function updateMessageText() {
     document.getElementById('messageText').value = msg;
 }
 
+function openQEducationDraft() {
+    if (!currentMessageStudent || !currentMessageStudent.name) {
+        alert('❌ لم يتم تحديد الطالب');
+        return;
+    }
+    const message = (document.getElementById('messageText')?.value || '').trim();
+    if (!message) {
+        alert('❌ اكتب نص الرسالة أولاً');
+        return;
+    }
+    const draft = {
+        version: 1,
+        studentName: currentMessageStudent.name,
+        message: message,
+        subject: 'اللغة الإنجليزية',
+        createdAt: Date.now()
+    };
+    const url = 'https://qeducation.edu.gov.qa/inbox#points-draft=' + encodeURIComponent(JSON.stringify(draft));
+    const opened = window.open(url, '_blank');
+    if (!opened) {
+        alert('⚠️ منع المتصفح فتح النافذة. اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة.');
+        return;
+    }
+    alert('✅ فُتحت منصة قطر للتعليم. إذا كان مساعد المنصة مثبتًا فسيجهّز المسودة، وستراجعها وترسلها بنفسك.');
+}
+
 function sendWhatsApp() {
     const contacts = getCurrentParentContacts();
     const phone = contacts[currentMessageStudent.name] && contacts[currentMessageStudent.name].phone;
@@ -6340,6 +6366,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('cancelSendMessageBtn').onclick = closeSendMessageModal;
     document.getElementById('sendWhatsAppBtn').onclick = sendWhatsApp;
     document.getElementById('sendEmailBtn').onclick = sendEmail;
+    document.getElementById('sendQEducationBtn').onclick = openQEducationDraft;
     document.getElementById('messageReasonSelect').onchange = updateMessageText;
     document.getElementById('closeEmbedModalBtn').onclick = closeEmbedModal;
     document.getElementById('copyUrlBtn').onclick = function() { copyToClipboard(window.location.href, '✅ تم النسخ'); };

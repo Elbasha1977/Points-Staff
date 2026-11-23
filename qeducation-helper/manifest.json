@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "POINTS - مساعد منصة قطر للتعليم",
+  "version": "1.0.0",
+  "description": "يجهز مسودة رسالة ولي الأمر في منصة قطر للتعليم دون إرسالها.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://qeducation.edu.gov.qa/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://qeducation.edu.gov.qa/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
