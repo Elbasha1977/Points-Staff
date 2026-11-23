@@ -141,7 +141,7 @@
 
       if (!clickedNewMessage) {
         const candidates = Array.from(document.querySelectorAll('a,button,[role="button"]'));
-        const button = candidates.find(el => visible(el) && /رسالة\\s*جديدة/.test((el.innerText || el.textContent || '').trim()));
+        const button = candidates.find(el => visible(el) && /رسالة\s*جديدة/g.test((el.innerText || el.textContent || '').trim()));
         if (button) {
           clickedNewMessage = true;
           button.click();
