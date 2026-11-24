@@ -1,0 +1,213 @@
+(() => {
+  "use strict";
+  const PERIODS = [
+    ["mid_term1","منتصف الفصل الدراسي الأول","30"],
+    ["final_term1","نهاية الفصل الدراسي الأول","50"],
+    ["mid_term2","منتصف الفصل الدراسي الثاني","30"],
+    ["final_term2","نهاية الفصل الدراسي الثاني","50"]
+  ];
+  const LEVELS = [
+    {id:"weak",label:"ضعيف الأداء",min:0,max:50},
+    {id:"low",label:"متدني الأداء",min:50,max:70},
+    {id:"average",label:"متوسط الأداء",min:70,max:90},
+    {id:"elevated",label:"مرتفع الأداء",min:90,max:95},
+    {id:"high",label:"عالي الأداء",min:95,max:101}
+  ];
+  const GROUPS = [
+    {id:"lowGroup",label:"ضعيفو ومتدنو الأداء",levels:["weak","low"],subject:"متابعة المستوى الدراسي - مطلوب دعم ومتابعة",message:"السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نود إحاطتكم بأن مستوى ابنكم في مادة اللغة الإنجليزية يحتاج إلى متابعة ودعم إضافيين، ونأمل الاهتمام بالمراجعة اليومية ومتابعة الواجبات والاستعداد للتقييمات القادمة.\nشاكرين لكم تعاونكم واهتمامكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية"},
+    {id:"averageGroup",label:"متوسطو الأداء",levels:["average"],subject:"متابعة المستوى الدراسي - نحو مستوى أفضل",message:"السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، حقق ابنكم مستوى متوسطًا في مادة اللغة الإنجليزية، ونطمح إلى الارتقاء به إلى مستوى أعلى من خلال المراجعة المنتظمة والتدريب المستمر ومتابعة الواجبات.\nشاكرين لكم تعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية"},
+    {id:"highGroup",label:"مرتفعو وعاليو الأداء",levels:["elevated","high"],subject:"تهنئة ومتابعة التميز الدراسي",message:"السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نهنئكم على المستوى المتميز الذي حققه ابنكم في مادة اللغة الإنجليزية، ونشكر لكم دعمكم ومتابعتكم. نرجو الاستمرار في تشجيعه للمحافظة على هذا التفوق.\nمع خالص التقدير.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية"}
+  ];
+  let analyzed = null;
+  let selectedGroup = null;
+  let selectedLevel = "weak";
+  let activePeriod = "";
+  const $ = id => document.getElementById(id);
+  const esc = value => String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function ensureModal(){
+    if($("smartAcademicContactModal")) return;
+    const parent=$("parentContactModal");
+    const existing=$("openBulkEmailBtn");
+    if(!parent||!existing)return;
+    const row=existing.parentElement;
+    const button=document.createElement("button");
+    button.type="button";button.id="openSmartAcademicContactBtn";
+    button.className="send-btn email-send-btn";
+    button.style.cssText="background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:12px 22px;";
+    button.textContent="🎯 التواصل الذكي حسب الأداء";
+    button.addEventListener("click",openModal);
+    row.appendChild(button);
+    const modal=document.createElement("div");
+    modal.id="smartAcademicContactModal";modal.className="modal";modal.style.zIndex="1300";
+    modal.innerHTML=`
+      <div class="modal-content large" style="max-width:920px;position:relative;">
+       <button class="modal-close-x" type="button" id="smartContactCloseX">✕</button>
+       <h2 style="text-align:center;color:#4338ca;">🎯 التواصل الذكي حسب الأداء الأكاديمي</h2>
+       <p style="text-align:center;color:#475569;margin:8px 0 16px;">اختر فترة الاختبار أولًا؛ سيقرأ النظام درجات الطلاب المسجلة في «المتابعة الأكاديمية» ويصنفهم تلقائيًا.</p>
+       <div class="select-group"><label for="smartExamPeriod">📚 ما فترة الاختبار المطلوبة؟</label>
+        <select id="smartExamPeriod" style="width:100%;padding:13px;border:2px solid #818cf8;border-radius:12px;font-size:16px;">
+         <option value="">-- اختر فترة الاختبار --</option>
+         ${PERIODS.map(p=>`<option value="${p[0]}">${p[1]} (من ${p[2]})</option>`).join("")}
+        </select>
+       </div>
+       <div style="text-align:center;margin:12px 0;"><button id="smartAnalyzeBtn" class="close-modal confirm-btn" style="background:#4338ca;padding:12px 24px;">🔍 تحليل درجات الفترة المختارة</button></div>
+       <div id="smartAnalysisSummary" style="display:none;background:#f8fafc;border:1px solid #cbd5e1;border-radius:14px;padding:14px;margin:14px 0;"></div>
+       <div id="smartEmailGroups" style="display:none;">
+        <h3 style="text-align:center;margin:16px 0 10px;">📧 اختر فئة البريد الإلكتروني</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px;">
+         <button type="button" data-smart-group="lowGroup" style="padding:13px;border:0;border-radius:12px;background:#fee2e2;color:#991b1b;font-weight:900;">🔴 إرسال بريد لضعيفي ومتدني الأداء</button>
+         <button type="button" data-smart-group="averageGroup" style="padding:13px;border:0;border-radius:12px;background:#fef3c7;color:#92400e;font-weight:900;">🟠 إرسال بريد لمتوسطي الأداء</button>
+         <button type="button" data-smart-group="highGroup" style="padding:13px;border:0;border-radius:12px;background:#dcfce7;color:#166534;font-weight:900;">🟢 إرسال بريد لمرتفعي وعالي الأداء</button>
+        </div>
+        <div id="smartGroupPreview" style="display:none;margin-top:12px;padding:13px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;"></div>
+        <div id="smartEmailActions" style="display:none;margin-top:12px;">
+         <label for="smartEmailSubject" style="font-weight:bold;">عنوان البريد:</label>
+         <input id="smartEmailSubject" style="width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0 10px;">
+         <label for="smartEmailBody" style="font-weight:bold;">نص الرسالة (يمكن تعديله):</label>
+         <textarea id="smartEmailBody" rows="6" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0;"></textarea>
+         <button id="smartSendBccBtn" class="send-btn email-send-btn" style="background:#2563eb;width:100%;">📧 فتح البريد ووضع الطلاب في BCC</button>
+        </div>
+       </div>
+       <div id="smartQatarSection" style="display:none;margin-top:22px;border-top:2px dashed #cbd5e1;padding-top:16px;">
+        <h3 style="text-align:center;color:#0f766e;">🎓 تجهيز رسالة جماعية لمنصة قطر للتعليم</h3>
+        <p style="text-align:center;color:#475569;">اختر مستوى أداء محددًا، ثم انسخ أسماء الطلاب دفعة واحدة وضعها في خانة To داخل المنصة.</p>
+        <div class="select-group"><label for="smartQatarLevel">📊 مستوى الأداء:</label>
+         <select id="smartQatarLevel" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;">
+          ${LEVELS.map(l=>`<option value="${l.id}">${l.label} (${l.id==="weak"?"أقل من 50%":l.id==="low"?"من 50% إلى أقل من 70%":l.id==="average"?"من 70% إلى أقل من 90%":l.id==="elevated"?"من 90% إلى أقل من 95%":"95% فأعلى"})</option>`).join("")}
+         </select>
+        </div>
+        <div id="smartQatarNamesPreview" style="background:#f0fdfa;padding:10px;border-radius:10px;white-space:pre-wrap;direction:rtl;margin:8px 0;max-height:150px;overflow:auto;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+         <button id="smartCopyNamesBtn" class="send-btn" style="background:#0f766e;">📋 نسخ أسماء المستلمين إلى To</button>
+         <button id="smartOpenQatarBtn" class="send-btn" style="background:#0891b2;">🎓 فتح تعليم قطر ونسخ الرسالة</button>
+        </div>
+        <label for="smartQatarMessage" style="font-weight:bold;display:block;margin-top:12px;">نص الرسالة:</label>
+        <textarea id="smartQatarMessage" rows="5" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px;"></textarea>
+        <p style="font-size:12px;color:#64748b;margin-top:8px;">يتم نسخ الأسماء والرسالة كلٌّ على حدة حتى لا تستبدل إحداهما الأخرى في الحافظة. الإرسال النهائي يتم يدويًا داخل المنصة.</p>
+       </div>
+       <div style="display:flex;justify-content:center;margin-top:18px;"><button id="smartContactClose" class="close-modal cancel-btn">إغلاق</button></div>
+      </div>`;
+    document.body.appendChild(modal);
+    $("smartContactCloseX").onclick=closeModal;$("smartContactClose").onclick=closeModal;
+    $("smartAnalyzeBtn").onclick=analyzePeriod;
+    $("smartExamPeriod").onchange=()=>{$("smartAnalysisSummary").style.display="none";$("smartEmailGroups").style.display="none";$("smartQatarSection").style.display="none";analyzed=null;};
+    modal.querySelectorAll("[data-smart-group]").forEach(btn=>btn.addEventListener("click",()=>selectEmailGroup(btn.dataset.smartGroup)));
+    $("smartSendBccBtn").onclick=launchBccDraft;
+    $("smartQatarLevel").onchange=renderQatarNames;
+    $("smartCopyNamesBtn").onclick=copyQatarNames;
+    $("smartOpenQatarBtn").onclick=openQatarAndCopyMessage;
+  }
+  function openModal(){
+    ensureModal();
+    if(!$("smartAcademicContactModal"))return;
+    analyzed=null;selectedGroup=null;
+    $("smartExamPeriod").value="";
+    $("smartAnalysisSummary").style.display="none";
+    $("smartEmailGroups").style.display="none";
+    $("smartQatarSection").style.display="none";
+    $("smartGroupPreview").style.display="none";
+    $("smartEmailActions").style.display="none";
+    $("smartAcademicContactModal").style.display="flex";
+  }
+  function closeModal(){if($("smartAcademicContactModal"))$("smartAcademicContactModal").style.display="none";}
+  function analyzePeriod(){
+    const period=$("smartExamPeriod").value;
+    if(!period){alert("اختر فترة الاختبار أولًا.");return;}
+    if(typeof getCurrentStudents!=="function"||typeof academicScores==="undefined"||typeof examDefinitions==="undefined"){alert("تعذر الوصول إلى درجات المتابعة الأكاديمية. أعد تحميل البرنامج وحاول مرة أخرى.");return;}
+    const exam=examDefinitions[period],className=currentClass;
+    if(!exam||!className){alert("تعذر تحديد بيانات الصف أو الاختبار.");return;}
+    const students=getCurrentStudents()||[];
+    const scoreMap=(academicScores[className]||{})[period]||{};
+    const classified=[],incomplete=[];
+    students.forEach(student=>{
+      if(!student||!student.name)return;
+      const row=scoreMap[student.name];
+      if(!row||typeof row!=="object"){incomplete.push(student.name);return;}
+      let total=0,complete=true;
+      exam.items.forEach(item=>{
+        if(!Object.prototype.hasOwnProperty.call(row,item.id)||row[item.id]===""||row[item.id]===null||!Number.isFinite(Number(row[item.id]))){complete=false;return;}
+        total+=Number(row[item.id]);
+      });
+      if(!complete){incomplete.push(student.name);return;}
+      const pct=(total/exam.total)*100;
+      const level=LEVELS.find(l=>pct>=l.min&&pct<l.max)||LEVELS[LEVELS.length-1];
+      classified.push({name:student.name,total,percentage:pct,level:level.id,levelLabel:level.label});
+    });
+    analyzed={period,exam,className,students:classified,incomplete};
+    const counts=LEVELS.map(l=>({label:l.label,count:classified.filter(s=>s.level===l.id).length,color:l.id}));
+    const summary=$("smartAnalysisSummary");
+    summary.innerHTML=`<strong>الصف: ${esc(className)} — ${esc(exam.name)} (من ${exam.total})</strong><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:7px;margin-top:10px;">${counts.map(c=>`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;text-align:center;"><b>${esc(c.label)}</b><div style="font-size:22px;font-weight:900;color:#4338ca;">${c.count}</div></div>`).join("")}</div><div style="margin-top:9px;color:#475569;">طلاب اكتملت درجاتهم: ${classified.length} — درجات غير مكتملة: ${incomplete.length}</div>${incomplete.length?`<details style="margin-top:7px;"><summary>عرض الطلاب غير مكتملة درجاتهم</summary><div>${incomplete.map(esc).join("، ")}</div></details>`:""}`;
+    summary.style.display="block";$("smartEmailGroups").style.display="block";$("smartQatarSection").style.display="block";
+    $("smartQatarLevel").value="weak";renderQatarNames();
+    $("smartGroupPreview").style.display="none";$("smartEmailActions").style.display="none";
+  }
+  function getLevelStudents(levelId){return analyzed?analyzed.students.filter(s=>s.level===levelId):[];}
+  function selectEmailGroup(groupId){
+    if(!analyzed){alert("حلل فترة الاختبار أولًا.");return;}
+    const group=GROUPS.find(g=>g.id===groupId);if(!group)return;
+    selectedGroup=group;
+    const people=analyzed.students.filter(s=>group.levels.includes(s.level));
+    const preview=$("smartGroupPreview");
+    preview.innerHTML=`<strong>${esc(group.label)} — ${people.length} طالبًا</strong><div style="margin-top:7px;line-height:1.9;">${people.length?people.map(s=>`${esc(s.name)} <small style="color:#64748b">(${s.percentage.toFixed(1)}% — ${esc(s.levelLabel)})</small>`).join("<br>"):"لا يوجد طلاب مكتملة درجاتهم في هذه الفئة."}</div>`;
+    preview.style.display="block";
+    $("smartEmailActions").style.display=people.length?"block":"none";
+    $("smartEmailSubject").value=group.subject+" - "+analyzed.exam.name;
+    $("smartEmailBody").value=group.message;
+  }
+  function selectedEmailStudents(){return selectedGroup&&analyzed?analyzed.students.filter(s=>selectedGroup.levels.includes(s.level)):[];}
+  function launchBccDraft(){
+    const people=selectedEmailStudents();if(!people.length){alert("لا يوجد طلاب في الفئة المحددة.");return;}
+    const subject=$("smartEmailSubject").value.trim(),body=$("smartEmailBody").value.trim();
+    if(!body){alert("اكتب نص الرسالة أولًا.");return;}
+    const bcc=people.map(s=>s.name).join("; ");
+    const url="mailto:?bcc="+encodeURIComponent(bcc)+"&subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
+    const win=window.open(url,"_self");
+    if(!win){alert("تعذر فتح تطبيق البريد. تحقق من إعداد تطبيق البريد الافتراضي.");return;}
+    const reason=selectedGroup.label+" — "+analyzed.exam.name;
+    people.forEach(p=>{
+      const contact=(typeof getCurrentParentContacts==="function"?getCurrentParentContacts():{})[p.name]||{};
+      try{logParentMessage(p.name,contact.phone||"",contact.email||"",body,reason,"negative","email_bulk","تم فتح مسودة Outlook — بانتظار الإرسال",subject);}
+      catch(e){console.warn("smart email log failed",e);}
+    });
+    alert("تم تجهيز مسودة البريد ووضع أسماء الطلاب في BCC. راجع تعرف تطبيق البريد على جميع الأسماء ثم اضغط إرسال. لم يتم إرسال الرسالة تلقائيًا.");
+  }
+  function renderQatarNames(){
+    if(!analyzed)return;
+    const level=$("smartQatarLevel").value;
+    const people=getLevelStudents(level);
+    $("smartQatarNamesPreview").textContent=people.length?people.map(s=>s.name).join("\n"):"لا يوجد طلاب مكتملة درجاتهم في هذا المستوى.";
+    const label=LEVELS.find(l=>l.id===level);
+    $("smartQatarMessage").value=level==="weak"||level==="low"
+      ?`السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نود إحاطتكم بأن مستوى ابنكم في مادة اللغة الإنجليزية يحتاج إلى متابعة ودعم إضافيين خلال ${analyzed.exam.name}. نرجو الاهتمام بالمراجعة اليومية ومتابعة الواجبات.\nشاكرين لكم تعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`
+      :level==="average"
+      ?`السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، حقق ابنكم مستوى متوسطًا في ${analyzed.exam.name} بمادة اللغة الإنجليزية، ونطمح إلى الارتقاء به من خلال المراجعة المنتظمة والتدريب المستمر.\nشاكرين لكم تعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`
+      :`السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نهنئكم على مستوى ابنكم ${label.label} في ${analyzed.exam.name} بمادة اللغة الإنجليزية، ونشكر لكم دعمكم ومتابعتكم.\nمع خالص التقدير.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`;
+  }
+  async function copyText(text){
+    if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return;}
+    const box=document.createElement("textarea");box.value=text;box.style.position="fixed";box.style.opacity="0";document.body.appendChild(box);box.select();const ok=document.execCommand("copy");box.remove();if(!ok)throw new Error("copy_failed");
+  }
+  async function copyQatarNames(){
+    if(!analyzed)return;
+    const people=getLevelStudents($("smartQatarLevel").value);
+    if(!people.length){alert("لا يوجد طلاب مكتملة درجاتهم في هذا المستوى.");return;}
+    try{await copyText(people.map(s=>s.name).join("\n"));alert("تم نسخ أسماء "+people.length+" طالبًا. افتح تعليم قطر والصقها في خانة To. لم يتم إرسال الرسالة.");}
+    catch(e){alert("تعذر نسخ الأسماء تلقائيًا. يمكنك تحديد الأسماء الظاهرة ونسخها يدويًا.");}
+  }
+  async function openQatarAndCopyMessage(){
+    if(!analyzed)return;
+    const people=getLevelStudents($("smartQatarLevel").value);if(!people.length){alert("لا يوجد طلاب في هذا المستوى.");return;}
+    const portal=window.open("https://qeducation.edu.gov.qa/inbox","_blank");
+    if(!portal){alert("اسمح بالنوافذ المنبثقة ثم أعد المحاولة.");return;}
+    try{
+      await copyText($("smartQatarMessage").value.trim());
+      const reason=LEVELS.find(l=>l.id===$("smartQatarLevel").value).label+" — "+analyzed.exam.name;
+      people.forEach(p=>{const c=(typeof getCurrentParentContacts==="function"?getCurrentParentContacts():{})[p.name]||{};try{logParentMessage(p.name,c.phone||"",c.email||"",$("smartQatarMessage").value,reason,"negative","qeducation","تم فتح المنصة وتجهيز الرسالة — بانتظار الإرسال");}catch(e){}});
+      alert("تم فتح منصة قطر ونسخ نص الرسالة. انسخ الأسماء من زر «نسخ أسماء المستلمين إلى To» بشكل منفصل، ثم الصق النص في الرسالة وأرسلها يدويًا.");
+    }catch(e){alert("فُتحت المنصة، لكن تعذر نسخ الرسالة تلقائيًا.");}
+  }
+  function boot(){ensureModal();}
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();
+  const observer=new MutationObserver(()=>{if(!$("openSmartAcademicContactBtn"))ensureModal();});
+  if(document.body)observer.observe(document.body,{childList:true,subtree:true});
+})();
