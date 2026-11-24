@@ -166,7 +166,7 @@
     const reason=selectedGroup.label+" — "+analyzed.exam.name;
     people.forEach(p=>{
       const contact=(typeof getCurrentParentContacts==="function"?getCurrentParentContacts():{})[p.name]||{};
-      try{logParentMessage(p.name,contact.phone||"",contact.email||"",body,reason,"negative","email_bulk","تم فتح مسودة Outlook — بانتظار الإرسال",subject);}
+      try{logParentMessage(p.name,contact.phone||"",contact.email||"",body,reason,selectedGroup.id==="highGroup"?"positive":"negative","email_bulk","تم فتح مسودة Outlook — بانتظار الإرسال",subject);}
       catch(e){console.warn("smart email log failed",e);}
     });
     alert("تم تجهيز مسودة البريد ووضع أسماء الطلاب في BCC. راجع تعرف تطبيق البريد على جميع الأسماء ثم اضغط إرسال. لم يتم إرسال الرسالة تلقائيًا.");
@@ -175,7 +175,7 @@
     if(!analyzed)return;
     const level=$("smartQatarLevel").value;
     const people=getLevelStudents(level);
-    $("smartQatarNamesPreview").textContent=people.length?people.map(s=>s.name).join("\n"):"لا يوجد طلاب مكتملة درجاتهم في هذا المستوى.";
+    $("smartQatarNamesPreview").textContent=people.length?people.map(s=>s.name).join("; "):"لا يوجد طلاب مكتملة درجاتهم في هذا المستوى.";
     const label=LEVELS.find(l=>l.id===level);
     $("smartQatarMessage").value=level==="weak"||level==="low"
       ?`السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نود إحاطتكم بأن مستوى ابنكم في مادة اللغة الإنجليزية يحتاج إلى متابعة ودعم إضافيين خلال ${analyzed.exam.name}. نرجو الاهتمام بالمراجعة اليومية ومتابعة الواجبات.\nشاكرين لكم تعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`
@@ -202,7 +202,7 @@
     try{
       await copyText($("smartQatarMessage").value.trim());
       const reason=LEVELS.find(l=>l.id===$("smartQatarLevel").value).label+" — "+analyzed.exam.name;
-      people.forEach(p=>{const c=(typeof getCurrentParentContacts==="function"?getCurrentParentContacts():{})[p.name]||{};try{logParentMessage(p.name,c.phone||"",c.email||"",$("smartQatarMessage").value,reason,"negative","qeducation","تم فتح المنصة وتجهيز الرسالة — بانتظار الإرسال");}catch(e){}});
+      people.forEach(p=>{const c=(typeof getCurrentParentContacts==="function"?getCurrentParentContacts():{})[p.name]||{};try{logParentMessage(p.name,c.phone||"",c.email||"",$("smartQatarMessage").value,reason,($("smartQatarLevel").value==="high"||$("smartQatarLevel").value==="elevated")?"positive":"negative","qeducation","تم فتح المنصة وتجهيز الرسالة — بانتظار الإرسال");}catch(e){}});
       alert("تم فتح منصة قطر ونسخ نص الرسالة. انسخ الأسماء من زر «نسخ أسماء المستلمين إلى To» بشكل منفصل، ثم الصق النص في الرسالة وأرسلها يدويًا.");
     }catch(e){alert("فُتحت المنصة، لكن تعذر نسخ الرسالة تلقائيًا.");}
   }
