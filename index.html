@@ -1856,10 +1856,13 @@ function launchBulkOutlookEmail() {
 
 // ==================== سجل مراسلات أولياء الأمور ====================
 function logParentMessage(studentName, phone, email, messageText, reason, type, medium, status, subject) {
-    if (!messagesLog[currentClass]) messagesLog[currentClass] = [];
+    const classKey = String(currentClass || '').trim();
+    if (!classKey) throw new Error('تعذر تحديد الصف الحالي لتسجيل الرسالة.');
+    if (!messagesLog || typeof messagesLog !== 'object' || Array.isArray(messagesLog)) messagesLog = {};
+    if (!Array.isArray(messagesLog[classKey])) messagesLog[classKey] = [];
     const now = new Date();
     const record = {
-        id: Date.now() + Math.random(),
+        id: 'msg_' + (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '_' + Math.random().toString(36).slice(2))),
         studentName: studentName,
         phone: phone || '',
         email: email || '',
@@ -1873,8 +1876,11 @@ function logParentMessage(studentName, phone, email, messageText, reason, type, 
         time: now.toLocaleTimeString('ar-EG'),
         timestamp: now.getTime()
     };
-    messagesLog[currentClass].push(record);
+    messagesLog[classKey].push(record);
     localStorage.setItem('messagesLog', JSON.stringify(messagesLog));
+    if (typeof saveFirebaseData === 'function' && firebaseSyncReady) {
+        saveFirebaseData().catch(error => console.error('Parent message cloud sync failed:', error));
+    }
 }
 
 function showMessagesLogModal() {
