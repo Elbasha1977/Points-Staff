@@ -1,4 +1,4 @@
-const CACHE_NAME = "points-staff-shell-root-v18";
+const CACHE_NAME = "points-staff-shell-root-v19";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
@@ -30,6 +30,19 @@ self.addEventListener("fetch", event => {
       });
       if (!launcherTagFound) {
         const script = '<script src="./grade-analysis-launch.js?v=' + launcherVersion + '" defer></script>';
+        const closingIndex = html.toLowerCase().lastIndexOf("</body>");
+        if (closingIndex >= 0) html = html.slice(0, closingIndex) + script + html.slice(closingIndex);
+        else html += script;
+      }
+      const smartMessagingVersion = "20261124-smart-academic-messaging-v1";
+      const smartTagPattern = /(<script\\b[^>]*\\bsrc=["'])([^"']*smart-academic-messaging\\.js)(?:\\?[^"']*)?(["'][^>]*>)/gi;
+      let smartTagFound = false;
+      html = html.replace(smartTagPattern, (_match, opening, source, closing) => {
+        smartTagFound = true;
+        return opening + source + "?v=" + smartMessagingVersion + closing;
+      });
+      if (!smartTagFound) {
+        const script = '<script src="./smart-academic-messaging.js?v=' + smartMessagingVersion + '" defer></script>';
         const closingIndex = html.toLowerCase().lastIndexOf("</body>");
         if (closingIndex >= 0) html = html.slice(0, closingIndex) + script + html.slice(closingIndex);
         else html += script;
