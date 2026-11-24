@@ -22,6 +22,7 @@
   let selectedGroup = null;
   let selectedQatarGroup = "lowGroup";
   let activePeriod = "";
+  const loggedMessageWindows = new Set();
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   function ensureModal(){
@@ -70,7 +71,7 @@
        </div>
        <div id="smartQatarSection" style="display:none;margin-top:22px;border-top:2px dashed #cbd5e1;padding-top:16px;">
         <h3 style="text-align:center;color:#0f766e;">🎓 تجهيز رسالة جماعية لمنصة قطر للتعليم</h3>
-        <p style="text-align:center;color:#475569;">اختر فئة الأداء، ثم انسخ عناوين أولياء الأمور إلى خانة BCC داخل المنصة. نص الرسالة موجه إلى ولي أمر طالب واحد بصيغة المفرد.</p>
+        <p style="text-align:center;color:#475569;">اختر فئة الأداء، ثم انسخ أسماء الطلاب المستهدفين والصقها في خانة BCC داخل المنصة ليتم التعرف عليهم من دليل الأسماء.</p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:10px 0;">
          <button type="button" data-qatar-group="lowGroup" style="padding:12px;border:0;border-radius:10px;background:#fee2e2;color:#991b1b;font-weight:900;">🔴 ضعيفو ومتدنو الأداء</button>
          <button type="button" data-qatar-group="averageGroup" style="padding:12px;border:0;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:900;">🟠 متوسطو الأداء</button>
@@ -78,12 +79,12 @@
         </div>
         <div id="smartQatarNamesPreview" style="background:#f0fdfa;padding:10px;border-radius:10px;white-space:pre-wrap;direction:rtl;margin:8px 0;max-height:150px;overflow:auto;"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-         <button id="smartCopyNamesBtn" class="send-btn" style="background:#0f766e;">📋 نسخ عناوين أولياء الأمور إلى BCC</button>
+         <button id="smartCopyNamesBtn" class="send-btn" style="background:#0f766e;">📋 نسخ أسماء الطلاب إلى BCC</button>
          <button id="smartOpenQatarBtn" class="send-btn" style="background:#0891b2;">🎓 فتح تعليم قطر ونسخ الرسالة</button>
         </div>
         <label for="smartQatarMessage" style="font-weight:bold;display:block;margin-top:12px;">نص الرسالة:</label>
         <textarea id="smartQatarMessage" rows="5" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px;"></textarea>
-        <p style="font-size:12px;color:#64748b;margin-top:8px;">انسخ عناوين البريد والصقها في BCC، ثم انسخ نص الرسالة والصقه في متن الرسالة. الإرسال النهائي يتم من داخل منصة قطر للتعليم.</p>
+        <p style="font-size:12px;color:#64748b;margin-top:8px;">انسخ أسماء الطلاب والصقها في BCC، ثم الصق نص الرسالة. الإرسال يتم من داخل منصة قطر للتعليم.</p>
        </div>
        <div style="display:flex;justify-content:center;margin-top:18px;"><button id="smartContactClose" class="close-modal cancel-btn">إغلاق</button></div>
       </div>`;
@@ -93,7 +94,7 @@
     $("smartExamPeriod").onchange=()=>{$("smartAnalysisSummary").style.display="none";$("smartEmailGroups").style.display="none";$("smartQatarSection").style.display="none";analyzed=null;};
     modal.querySelectorAll("[data-smart-group]").forEach(btn=>btn.addEventListener("click",()=>selectEmailGroup(btn.dataset.smartGroup)));
     $("smartSendBccBtn").onclick=launchBccDraft;
-    modal.querySelectorAll("[data-qatar-group]").forEach(btn=>btn.addEventListener("click",()=>{selectedQatarGroup=btn.dataset.qatarGroup;renderQatarNames();}));
+    modal.querySelectorAll("[data-qatar-group]").forEach(btn=>btn.addEventListener("click",()=>{selectedQatarGroup=btn.dataset.qatarGroup;renderQatarNames();const group=GROUPS.find(g=>g.id===selectedQatarGroup)||GROUPS[0];recordMessageWindow(selectedQatarGroup,"qeducation",qatarGroupStudents(),group.message,group.subject+" - "+(analyzed?analyzed.exam.name:""));}));
     $("smartCopyNamesBtn").onclick=copyQatarNames;
     $("smartOpenQatarBtn").onclick=openQatarAndCopyMessage;
   }
@@ -101,6 +102,7 @@
     ensureModal();
     if(!$("smartAcademicContactModal"))return;
     analyzed=null;selectedGroup=null;
+    loggedMessageWindows.clear();
     $("smartExamPeriod").value="";
     $("smartAnalysisSummary").style.display="none";
     $("smartEmailGroups").style.display="none";
@@ -147,6 +149,7 @@
     const group=GROUPS.find(g=>g.id===groupId);if(!group)return;
     selectedGroup=group;
     const people=analyzed.students.filter(s=>group.levels.includes(s.level));
+    recordMessageWindow(groupId,"email",people,group.message,group.subject+" - "+analyzed.exam.name);
     const preview=$("smartGroupPreview");
     preview.innerHTML=`<strong>${esc(group.label)} — ${people.length} طالبًا</strong><div style="margin-top:7px;line-height:1.9;">${people.length?people.map(s=>`${esc(s.name)} <small style="color:#64748b">(${s.percentage.toFixed(1)}% — ${esc(s.levelLabel)})</small>`).join("<br>"):"لا يوجد طلاب مكتملة درجاتهم في هذه الفئة."}</div>`;
     preview.style.display="block";
@@ -155,24 +158,29 @@
     $("smartEmailBody").value=group.message;
   }
   function selectedEmailStudents(){return selectedGroup&&analyzed?analyzed.students.filter(s=>selectedGroup.levels.includes(s.level)):[];}
+  function recordMessageWindow(groupId,channel,people,message,subject){
+    if(!analyzed||!people||!people.length)return;
+    const key=[analyzed.period,analyzed.className,groupId,channel].join("|");
+    if(loggedMessageWindows.has(key))return;
+    loggedMessageWindows.add(key);
+    const group=GROUPS.find(g=>g.id===groupId)||GROUPS[0];
+    const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
+    const reason=group.label+" — "+analyzed.exam.name;
+    people.forEach(student=>{
+      const contact=contacts[student.name]||{};
+      try{logParentMessage(student.name,contact.phone||"",contact.email||"",message,reason,groupId==="highGroup"?"positive":"negative",channel,"تم الإرسال",subject||"");}
+      catch(error){console.warn("smart message log failed",error);}
+    });
+  }
   function launchBccDraft(){
     const people=selectedEmailStudents();if(!people.length){alert("لا يوجد طلاب في الفئة المحددة.");return;}
     const subject=$("smartEmailSubject").value.trim(),body=$("smartEmailBody").value.trim();
     if(!body){alert("اكتب نص الرسالة أولًا.");return;}
-    const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
-    const missing=people.filter(s=>!String((contacts[s.name]||{}).email||"").trim());
-    if(missing.length){alert("لا يمكن تجهيز البريد؛ لا توجد عناوين بريد مسجلة لـ "+missing.length+" من أولياء الأمور.\n"+missing.map(s=>s.name).join("، "));return;}
-    const bcc=people.map(s=>String(contacts[s.name].email).trim()).join("; ");
+    const bcc=people.map(s=>s.name.trim()).join("; ");
     const url="mailto:?bcc="+encodeURIComponent(bcc)+"&subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
     const win=window.open(url,"_self");
     if(!win){alert("تعذر فتح تطبيق البريد. تحقق من إعداد تطبيق البريد الافتراضي.");return;}
-    const reason=selectedGroup.label+" — "+analyzed.exam.name;
-    people.forEach(p=>{
-      const contact=(typeof getCurrentParentContacts==="function"?getCurrentParentContacts():{})[p.name]||{};
-      try{logParentMessage(p.name,contact.phone||"",contact.email||"",body,reason,selectedGroup.id==="highGroup"?"positive":"negative","email_bulk","تم فتح مسودة Outlook — بانتظار الإرسال",subject);}
-      catch(e){console.warn("smart email log failed",e);}
-    });
-    alert("تم تجهيز مسودة البريد ووضع أسماء الطلاب في BCC. راجع تعرف تطبيق البريد على جميع الأسماء ثم اضغط إرسال. لم يتم إرسال الرسالة تلقائيًا.");
+    alert("تم تجهيز مسودة Outlook بأسماء الطلاب في BCC. سيحاول Outlook مطابقة الأسماء بدليل وزارة التعليم؛ راجع المستلمين ثم أكمل الإرسال.");
   }
   function qatarGroupStudents(){return analyzed?analyzed.students.filter(s=>selectedQatarGroup&&GROUPS.find(g=>g.id===selectedQatarGroup)?.levels.includes(s.level)):[];}
   function renderQatarNames(){
@@ -180,13 +188,11 @@
     const group=GROUPS.find(g=>g.id===selectedQatarGroup)||GROUPS[0];
     const people=qatarGroupStudents();
     const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
-    const emails=people.map(s=>({name:s.name,email:String((contacts[s.name]||{}).email||"").trim()}));
-    const missing=emails.filter(x=>!x.email);
-    $("smartQatarNamesPreview").textContent=emails.length?emails.map(x=>x.email?x.name+" — "+x.email:x.name+" — لا يوجد بريد مسجل").join("\n"):"لا يوجد طلاب مكتملة درجاتهم في هذه الفئة.";
+    const names=people.map(s=>s.name.trim());
+    $("smartQatarNamesPreview").textContent=names.length?names.join("\n"):"لا يوجد طلاب مكتملة درجاتهم في هذه الفئة.";
     $("smartQatarMessage").value=group.message;
-    $("smartCopyNamesBtn").disabled=!emails.length||missing.length>0;
-    $("smartCopyNamesBtn").title=missing.length?"توجد عناوين بريد غير مسجلة":"نسخ عناوين البريد إلى BCC";
-    $("smartQatarNamesPreview").dataset.missing=String(missing.length);
+    $("smartCopyNamesBtn").disabled=!names.length;
+    $("smartCopyNamesBtn").title="نسخ أسماء الطلاب إلى BCC";
   }
   async function copyText(text){
     if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return;}
@@ -195,12 +201,9 @@
   async function copyQatarNames(){
     if(!analyzed)return;
     const people=qatarGroupStudents();
-    const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
-    const emails=people.map(s=>String((contacts[s.name]||{}).email||"").trim());
-    const missing=people.filter((s,i)=>!emails[i]);
+    const names=people.map(s=>s.name.trim());
     if(!people.length){alert("لا يوجد طلاب في فئة الأداء المحددة.");return;}
-    if(missing.length){alert("لا يمكن نسخ القائمة؛ توجد عناوين بريد غير مسجلة للأسماء التالية:\n"+missing.map(s=>s.name).join("، "));return;}
-    try{await copyText(emails.join("; "));alert("تم نسخ "+emails.length+" عنوان بريد. افتح تعليم قطر والصقها في خانة BCC.");}
+    try{await copyText(names.join("; "));alert("تم نسخ "+names.length+" اسم طالب. افتح تعليم قطر والصق الأسماء في خانة BCC.");}
     catch(e){alert("تعذر نسخ العناوين تلقائيًا. حاول مرة أخرى.");}
   }
   async function openQatarAndCopyMessage(){
@@ -211,10 +214,7 @@
     if(!portal){alert("اسمح بالنوافذ المنبثقة لموقع POINTS ثم أعد المحاولة.");return;}
     try{
       await copyText($("smartQatarMessage").value.trim());
-      const reason=(GROUPS.find(g=>g.id===selectedQatarGroup)||GROUPS[0]).label+" — "+analyzed.exam.name;
-      const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
-      people.forEach(p=>{const c=contacts[p.name]||{};try{logParentMessage(p.name,c.phone||"",c.email||"",$("smartQatarMessage").value,reason,selectedQatarGroup==="highGroup"?"positive":"negative","qeducation","تم فتح المنصة ونسخ نص الرسالة — بانتظار لصق BCC والإرسال");}catch(e){}});
-      alert("تم فتح منصة قطر ونسخ نص الرسالة. اضغط «نسخ عناوين أولياء الأمور إلى BCC» والصق العناوين في خانة BCC، ثم الصق نص الرسالة وأرسلها من المنصة.");
+      alert("تم فتح منصة قطر ونسخ نص الرسالة. اضغط «نسخ أسماء الطلاب إلى BCC» والصق الأسماء في خانة BCC، ثم الصق نص الرسالة وأرسلها من المنصة.");
     }catch(e){alert("فُتحت المنصة، لكن تعذر نسخ الرسالة تلقائيًا.");}
   }
   function boot(){ensureModal();}
