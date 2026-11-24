@@ -144,6 +144,8 @@
     summary.innerHTML=`<strong>الصف: ${esc(className)} — ${esc(exam.name)} (من ${exam.total})</strong><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:7px;margin-top:10px;">${counts.map(c=>`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;text-align:center;"><b>${esc(c.label)}</b><div style="font-size:22px;font-weight:900;color:#4338ca;">${c.count}</div></div>`).join("")}</div><div style="margin-top:9px;color:#475569;">طلاب اكتملت درجاتهم: ${classified.length} — درجات غير مكتملة: ${incomplete.length}</div>${incomplete.length?`<details style="margin-top:7px;"><summary>عرض الطلاب غير مكتملة درجاتهم</summary><div>${incomplete.map(esc).join("، ")}</div></details>`:""}`;
     summary.style.display="block";$("smartEmailGroups").style.display="block";$("smartQatarSection").style.display="block";
     selectedQatarGroup="lowGroup";renderQatarNames();
+    const defaultQatarGroup=GROUPS.find(g=>g.id===selectedQatarGroup)||GROUPS[0];
+    recordMessageWindow(selectedQatarGroup,"qeducation",qatarGroupStudents(),defaultQatarGroup.message,defaultQatarGroup.subject+" - "+exam.name);
     $("smartGroupPreview").style.display="none";$("smartEmailActions").style.display="none";
   }
   function getLevelStudents(levelId){return analyzed?analyzed.students.filter(s=>s.level===levelId):[];}
@@ -165,15 +167,29 @@
     if(!analyzed||!people||!people.length)return;
     const key=[analyzed.period,analyzed.className,groupId,channel].join("|");
     if(loggedMessageWindows.has(key))return;
-    loggedMessageWindows.add(key);
+    const logger=window.logParentMessage;
+    if(typeof logger!=="function"){
+      console.error("Parent message logger is unavailable on window.");
+      alert("تعذر تسجيل الرسائل: دالة سجل مراسلة أولياء الأمور غير متاحة. لم يتم حذف أي سجل سابق.");
+      return;
+    }
     const group=GROUPS.find(g=>g.id===groupId)||GROUPS[0];
     const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
     const reason=group.label+" — "+analyzed.exam.name;
+    let saved=0;
     people.forEach(student=>{
       const contact=contacts[student.name]||{};
-      try{logParentMessage(student.name,contact.phone||"",contact.email||"",message,reason,groupId==="highGroup"?"positive":"negative",channel,"تم الإرسال",subject||"");}
-      catch(error){console.warn("smart message log failed",error);}
+      try{
+        logger(student.name,contact.phone||"",contact.email||"",message,reason,groupId==="highGroup"?"positive":"negative",channel,"تم الإرسال",subject||"");
+        saved++;
+      }catch(error){console.error("smart message log failed",error);}
     });
+    if(saved===people.length){
+      loggedMessageWindows.add(key);
+      console.info("Smart parent messages logged:",saved,"class:",analyzed.className,"medium:",channel);
+    }else{
+      alert("تم تسجيل "+saved+" من "+people.length+" رسالة فقط. راجع سجل المراسلات قبل إعادة المحاولة.");
+    }
   }
   function launchBccDraft(){
     const people=selectedEmailStudents();if(!people.length){alert("لا يوجد طلاب في الفئة المحددة.");return;}
