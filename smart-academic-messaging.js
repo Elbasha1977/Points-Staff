@@ -21,6 +21,7 @@
   let analyzed = null;
   let selectedGroup = null;
   let selectedQatarGroup = "lowGroup";
+  let qatarNameIndex = 0;
   let activePeriod = "";
   const loggedMessageWindows = new Set();
   const $ = id => document.getElementById(id);
@@ -79,7 +80,8 @@
         </div>
         <div id="smartQatarNamesPreview" style="background:#f0fdfa;padding:10px;border-radius:10px;white-space:pre-wrap;direction:rtl;margin:8px 0;max-height:150px;overflow:auto;"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-         <button id="smartCopyNamesBtn" class="send-btn" style="background:#0f766e;">📋 نسخ أسماء الطلاب إلى BCC</button>
+         <button id="smartCopyNamesBtn" class="send-btn" style="background:#0f766e;">📋 نسخ الاسم الأول إلى BCC</button>
+         <button id="smartResetNamesBtn" class="send-btn" style="background:#64748b;">↺ إعادة القائمة</button>
          <button id="smartOpenQatarBtn" class="send-btn" style="background:#0891b2;">🎓 فتح تعليم قطر ونسخ الرسالة</button>
         </div>
         <label for="smartQatarMessage" style="font-weight:bold;display:block;margin-top:12px;">نص الرسالة:</label>
@@ -96,6 +98,7 @@
     $("smartSendBccBtn").onclick=launchBccDraft;
     modal.querySelectorAll("[data-qatar-group]").forEach(btn=>btn.addEventListener("click",()=>{selectedQatarGroup=btn.dataset.qatarGroup;renderQatarNames();const group=GROUPS.find(g=>g.id===selectedQatarGroup)||GROUPS[0];recordMessageWindow(selectedQatarGroup,"qeducation",qatarGroupStudents(),group.message,group.subject+" - "+(analyzed?analyzed.exam.name:""));}));
     $("smartCopyNamesBtn").onclick=copyQatarNames;
+    $("smartResetNamesBtn").onclick=resetQatarNames;
     $("smartOpenQatarBtn").onclick=openQatarAndCopyMessage;
   }
   function openModal(){
@@ -189,10 +192,12 @@
     const people=qatarGroupStudents();
     const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
     const names=people.map(s=>s.name.trim());
-    $("smartQatarNamesPreview").textContent=names.length?names.join("\n"):"لا يوجد طلاب مكتملة درجاتهم في هذه الفئة.";
+    qatarNameIndex=0;
+    $("smartQatarNamesPreview").textContent=names.length?names.map((name,i)=>(i+1)+". "+name).join("\n"):"لا يوجد طلاب مكتملة درجاتهم في هذه الفئة.";
     $("smartQatarMessage").value=group.message;
     $("smartCopyNamesBtn").disabled=!names.length;
-    $("smartCopyNamesBtn").title="نسخ أسماء الطلاب إلى BCC";
+    $("smartCopyNamesBtn").title="نسخ اسم واحد في كل مرة ثم اختياره في BCC";
+    $("smartCopyNamesBtn").textContent="📋 نسخ الاسم التالي (1 من "+names.length+")";
   }
   async function copyText(text){
     if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return;}
@@ -200,11 +205,29 @@
   }
   async function copyQatarNames(){
     if(!analyzed)return;
-    const people=qatarGroupStudents();
-    const names=people.map(s=>s.name.trim());
-    if(!people.length){alert("لا يوجد طلاب في فئة الأداء المحددة.");return;}
-    try{await copyText(names.join("; "));alert("تم نسخ "+names.length+" اسم طالب. افتح تعليم قطر والصق الأسماء في خانة BCC.");}
-    catch(e){alert("تعذر نسخ العناوين تلقائيًا. حاول مرة أخرى.");}
+    const names=qatarGroupStudents().map(s=>s.name.trim());
+    if(!names.length){alert("لا يوجد طلاب في فئة الأداء المحددة.");return;}
+    if(qatarNameIndex>=names.length){alert("اكتملت قائمة الأسماء. اضغط «إعادة القائمة» للبدء من جديد.");return;}
+    const current=names[qatarNameIndex];
+    try{
+      await copyText(current);
+      qatarNameIndex++;
+      const button=$("smartCopyNamesBtn");
+      if(qatarNameIndex>=names.length){
+        button.textContent="✓ اكتملت الأسماء ("+names.length+")";
+        button.disabled=true;
+      }else{
+        button.textContent="📋 نسخ الاسم التالي ("+(qatarNameIndex+1)+" من "+names.length+")";
+      }
+      alert("تم نسخ الاسم ("+qatarNameIndex+" من "+names.length+"):\n"+current+"\n\nانتقل إلى تعليم قطر، الصقه في BCC واختر نتيجة البحث، ثم ارجع واضغط نسخ الاسم التالي.");
+    }catch(e){alert("تعذر نسخ الاسم تلقائيًا. حاول مرة أخرى.");}
+  }
+  function resetQatarNames(){
+    qatarNameIndex=0;
+    const names=qatarGroupStudents().map(s=>s.name.trim());
+    const button=$("smartCopyNamesBtn");
+    button.disabled=!names.length;
+    button.textContent=names.length?"📋 نسخ الاسم الأول إلى BCC":"لا توجد أسماء";
   }
   async function openQatarAndCopyMessage(){
     if(!analyzed)return;
