@@ -167,28 +167,56 @@
     if(!analyzed||!people||!people.length)return;
     const key=[analyzed.period,analyzed.className,groupId,channel].join("|");
     if(loggedMessageWindows.has(key))return;
-    const logger=window.logParentMessage;
-    if(typeof logger!=="function"){
-      console.error("Parent message logger is unavailable on window.");
-      alert("تعذر تسجيل الرسائل: دالة سجل مراسلة أولياء الأمور غير متاحة. لم يتم حذف أي سجل سابق.");
-      return;
-    }
+    const classKey=analyzed.className||currentClass;
     const group=GROUPS.find(g=>g.id===groupId)||GROUPS[0];
     const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
     const reason=group.label+" — "+analyzed.exam.name;
+    let before={};
+    try{before=JSON.parse(localStorage.getItem("messagesLog")||"{}")||{};}catch(error){before={};}
+    const logger=window.logParentMessage;
     let saved=0;
     people.forEach(student=>{
       const contact=contacts[student.name]||{};
       try{
-        logger(student.name,contact.phone||"",contact.email||"",message,reason,groupId==="highGroup"?"positive":"negative",channel,"تم الإرسال",subject||"");
+        if(typeof logger==="function"){
+          logger(student.name,contact.phone||"",contact.email||"",message,reason,groupId==="highGroup"?"positive":"negative",channel,"تم الإرسال",subject||"");
+        }else{
+          const now=new Date();
+          if(!Array.isArray(before[classKey]))before[classKey]=[];
+          before[classKey].push({
+            id:Date.now()+Math.random(),studentName:student.name,phone:contact.phone||"",email:contact.email||"",
+            messageText:message||"",reason,type:groupId==="highGroup"?"positive":"negative",medium:channel,
+            status:"تم الإرسال",subject:subject||"",date:now.toLocaleDateString("ar-EG"),
+            time:now.toLocaleTimeString("ar-EG"),timestamp:now.getTime()
+          });
+        }
         saved++;
       }catch(error){console.error("smart message log failed",error);}
     });
+    try{
+      const after=JSON.parse(localStorage.getItem("messagesLog")||"{}")||{};
+      const classes=new Set([...Object.keys(before),...Object.keys(after)]);
+      classes.forEach(name=>{
+        const oldRows=Array.isArray(before[name])?before[name]:[];
+        const newRows=Array.isArray(after[name])?after[name]:[];
+        const byId=new Map();
+        oldRows.concat(newRows).forEach(row=>byId.set(String(row.id),row));
+        after[name]=Array.from(byId.values());
+      });
+      if(!Array.isArray(after[classKey]))after[classKey]=[];
+      localStorage.setItem("messagesLog",JSON.stringify(after));
+      if(typeof messagesLog!=="undefined"){
+        if(!Array.isArray(messagesLog[classKey]))messagesLog[classKey]=[];
+        const byId=new Map();
+        (after[classKey]||[]).forEach(row=>byId.set(String(row.id),row));
+        messagesLog[classKey]=Array.from(byId.values());
+      }
+    }catch(error){console.error("Could not preserve previous parent message logs",error);}
     if(saved===people.length){
       loggedMessageWindows.add(key);
-      console.info("Smart parent messages logged:",saved,"class:",analyzed.className,"medium:",channel);
+      console.info("Smart parent messages logged:",saved,"class:",classKey,"medium:",channel);
     }else{
-      alert("تم تسجيل "+saved+" من "+people.length+" رسالة فقط. راجع سجل المراسلات قبل إعادة المحاولة.");
+      alert("تم تسجيل "+saved+" من "+people.length+" رسالة فقط. لم يتم حذف السجلات السابقة؛ راجع سجل المراسلات.");
     }
   }
   function launchBccDraft(){
