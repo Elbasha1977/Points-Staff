@@ -103,6 +103,85 @@
     return { ok: true };
   }
 
+  function splitRecipientNames(raw) {
+    return Array.from(new Set(String(raw || "")
+      .split(/[\\r\\n;；,،|]+/)
+      .map(name => name.replace(/^[\\s•\\-]+|[\\s•\\-]+$/g, "").replace(/\\s+/g, " ").trim())
+      .filter(name => name.length >= 3)));
+  }
+
+  async function chooseBccField() {
+    const field = document.querySelector("select#field");
+    if (!field) return false;
+    const option = Array.from(field.options).find(o => /^bcc$/i.test(o.text.trim()) || /نسخة مخفية/.test(o.text.trim()));
+    if (!option) return false;
+    if (field.value !== option.value) {
+      field.value = option.value;
+      field.dispatchEvent(new Event("change", { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 350));
+    }
+    return true;
+  }
+
+  async function addOneBccRecipient(name) {
+    const container = await waitFor(() => {
+      const el = document.querySelector("#s2id_field, .select2-container");
+      return el && visible(el) ? el : null;
+    }, 5000);
+    if (!container) return { ok: false, reason: "لم يظهر حقل BCC" };
+    container.click();
+
+    const search = await waitFor(() => {
+      const fields = Array.from(document.querySelectorAll("input.select2-input, input[id^='s2id_autogen']"));
+      return fields.find(visible) || null;
+    }, 5000);
+    if (!search) return { ok: false, reason: "لم يظهر مربع البحث" };
+
+    setNativeValue(search, name);
+    search.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true, key: "a" }));
+    const exact = await waitFor(() => {
+      const results = Array.from(document.querySelectorAll(".select2-results li, .select2-result-selectable, .select2-result"));
+      return results.find(el => visible(el) &&
+        (el.innerText || el.textContent || "").replace(/\\s+/g, " ").trim() === name);
+    }, 7000);
+    if (!exact) return { ok: false, reason: "لم يظهر تطابق دقيق للاسم: " + name };
+    exact.click();
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return { ok: true };
+  }
+
+  async function addBccRecipientsSequentially(names) {
+    if (!await chooseBccField()) {
+      toast("تعذر تحديد خانة BCC تلقائيًا. اختر BCC يدويًا ثم أعد لصق القائمة.", "error");
+      return;
+    }
+    let added = 0;
+    const failed = [];
+    for (const name of names) {
+      const result = await addOneBccRecipient(name);
+      if (result.ok) added++;
+      else failed.push(result.reason);
+    }
+    toast("تمت إضافة " + added + " من " + names.length + " إلى BCC." +
+      (failed.length ? " تعذر العثور على " + failed.length + " اسم؛ راجع الأسماء وأكمل يدويًا." : " راجع القائمة قبل الإرسال."),
+      failed.length ? "error" : "ok");
+  }
+
+  function installMultiPasteHandler() {
+    document.addEventListener("paste", event => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement) ||
+          !(target.matches("input.select2-input") || (target.id || "").startsWith("s2id_autogen"))) return;
+      const raw = event.clipboardData && event.clipboardData.getData("text");
+      const names = splitRecipientNames(raw);
+      if (names.length < 2) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      addBccRecipientsSequentially(names).catch(error =>
+        toast("تعذر إدراج قائمة الأسماء: " + (error.message || error), "error"));
+    }, true);
+  }
+
   async function fillSubject(subject) {
     const field = await waitFor(() => {
       const el = document.querySelector('input#subject.textInput, input[id="subject"], input[name="subject"]');
@@ -190,5 +269,6 @@
     }
   }
 
+  installMultiPasteHandler();
   init().catch(error => toast('تعذر تجهيز الرسالة: ' + (error.message || error), 'error'));
 })();
