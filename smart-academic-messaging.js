@@ -14,13 +14,13 @@
     {id:"high",label:"عالي الأداء",min:95,max:101}
   ];
   const GROUPS = [
-    {id:"lowGroup",label:"ضعيفو ومتدنو الأداء",levels:["weak","low"],subject:"متابعة المستوى الدراسي - مطلوب دعم ومتابعة",message:"السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نود إحاطتكم بأن مستوى ابنكم في مادة اللغة الإنجليزية يحتاج إلى متابعة ودعم إضافيين، ونأمل الاهتمام بالمراجعة اليومية ومتابعة الواجبات والاستعداد للتقييمات القادمة.\nشاكرين لكم تعاونكم واهتمامكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية"},
-    {id:"averageGroup",label:"متوسطو الأداء",levels:["average"],subject:"متابعة المستوى الدراسي - نحو مستوى أفضل",message:"السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، حقق ابنكم مستوى متوسطًا في مادة اللغة الإنجليزية، ونطمح إلى الارتقاء به إلى مستوى أعلى من خلال المراجعة المنتظمة والتدريب المستمر ومتابعة الواجبات.\nشاكرين لكم تعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية"},
-    {id:"highGroup",label:"مرتفعو وعاليو الأداء",levels:["elevated","high"],subject:"تهنئة ومتابعة التميز الدراسي",message:"السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نهنئكم على المستوى المتميز الذي حققه ابنكم في مادة اللغة الإنجليزية، ونشكر لكم دعمكم ومتابعتكم. نرجو الاستمرار في تشجيعه للمحافظة على هذا التفوق.\nمع خالص التقدير.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية"}
+    {id:"lowGroup",label:"ضعيفو ومتدنو الأداء",levels:["weak","low"],subject:"متابعة المستوى الدراسي لنجلكم",message:"السيد ولي الأمر الفاضل،\nتحية طيبة وبعد،\nنحيطكم علمًا بأن مستوى نجلكم الدراسي في مادة اللغة الإنجليزية يحتاج إلى مزيد من الاهتمام والمتابعة، ونأمل منكم التعاون مع المدرسة وتشجيعه على بذل المزيد من الجهد والمثابرة والانتظام في المذاكرة وأداء الواجبات.\nونؤكد لكم أن المدرسة حريصة على تقديم الدعم والمساعدة اللازمة له، ونعمل معًا على تحسين مستواه الدراسي وتجاوز الصعوبات التي تواجهه، حتى يتمكن بإذن الله من الوصول إلى درجة النجاح وتحقيق نتائج أفضل.\nإن تعاونكم ومتابعتكم المستمرة له سيكون لهما أثر كبير في تحقيق هذا الهدف.\nشاكرين لكم حسن تعاونكم واهتمامكم.\nمعلم اللغة الإنجليزية\nعبد الباسط عطية"},
+    {id:"averageGroup",label:"متوسطو الأداء",levels:["average"],subject:"نحو مستوى دراسي أفضل لنجلكم",message:"السيد ولي الأمر الفاضل،\nتحية طيبة وبعد،\nنحيطكم علمًا بأن نجلكم يحقق مستوى دراسيًا متوسطًا في مادة اللغة الإنجليزية، وهو مستوى جيد يمكن تطويره والارتقاء به من خلال المزيد من الاجتهاد والمثابرة والاهتمام بالمذاكرة والتدريب المستمر.\nونأمل منكم تشجيعه على بذل جهد أكبر، ومتابعة واجباته ودروسه بانتظام، حتى يتمكن من تنمية مهاراته وتحقيق درجات أعلى والوصول إلى مستويات متميزة.\nونحن في المدرسة نحرص على دعمه ومساندته، ونتطلع إلى استمرار تعاونكم معنا لتحقيق أفضل النتائج له.\nشاكرين لكم حسن تعاونكم واهتمامكم.\nمعلم اللغة الإنجليزية\nعبد الباسط عطية"},
+    {id:"highGroup",label:"مرتفعو وعاليو الأداء",levels:["elevated","high"],subject:"تقدير المستوى الدراسي المتميز لنجلكم",message:"السيد ولي الأمر الفاضل،\nتحية طيبة وبعد،\nيسعدنا أن نحيطكم علمًا بأن نجلكم يحقق مستوى دراسيًا مرتفعًا ومتميزًا في مادة اللغة الإنجليزية، وهو أمر يستحق التقدير والتشجيع.\nونأمل منكم مواصلة دعمه وتحفيزه على الاجتهاد والمثابرة والاستمرار في المحافظة على هذا المستوى الجميل، والعمل على تطوير مهاراته وتحقيق المزيد من التفوق والتميز.\nونؤكد لكم أن استمرار التعاون بين الأسرة والمدرسة هو أساس المحافظة على هذا النجاح والارتقاء به إلى مستويات أفضل.\nمع خالص الشكر والتقدير لجهودكم واهتمامكم.\nمعلم اللغة الإنجليزية\nعبد الباسط عطية"}
   ];
   let analyzed = null;
   let selectedGroup = null;
-  let selectedLevel = "weak";
+  let selectedQatarGroup = "lowGroup";
   let activePeriod = "";
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -70,20 +70,20 @@
        </div>
        <div id="smartQatarSection" style="display:none;margin-top:22px;border-top:2px dashed #cbd5e1;padding-top:16px;">
         <h3 style="text-align:center;color:#0f766e;">🎓 تجهيز رسالة جماعية لمنصة قطر للتعليم</h3>
-        <p style="text-align:center;color:#475569;">اختر مستوى أداء محددًا، ثم انسخ أسماء الطلاب دفعة واحدة وضعها في خانة To داخل المنصة.</p>
-        <div class="select-group"><label for="smartQatarLevel">📊 مستوى الأداء:</label>
-         <select id="smartQatarLevel" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;">
-          ${LEVELS.map(l=>`<option value="${l.id}">${l.label} (${l.id==="weak"?"أقل من 50%":l.id==="low"?"من 50% إلى أقل من 70%":l.id==="average"?"من 70% إلى أقل من 90%":l.id==="elevated"?"من 90% إلى أقل من 95%":"95% فأعلى"})</option>`).join("")}
-         </select>
+        <p style="text-align:center;color:#475569;">اختر فئة الأداء، ثم انسخ عناوين أولياء الأمور إلى خانة BCC داخل المنصة. نص الرسالة موجه إلى ولي أمر طالب واحد بصيغة المفرد.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:10px 0;">
+         <button type="button" data-qatar-group="lowGroup" style="padding:12px;border:0;border-radius:10px;background:#fee2e2;color:#991b1b;font-weight:900;">🔴 ضعيفو ومتدنو الأداء</button>
+         <button type="button" data-qatar-group="averageGroup" style="padding:12px;border:0;border-radius:10px;background:#fef3c7;color:#92400e;font-weight:900;">🟠 متوسطو الأداء</button>
+         <button type="button" data-qatar-group="highGroup" style="padding:12px;border:0;border-radius:10px;background:#dcfce7;color:#166534;font-weight:900;">🟢 مرتفعو وعاليو الأداء</button>
         </div>
         <div id="smartQatarNamesPreview" style="background:#f0fdfa;padding:10px;border-radius:10px;white-space:pre-wrap;direction:rtl;margin:8px 0;max-height:150px;overflow:auto;"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-         <button id="smartCopyNamesBtn" class="send-btn" style="background:#0f766e;">📋 نسخ أسماء المستلمين إلى To</button>
+         <button id="smartCopyNamesBtn" class="send-btn" style="background:#0f766e;">📋 نسخ عناوين أولياء الأمور إلى BCC</button>
          <button id="smartOpenQatarBtn" class="send-btn" style="background:#0891b2;">🎓 فتح تعليم قطر ونسخ الرسالة</button>
         </div>
         <label for="smartQatarMessage" style="font-weight:bold;display:block;margin-top:12px;">نص الرسالة:</label>
         <textarea id="smartQatarMessage" rows="5" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-top:6px;"></textarea>
-        <p style="font-size:12px;color:#64748b;margin-top:8px;">يتم نسخ الأسماء والرسالة كلٌّ على حدة حتى لا تستبدل إحداهما الأخرى في الحافظة. الإرسال النهائي يتم يدويًا داخل المنصة.</p>
+        <p style="font-size:12px;color:#64748b;margin-top:8px;">انسخ عناوين البريد والصقها في BCC، ثم انسخ نص الرسالة والصقه في متن الرسالة. الإرسال النهائي يتم من داخل منصة قطر للتعليم.</p>
        </div>
        <div style="display:flex;justify-content:center;margin-top:18px;"><button id="smartContactClose" class="close-modal cancel-btn">إغلاق</button></div>
       </div>`;
@@ -93,7 +93,7 @@
     $("smartExamPeriod").onchange=()=>{$("smartAnalysisSummary").style.display="none";$("smartEmailGroups").style.display="none";$("smartQatarSection").style.display="none";analyzed=null;};
     modal.querySelectorAll("[data-smart-group]").forEach(btn=>btn.addEventListener("click",()=>selectEmailGroup(btn.dataset.smartGroup)));
     $("smartSendBccBtn").onclick=launchBccDraft;
-    $("smartQatarLevel").onchange=renderQatarNames;
+    modal.querySelectorAll("[data-qatar-group]").forEach(btn=>btn.addEventListener("click",()=>{selectedQatarGroup=btn.dataset.qatarGroup;renderQatarNames();}));
     $("smartCopyNamesBtn").onclick=copyQatarNames;
     $("smartOpenQatarBtn").onclick=openQatarAndCopyMessage;
   }
@@ -138,7 +138,7 @@
     const summary=$("smartAnalysisSummary");
     summary.innerHTML=`<strong>الصف: ${esc(className)} — ${esc(exam.name)} (من ${exam.total})</strong><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:7px;margin-top:10px;">${counts.map(c=>`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:9px;padding:9px;text-align:center;"><b>${esc(c.label)}</b><div style="font-size:22px;font-weight:900;color:#4338ca;">${c.count}</div></div>`).join("")}</div><div style="margin-top:9px;color:#475569;">طلاب اكتملت درجاتهم: ${classified.length} — درجات غير مكتملة: ${incomplete.length}</div>${incomplete.length?`<details style="margin-top:7px;"><summary>عرض الطلاب غير مكتملة درجاتهم</summary><div>${incomplete.map(esc).join("، ")}</div></details>`:""}`;
     summary.style.display="block";$("smartEmailGroups").style.display="block";$("smartQatarSection").style.display="block";
-    $("smartQatarLevel").value="weak";renderQatarNames();
+    selectedQatarGroup="lowGroup";renderQatarNames();
     $("smartGroupPreview").style.display="none";$("smartEmailActions").style.display="none";
   }
   function getLevelStudents(levelId){return analyzed?analyzed.students.filter(s=>s.level===levelId):[];}
@@ -159,7 +159,10 @@
     const people=selectedEmailStudents();if(!people.length){alert("لا يوجد طلاب في الفئة المحددة.");return;}
     const subject=$("smartEmailSubject").value.trim(),body=$("smartEmailBody").value.trim();
     if(!body){alert("اكتب نص الرسالة أولًا.");return;}
-    const bcc=people.map(s=>s.name).join("; ");
+    const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
+    const missing=people.filter(s=>!String((contacts[s.name]||{}).email||"").trim());
+    if(missing.length){alert("لا يمكن تجهيز البريد؛ لا توجد عناوين بريد مسجلة لـ "+missing.length+" من أولياء الأمور.\n"+missing.map(s=>s.name).join("، "));return;}
+    const bcc=people.map(s=>String(contacts[s.name].email).trim()).join("; ");
     const url="mailto:?bcc="+encodeURIComponent(bcc)+"&subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
     const win=window.open(url,"_self");
     if(!win){alert("تعذر فتح تطبيق البريد. تحقق من إعداد تطبيق البريد الافتراضي.");return;}
@@ -171,17 +174,19 @@
     });
     alert("تم تجهيز مسودة البريد ووضع أسماء الطلاب في BCC. راجع تعرف تطبيق البريد على جميع الأسماء ثم اضغط إرسال. لم يتم إرسال الرسالة تلقائيًا.");
   }
+  function qatarGroupStudents(){return analyzed?analyzed.students.filter(s=>selectedQatarGroup&&GROUPS.find(g=>g.id===selectedQatarGroup)?.levels.includes(s.level)):[];}
   function renderQatarNames(){
     if(!analyzed)return;
-    const level=$("smartQatarLevel").value;
-    const people=getLevelStudents(level);
-    $("smartQatarNamesPreview").textContent=people.length?people.map(s=>s.name).join("; "):"لا يوجد طلاب مكتملة درجاتهم في هذا المستوى.";
-    const label=LEVELS.find(l=>l.id===level);
-    $("smartQatarMessage").value=level==="weak"||level==="low"
-      ?`السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نود إحاطتكم بأن مستوى ابنكم في مادة اللغة الإنجليزية يحتاج إلى متابعة ودعم إضافيين خلال ${analyzed.exam.name}. نرجو الاهتمام بالمراجعة اليومية ومتابعة الواجبات.\nشاكرين لكم تعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`
-      :level==="average"
-      ?`السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، حقق ابنكم مستوى متوسطًا في ${analyzed.exam.name} بمادة اللغة الإنجليزية، ونطمح إلى الارتقاء به من خلال المراجعة المنتظمة والتدريب المستمر.\nشاكرين لكم تعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`
-      :`السلام عليكم ورحمة الله وبركاته،\nولي الأمر الكريم، نهنئكم على مستوى ابنكم ${label.label} في ${analyzed.exam.name} بمادة اللغة الإنجليزية، ونشكر لكم دعمكم ومتابعتكم.\nمع خالص التقدير.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`;
+    const group=GROUPS.find(g=>g.id===selectedQatarGroup)||GROUPS[0];
+    const people=qatarGroupStudents();
+    const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
+    const emails=people.map(s=>({name:s.name,email:String((contacts[s.name]||{}).email||"").trim()}));
+    const missing=emails.filter(x=>!x.email);
+    $("smartQatarNamesPreview").textContent=emails.length?emails.map(x=>x.email?x.name+" — "+x.email:x.name+" — لا يوجد بريد مسجل").join("\n"):"لا يوجد طلاب مكتملة درجاتهم في هذه الفئة.";
+    $("smartQatarMessage").value=group.message;
+    $("smartCopyNamesBtn").disabled=!emails.length||missing.length>0;
+    $("smartCopyNamesBtn").title=missing.length?"توجد عناوين بريد غير مسجلة":"نسخ عناوين البريد إلى BCC";
+    $("smartQatarNamesPreview").dataset.missing=String(missing.length);
   }
   async function copyText(text){
     if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return;}
@@ -189,21 +194,27 @@
   }
   async function copyQatarNames(){
     if(!analyzed)return;
-    const people=getLevelStudents($("smartQatarLevel").value);
-    if(!people.length){alert("لا يوجد طلاب مكتملة درجاتهم في هذا المستوى.");return;}
-    try{await copyText(people.map(s=>s.name).join("\n"));alert("تم نسخ أسماء "+people.length+" طالبًا. افتح تعليم قطر والصقها في خانة To. لم يتم إرسال الرسالة.");}
-    catch(e){alert("تعذر نسخ الأسماء تلقائيًا. يمكنك تحديد الأسماء الظاهرة ونسخها يدويًا.");}
+    const people=qatarGroupStudents();
+    const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
+    const emails=people.map(s=>String((contacts[s.name]||{}).email||"").trim());
+    const missing=people.filter((s,i)=>!emails[i]);
+    if(!people.length){alert("لا يوجد طلاب في فئة الأداء المحددة.");return;}
+    if(missing.length){alert("لا يمكن نسخ القائمة؛ توجد عناوين بريد غير مسجلة للأسماء التالية:\n"+missing.map(s=>s.name).join("، "));return;}
+    try{await copyText(emails.join("; "));alert("تم نسخ "+emails.length+" عنوان بريد. افتح تعليم قطر والصقها في خانة BCC.");}
+    catch(e){alert("تعذر نسخ العناوين تلقائيًا. حاول مرة أخرى.");}
   }
   async function openQatarAndCopyMessage(){
     if(!analyzed)return;
-    const people=getLevelStudents($("smartQatarLevel").value);if(!people.length){alert("لا يوجد طلاب في هذا المستوى.");return;}
+    const people=qatarGroupStudents();
+    if(!people.length){alert("لا يوجد طلاب في هذه الفئة.");return;}
     const portal=window.open("https://qeducation.edu.gov.qa/inbox","_blank");
-    if(!portal){alert("اسمح بالنوافذ المنبثقة ثم أعد المحاولة.");return;}
+    if(!portal){alert("اسمح بالنوافذ المنبثقة لموقع POINTS ثم أعد المحاولة.");return;}
     try{
       await copyText($("smartQatarMessage").value.trim());
-      const reason=LEVELS.find(l=>l.id===$("smartQatarLevel").value).label+" — "+analyzed.exam.name;
-      people.forEach(p=>{const c=(typeof getCurrentParentContacts==="function"?getCurrentParentContacts():{})[p.name]||{};try{logParentMessage(p.name,c.phone||"",c.email||"",$("smartQatarMessage").value,reason,($("smartQatarLevel").value==="high"||$("smartQatarLevel").value==="elevated")?"positive":"negative","qeducation","تم فتح المنصة وتجهيز الرسالة — بانتظار الإرسال");}catch(e){}});
-      alert("تم فتح منصة قطر ونسخ نص الرسالة. انسخ الأسماء من زر «نسخ أسماء المستلمين إلى To» بشكل منفصل، ثم الصق النص في الرسالة وأرسلها يدويًا.");
+      const reason=(GROUPS.find(g=>g.id===selectedQatarGroup)||GROUPS[0]).label+" — "+analyzed.exam.name;
+      const contacts=typeof getCurrentParentContacts==="function"?(getCurrentParentContacts()||{}):{};
+      people.forEach(p=>{const c=contacts[p.name]||{};try{logParentMessage(p.name,c.phone||"",c.email||"",$("smartQatarMessage").value,reason,selectedQatarGroup==="highGroup"?"positive":"negative","qeducation","تم فتح المنصة ونسخ نص الرسالة — بانتظار لصق BCC والإرسال");}catch(e){}});
+      alert("تم فتح منصة قطر ونسخ نص الرسالة. اضغط «نسخ عناوين أولياء الأمور إلى BCC» والصق العناوين في خانة BCC، ثم الصق نص الرسالة وأرسلها من المنصة.");
     }catch(e){alert("فُتحت المنصة، لكن تعذر نسخ الرسالة تلقائيًا.");}
   }
   function boot(){ensureModal();}
