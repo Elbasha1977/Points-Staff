@@ -80,7 +80,7 @@
     panel.innerHTML="";
     const heading=document.createElement("strong");heading.textContent="تعذر إظهار أيقونة تحليل الدرجات";
     const detail=document.createElement("div");detail.textContent=(code?"رمز الخطأ: "+code+" — ":"")+message;
-    const note=document.createElement("div");note.textContent="الباقة PRO يفترض أن تدعم الميزة. أرسل صورة هذه الرسالة لتحديد إعداد الحساب أو الترخيص الذي يحتاج إلى تصحيح.";
+    const note=document.createElement("div");note.textContent="إذا كانت الميزة مفعّلة في ترخيصك، أرسل صورة الرسالة لفحص صلاحية الحساب والاتصال بالخادم."
     panel.append(heading,detail,note);
     if(panel.parentElement!==host)host.appendChild(panel);
   }
@@ -97,8 +97,16 @@
     // لا نعتمد على features داخل checkAppLicense؛ فهذا كتالوج ترخيص التطبيق
     // وقد لا يحتوي مفاتيح الميزات الإضافية مثل gradeAnalysis.
     const check=firebase.app().functions("us-central1").httpsCallable("checkCustomerFeature");
-    const response=await check({feature:featureKey});
-    return response.data?.success===true && response.data?.allowed===true;
+    try{
+      const response=await check({feature:featureKey});
+      return response.data?.success===true && response.data?.allowed===true;
+    }catch(error){
+      const code=String(error?.code||"").replace(/^functions\//,"");
+      const message=String(error?.message||"");
+      // رفض الميزة بسبب عدم تفعيلها في الباقة حالة طبيعية: أخفِ الأيقونة فقط.
+      if(code==="permission-denied" && message.includes("الميزة غير متاحة ضمن باقة العميل الحالية"))return false;
+      throw error;
+    }
   }
   function applyFeatureLauncherVisibility(featureKey,enabled){
     const hints=VISIBILITY_HINTS[featureKey]||null;
@@ -208,7 +216,7 @@
         if(!firebase.auth().currentUser||firebase.auth().currentUser.uid!==user.uid)return;
         analysisFeatureAllowed=allowed===true;
         if(analysisFeatureAllowed){removeDiagnostic();createButton();}
-        else {removeButton();showDiagnostic(new Error("الخادم لم يمنح صلاحية gradeAnalysis لهذا الحساب رغم تسجيل الدخول."));}
+        else {removeButton();removeDiagnostic();}
         let isGlobalAdmin=false;
         try{
           const snap=await firebase.firestore().collection("users").doc(user.uid).get();
