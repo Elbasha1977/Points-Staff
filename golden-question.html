@@ -14,7 +14,7 @@
 <div class="notice">بعد بدء أول محاولة يُقفل تعديل السؤال لذلك الفصل والتاريخ. يكتب الطالب الإجابة وسبب اختياره باللغة الإنجليزية، ولا تُضاف النقاط إلا بعد اعتماد المعلم.</div></section>
 <section class="card"><h2>إجابات الطلاب — مراجعة المعلم</h2><div id="reviewList">اختر الفصل والتاريخ ثم اضغط تحميل الإجابات.</div></section><section class="card"><h2>الأسئلة السابقة والقادمة</h2><div id="historyList"></div></section></main></div>
 <script>
-const firebaseConfig={apiKey:"AIzaSyCAeHOVGUp7GWcPcUh0XtBvmTwLGdcBCJE",authDomain:"school-points-qatar.firebaseapp.com",projectId:"school-points-qatar",storageBucket:"school-points-qatar.firebasestorage.app",messagingSenderId:"689880020347",appId:"1:689880020347:web:24305b6f89ac3448acb9de"};
+const firebaseConfig={apiKey:"AIzaSyCAeHOVGUpG7WcPcUh0XtBvmTwLGdcBCJE",authDomain:"school-points-qatar.firebaseapp.com",projectId:"school-points-qatar",storageBucket:"school-points-qatar.firebasestorage.app",messagingSenderId:"689880020347",appId:"1:689880020347:web:24305b6f89ac3448acb9de"};
 if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore(),fn=firebase.app().functions("us-central1"),$=id=>document.getElementById(id),call=n=>fn.httpsCallable(n),ADMIN="hwPgzTQbdfUJa45G2Wwc79ANNJE2";let schoolId="",classes=[];
 function qdate(){const p=new Intl.DateTimeFormat("en",{timeZone:"Asia/Qatar",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()),g=t=>p.find(x=>x.type===t)?.value||"";return g("year")+"-"+g("month")+"-"+g("day");}
 function say(t,bad=false){$("status").textContent=t;$("status").style.display="block";$("status").style.background=bad?"#fee2e2":"#fffbeb";}
