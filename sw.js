@@ -1,4 +1,4 @@
-const CACHE_NAME = "points-staff-shell-root-v21";
+const CACHE_NAME = "points-staff-shell-root-v22";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
@@ -43,6 +43,14 @@ self.addEventListener("fetch", event => {
       });
       if (!smartTagFound) {
         const script = '<script src="./smart-academic-messaging.js?v=' + smartMessagingVersion + '" defer></script>';
+        const closingIndex = html.toLowerCase().lastIndexOf("</body>");
+        if (closingIndex >= 0) html = html.slice(0, closingIndex) + script + html.slice(closingIndex);
+        else html += script;
+      }
+      const staffToolsVersion = "20261127-staff-tools-v1";
+      const staffToolsTag = /<script\\b[^>]*\\bsrc=["']([^"']*staff-tools-launchers\\.js)(?:\\?[^"']*)?["'][^>]*><\\/script>/i;
+      if (!staffToolsTag.test(html)) {
+        const script = '<script src="./staff-tools-launchers.js?v=' + staffToolsVersion + '" defer></script>';
         const closingIndex = html.toLowerCase().lastIndexOf("</body>");
         if (closingIndex >= 0) html = html.slice(0, closingIndex) + script + html.slice(closingIndex);
         else html += script;
