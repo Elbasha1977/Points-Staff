@@ -8080,6 +8080,23 @@ window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,o
       overlay.style.display = "";
     } catch (error) {
       console.error("POINTS Staff Next button transition failed:", error);
+
+      // A late optional-form setup error must not cover a login form that
+      // has already been created. Reveal that form and keep its login action.
+      var existingLogin = document.getElementById("loginOverlay");
+      if (existingLogin) {
+        window.__POINTS_INTRO_CONTINUED = true;
+        intro.style.display = "none";
+        existingLogin.style.display = "flex";
+        existingLogin.style.visibility = "visible";
+        existingLogin.style.zIndex = "400001";
+        button.disabled = false;
+        transitioning = false;
+        var previousMessage = document.getElementById("pointsIntroTransitionError");
+        if (previousMessage) previousMessage.remove();
+        return;
+      }
+
       window.__POINTS_INTRO_CONTINUED = false;
       intro.style.display = "flex";
       button.disabled = false;
@@ -8095,7 +8112,7 @@ window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,o
           "border:1px solid #fecaca;text-align:center;direction:rtl;font-weight:bold;";
         document.body.appendChild(message);
       }
-      message.textContent = "تعذر فتح شاشة تسجيل الدخول. حاول مرة أخرى بعد تحديث الصفحة.";
+      message.textContent = "تعذر إنشاء شاشة الدخول: " + String(error && error.message || error || "خطأ غير معروف");
     }
   }, true);
 })();
