@@ -501,7 +501,6 @@ body { background: linear-gradient(135deg, #dbeafe, #c7d2fe); padding: 20px; }
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <style>/* Firebase manager dashboard scrolling fix */ html,body{height:auto!important;min-height:100%;overflow-y:auto!important;overflow-x:hidden!important} #tempAdminPanel{overscroll-behavior:contain}</style><style id="firebase-scroll-fix">
 html,body{height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important}
@@ -603,14 +602,7 @@ body{overscroll-behavior-y:auto}
                 </div>
             </div>
 
-                        <div style="display:flex;justify-content:center;margin:0 0 14px;">
-                <button id="lwsLaunchBtn" data-feature="liveWorksheets" class="btn" type="button"
-                    onclick="POINTS_LWS.open()" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);min-width:220px;padding:13px 22px;font-size:16px;">
-                    📝 Live Worksheets
-                </button>
-            </div>
-
-<div class="row1">
+            <div class="row1">
                 <div class="dropdown">
                     <button class="dropdown-btn">📋 إدارة الصفوف <span>▼</span></button>
                     <div class="dropdown-content">
@@ -696,13 +688,6 @@ body{overscroll-behavior-y:auto}
 
                 <a href="daily-challenge.html" data-feature="dailyChallenge" class="daily-challenge-direct-btn" aria-label="فتح إدارة تحدي اليوم" style="background:linear-gradient(135deg,#f97316,#dc2626);color:#fff;padding:10px 20px;border:0;border-radius:16px;font-size:14px;font-weight:800;cursor:pointer;transition:.3s;min-width:150px;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;box-shadow:0 4px 12px rgba(220,38,38,.2);">🔥 تحدي اليوم</a>
                 <button class="developer-direct-btn" id="aboutBtnDirect">👨‍💻 عن المطور</button>
-            </div>
-            <div id="studentAnswersLaunchWrap" style="display:flex;justify-content:center;margin:18px 0 4px;">
-                <button id="studentAnswersLaunchBtn" class="btn" type="button"
-                    onclick="POINTS_LWS.openGrading()"
-                    style="background:linear-gradient(135deg,#8b5cf6,#d11f8a);min-width:280px;padding:14px 24px;font-size:17px;box-shadow:0 8px 20px rgba(109,40,217,.18);">
-                    📝 تصحيح إجابات الطلاب
-                </button>
             </div>
         </div>
     </div>
@@ -1012,8 +997,7 @@ body{overscroll-behavior-y:auto}
                                 <th style="padding: 8px; border: 1px solid #3730a3;">المستوى الجديد</th>
                             </tr>
                         </thead>
-                        <tbody id="classificationPreviewBody"></tbody>                    </table>
-                </div>
+                        <tbody id="classificationPreviewBody"></tbody>                    </table>                </div>
                 <div id="classificationPreviewSummary" style="margin-top: 12px; padding: 10px; border-radius: 10px; text-align: center; font-weight: bold;"></div>
             </div>
         </div>
@@ -1052,9 +1036,6 @@ body{overscroll-behavior-y:auto}
     <div class="modal-content large" style="position: relative;">
         <button class="modal-close-x" id="closeParentContactXBtn" onclick="closeParentContactModal(); event.stopPropagation();">✕</button>
         <h2>📞 التواصل مع ولي الأمر - صف: <span id="currentClassForContact"></span></h2>
-        <div style="display:flex;justify-content:center;margin:12px 0 18px;">
-            <button type="button" id="openBulkEmailBtn" class="send-btn email-send-btn" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);padding:12px 22px;">📨 إرسال إيميل جماعي لأولياء الأمور</button>
-        </div>
         
         <div class="bulk-input-area">
             <h3>🚀 إدخال سريع - نسخ ولصق من إكسل</h3>
@@ -1118,36 +1099,6 @@ body{overscroll-behavior-y:auto}
     </div>
 </div>
 
-<!-- ==================== نافذة البريد الإلكتروني الجماعي ==================== -->
-<div id="bulkEmailModal" class="modal" style="z-index:1200;">
-  <div class="modal-content large" style="max-width:850px;position:relative;">
-    <button class="modal-close-x" type="button" onclick="closeBulkEmailModal(); event.stopPropagation();">✕</button>
-    <h2>📨 إرسال إيميل جماعي لأولياء الأمور</h2>
-    <p style="text-align:center;color:#64748b;font-size:13px;">اختر الطلاب، ثم حدد نوع الرسالة وراجع نصها قبل فتح Outlook</p>
-    <div style="display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 0;">
-      <strong>👨‍🎓 قائمة طلاب الصف</strong>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button type="button" class="close-modal" onclick="setBulkEmailSelection(true)" style="background:#0f766e;">تحديد الكل</button>
-        <button type="button" class="close-modal cancel-btn" onclick="setBulkEmailSelection(false)">إلغاء التحديد</button>
-      </div>
-    </div>
-    <div id="bulkEmailStudentsList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:7px;max-height:230px;overflow:auto;padding:10px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;"></div>
-    <div style="text-align:center;font-weight:bold;margin:8px 0;color:#0f766e;">عدد المختارين: <span id="bulkEmailSelectedCount">0</span></div>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0;">
-      <button type="button" id="bulkEmailPositiveBtn" class="close-modal" onclick="setBulkEmailEmotion('positive')" style="background:#059669;">😊 رسالة إيجابية</button>
-      <button type="button" id="bulkEmailNegativeBtn" class="close-modal" onclick="setBulkEmailEmotion('negative')" style="background:#dc2626;">😠 رسالة سلبية</button>
-    </div>
-    <div class="select-group"><label for="bulkEmailReason">📌 سبب الرسالة:</label><select id="bulkEmailReason"><option value="">-- اختر السبب --</option></select></div>
-    <div class="textarea-group"><label for="bulkEmailSubject">📝 عنوان البريد (Subject):</label><input id="bulkEmailSubject" type="text" value="رسائل بالبريد الإلكتروني للطلاب" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;direction:rtl;"></div>
-    <div class="textarea-group"><label for="bulkEmailMessage">✏️ نص الرسالة (بدون أسماء الطلاب):</label><textarea id="bulkEmailMessage" rows="7" class="message-textarea"></textarea></div>
-    <div style="background:#eff6ff;color:#1e40af;padding:10px;border-radius:10px;font-size:12px;text-align:center;">سيتم إدراج الأسماء العربية المختارة في خانة المستلم في Outlook. راجع تعرف Outlook على الأسماء قبل الإرسال.</div>
-    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:16px;">
-      <button type="button" id="launchBulkOutlookBtn" class="send-btn email-send-btn" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);">📧 فتح Outlook وتسجيل الرسائل</button>
-      <button type="button" class="close-modal cancel-btn" onclick="closeBulkEmailModal();">إلغاء</button>
-    </div>
-  </div>
-</div>
-
 <!-- ==================== نافذة سجل مراسلات أولياء الأمور ==================== -->
 <div id="messagesLogModal" class="modal">
     <div class="modal-content large" style="max-width: 1200px; position: relative;">
@@ -1166,7 +1117,6 @@ body{overscroll-behavior-y:auto}
             <button onclick="filterMessagesLog('whatsapp')" id="msgFilterWhatsapp" style="padding: 10px 20px; border: none; border-radius: 15px; font-size: 14px; font-weight: bold; cursor: pointer; background: #dcfce7; color: #166534;">💬 واتساب</button>
             <button onclick="filterMessagesLog('email')" id="msgFilterEmail" style="padding: 10px 20px; border: none; border-radius: 15px; font-size: 14px; font-weight: bold; cursor: pointer; background: #dbeafe; color: #1e40af;">📧 بريد</button>
             <button onclick="filterMessagesLog('qeducation')" id="msgFilterQeducation" style="padding: 10px 20px; border: none; border-radius: 15px; font-size: 14px; font-weight: bold; cursor: pointer; background: #ccfbf1; color: #115e59;">🎓 تعليم قطر</button>
-            <button onclick="filterMessagesLog('email_bulk')" id="msgFilterEmailBulk" style="padding: 10px 20px; border: none; border-radius: 15px; font-size: 14px; font-weight: bold; cursor: pointer; background: #e0e7ff; color: #3730a3;">📧 رسائل بالبريد الإلكتروني للطلاب</button>
         </div>
         
         <div class="search-box">
@@ -1520,7 +1470,7 @@ async function loadFirebaseData(){
   if(isSchoolManager()){
    for(const classId of classNames){
     const mirrorSnap=await firestoreDb.collection('schoolClasses').doc(firebaseProfile.schoolId+'__'+classId).get();
-    if(mirrorSnap.exists){const mirror=mirrorSnap.data();if(mirror.schoolId===firebaseProfile.schoolId&&mirror.classId===classId){if(mirror.classData!==undefined)allClassesData[classId]=mirror.classData;if(Array.isArray(mirror.messagesLog)){if(!messagesLog||Array.isArray(messagesLog)||typeof messagesLog!=='object')messagesLog={};messagesLog[classId]=mergeParentMessageArrays(messagesLog[classId],mirror.messagesLog);}}}
+    if(mirrorSnap.exists){const mirror=mirrorSnap.data();if(mirror.schoolId===firebaseProfile.schoolId&&mirror.classId===classId&&mirror.classData!==undefined)allClassesData[classId]=mirror.classData;}
    }
   }
   // Ensure a school manager always has a valid current class and initialized tenant-only class data.
@@ -1583,7 +1533,7 @@ async function saveFirebaseData(){
     // Secure sidecar is reconciled first. Existing balances are retained server-side;
     // new students start at zero. Do not write the mirror if this step fails.
     await syncRoster({classId,schoolId:tenant,studentNames:students.map(s=>s&&s.name||'')});
-    const mirror={classId,classData,messagesLog:Array.isArray(messagesLog[classId])?messagesLog[classId]:[],schoolId:tenant,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
+    const mirror={classId,classData,schoolId:tenant,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:firebaseCurrentUser.uid};
     batch.set(firestoreDb.collection('schoolClasses').doc(tenant+'__'+classId),mirror,{merge:true});
    }
    await batch.commit();
@@ -1649,53 +1599,7 @@ let monthlyPoints = {};
 let availablePrizesCount = 5;
 let savedGroupings = {};
 let diagnosticData = {};
-
 let messagesLog = {};
-// أرشيف مراسلات Excel الموحد بتاريخ 24-11-2026؛ يدمج مرة واحدة لكل سجل دون حذف السجل الحالي.
-const importedParentMessageArchive = [{"className":"السادس 2","studentName":"محمد كريم محمد على حسن طه","phone":"31155116","email":"","messageText":"⚠️ السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود لفت عنايتكم إلى أن أبناءكم يحتاجون إلى مزيد من المتابعة والاهتمام في مادة اللغة الإنجليزية.\nالسبب: ⚠️ سلوك سيء\n\nشاكرين لكم اهتمامكم وتعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"⚠️ سلوك سيء","type":"negative","medium":"email","status":"تم الإرسال","subject":"رسالة تحفيز لبدل جهد أكبر","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٣٣:٢٠ ص","importId":"legacy_20261124_001"},{"className":"السادس 2","studentName":"مسعود احمد مسعود العبري","phone":"55988966","email":"","messageText":"⚠️ السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود لفت عنايتكم إلى أن أبناءكم يحتاجون إلى مزيد من المتابعة والاهتمام في مادة اللغة الإنجليزية.\nالسبب: ⚠️ سلوك سيء\n\nشاكرين لكم اهتمامكم وتعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"⚠️ سلوك سيء","type":"negative","medium":"email","status":"تم الإرسال","subject":"رسالة تحفيز لبدل جهد أكبر","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٣٣:٢٠ ص","importId":"legacy_20261124_002"},{"className":"السادس 2","studentName":"محمد عيسى احمد محمد الحمادى","phone":"55833934","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_003"},{"className":"السادس 2","studentName":"محمد كريم محمد على حسن طه","phone":"31155116","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_004"},{"className":"السادس 2","studentName":"مالك عزام ذياب عبدالمالك","phone":"50898800","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_005"},{"className":"السادس 2","studentName":"ريان احمد سفيان الجمل","phone":"66452466","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_006"},{"className":"السادس 2","studentName":"احمد على فالح الجمل","phone":"70181222","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_007"},{"className":"السادس 2","studentName":"عمر يونس الشلوت","phone":"55700721","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_008"},{"className":"السادس 2","studentName":"مؤتمن منتصر يعقوب عبدالقادر احمد","phone":"33026286","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_009"},{"className":"السادس 2","studentName":"الهادي سمير الحاج عبدالله","phone":"33168754","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_010"},{"className":"السادس 2","studentName":"تميم المعتزبالله عادل احمد البحلس","phone":"77212145","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_011"},{"className":"السادس 2","studentName":"حمد محمد فاروق","phone":"33532390","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_012"},{"className":"السادس 2","studentName":"خالد سعيد عبد الحميد عبد الغفار محمد","phone":"51179427","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_013"},{"className":"السادس 2","studentName":"عناب معتصم اسامه عناب","phone":"50065073","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_014"},{"className":"السادس 2","studentName":"صالح عون علي محمد القمش","phone":"30192229","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_015"},{"className":"السادس 2","studentName":"احمد الامين احمد الامين","phone":"55189188","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_016"},{"className":"السادس 2","studentName":"أحمد عمر احمد عبدالرحمن الجهرمى","phone":"66665644","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_017"},{"className":"السادس 2","studentName":"جاسم محمد فاضل الشقيرى المهندى","phone":"30001098","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_018"},{"className":"السادس 2","studentName":"محمد شوقي قاسم فاضل","phone":"31668881","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_019"},{"className":"السادس 2","studentName":"صالح احمد عبدالقادر حموده","phone":"66447223","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_020"},{"className":"السادس 2","studentName":"هزاع جمال علي الجعل","phone":"66872221","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_021"},{"className":"السادس 2","studentName":"جاسم احمد صالح عبدالله السحيقى","phone":"66050150","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_022"},{"className":"السادس 2","studentName":"ياسين عماد مسعد حامد الصباغ","phone":"70637619","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_023"},{"className":"السادس 2","studentName":"فهد احمد ابراهيم حمد الطوالبة","phone":"55767693","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_024"},{"className":"السادس 2","studentName":"ريان بشار حمزه","phone":"66967796","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_025"},{"className":"السادس 2","studentName":"احمد غلام احمد تاج كاركشا","phone":"55194539","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_026"},{"className":"السادس 2","studentName":"يحيى احمد عاطف عبدالسلام العبد","phone":"55792097","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_027"},{"className":"السادس 2","studentName":"سليمان زياد سليمان عبدالخالق","phone":"66729156","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٣:١٤ ص","importId":"legacy_20261124_028"},{"className":"السادس 2","studentName":"ياسين عماد مسعد حامد الصباغ","phone":"70637619","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم ياسين عماد مسعد حامد الصباغ قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🌟 سلوك ممتاز\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🌟 سلوك ممتاز","type":"positive","medium":"qeducation","status":"","subject":"","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:٣٧:٢٧ ص","importId":"legacy_20261124_029"},{"className":"السادس 2","studentName":"حمد محمد فاروق","phone":"33532390","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_030"},{"className":"السادس 2","studentName":"خالد سعيد عبد الحميد عبد الغفار محمد","phone":"51179427","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_031"},{"className":"السادس 2","studentName":"عناب معتصم اسامه عناب","phone":"50065073","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_032"},{"className":"السادس 2","studentName":"محمد عيسى احمد محمد الحمادى","phone":"55833934","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_033"},{"className":"السادس 2","studentName":"مالك عزام ذياب عبدالمالك","phone":"50898800","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_034"},{"className":"السادس 2","studentName":"ريان احمد سفيان الجمل","phone":"66452466","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_035"},{"className":"السادس 2","studentName":"محمد عبدالله","phone":"55313191","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_036"},{"className":"السادس 2","studentName":"مؤتمن منتصر يعقوب عبدالقادر احمد","phone":"33026286","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_037"},{"className":"السادس 2","studentName":"تميم المعتزبالله عادل احمد البحلس","phone":"77212145","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_038"},{"className":"السادس 2","studentName":"احمد الامين احمد الامين","phone":"55189188","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_039"},{"className":"السادس 2","studentName":"عمر يونس الشلوت","phone":"55700721","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_040"},{"className":"السادس 2","studentName":"زياد بوحده","phone":"55073427","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_041"},{"className":"السادس 2","studentName":"صالح احمد عبدالقادر حموده","phone":"66447223","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_042"},{"className":"السادس 2","studentName":"صالح عون علي محمد القمش","phone":"30192229","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_043"},{"className":"السادس 2","studentName":"جاسم احمد صالح عبدالله السحيقى","phone":"66050150","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_044"},{"className":"السادس 2","studentName":"جاسم محمد فاضل الشقيرى المهندى","phone":"30001098","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_045"},{"className":"السادس 2","studentName":"محمد شوقي قاسم فاضل","phone":"31668881","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_046"},{"className":"السادس 2","studentName":"ياسين عماد مسعد حامد الصباغ","phone":"70637619","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_047"},{"className":"السادس 2","studentName":"فهد احمد ابراهيم حمد الطوالبة","phone":"55767693","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_048"},{"className":"السادس 2","studentName":"ريان بشار حمزه","phone":"66967796","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_049"},{"className":"السادس 2","studentName":"هزاع جمال علي الجعل","phone":"66872221","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_050"},{"className":"السادس 2","studentName":"سليمان زياد سليمان عبدالخالق","phone":"66729156","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_051"},{"className":"السادس 2","studentName":"احمد غلام احمد تاج كاركشا","phone":"55194539","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_052"},{"className":"السادس 2","studentName":"يحيى احمد عاطف عبدالسلام العبد","phone":"55792097","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٧:٤٩ ص","importId":"legacy_20261124_053"},{"className":"السادس 2","studentName":"صالح احمد عبدالقادر حموده","phone":"66447223","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم صالح احمد عبدالقادر حموده قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"whatsapp","status":"","subject":"","date":"٨‏/١١‏/٢٠٢٦","time":"٧:٤٩:٣٥ م","importId":"legacy_20261124_054"},{"className":"السادس 2","studentName":"تميم المعتزبالله عادل احمد البحلس","phone":"77212145","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم تميم المعتزبالله عادل احمد البحلس قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"whatsapp","status":"","subject":"","date":"٢٤‏/٩‏/٢٠٢٦","time":"١١:١٣:٥٢ ص","importId":"legacy_20261124_055"},{"className":"السادس 2","studentName":"الهادي سمير الحاج عبدالله","phone":"33168754","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم الهادي سمير الحاج عبدالله قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"whatsapp","status":"","subject":"","date":"٢٤‏/٩‏/٢٠٢٦","time":"١١:١٠:١٧ ص","importId":"legacy_20261124_056"},{"className":"السادس 2","studentName":"يحيى احمد عاطف عبدالسلام العبد","phone":"55792097","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم يحيى احمد عاطف عبدالسلام العبد قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"whatsapp","status":"","subject":"","date":"٢٣‏/٩‏/٢٠٢٦","time":"٣:٣٨:٢٢ م","importId":"legacy_20261124_057"},{"className":"السادس 4","studentName":"باسل عمار ياسر احمد محمود","phone":"66564051","email":"","messageText":"⚠️ السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود لفت عنايتكم إلى أن نجلكم يحتاج إلى مزيد من المتابعة والاهتمام في مادة اللغة الإنجليزية.\nالسبب: ⚠️تدني درجته في منتصف الفصل الدراسي الاول \n\nشاكرين لكم اهتمامكم وتعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"⚠️ سلوك سيء","type":"negative","medium":"email","status":"تم الإرسال","subject":"رسالة تشجيع للطالب","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٣٩:٣٥ ص","importId":"legacy_20261124_058"},{"className":"السادس 4","studentName":"محمد سيف الرحمن عبدالمنعم حسين حنفى","phone":"30507023","email":"","messageText":"⚠️ السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود لفت عنايتكم إلى أن نجلكم يحتاج إلى مزيد من المتابعة والاهتمام في مادة اللغة الإنجليزية.\nالسبب: ⚠️تدني درجته في منتصف الفصل الدراسي الاول \n\nشاكرين لكم اهتمامكم وتعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"⚠️ سلوك سيء","type":"negative","medium":"email","status":"تم الإرسال","subject":"رسالة تشجيع للطالب","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٣٩:٣٥ ص","importId":"legacy_20261124_059"},{"className":"السادس 4","studentName":"فواز فيصل ادهام فيصل المهندى","phone":"71155117","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_060"},{"className":"السادس 4","studentName":"عبدالهادى سليمان الهادي اسحق","phone":"66818700","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_061"},{"className":"السادس 4","studentName":"نصر موفق نصر جوهره","phone":"55861239","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_062"},{"className":"السادس 4","studentName":"محمد عبدالناصر ثابت الفتى","phone":"66222883","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_063"},{"className":"السادس 4","studentName":"ضياء الدين هشام النيل سعيد","phone":"50396604","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_064"},{"className":"السادس 4","studentName":"محمد الخواض محمدالامين محمدنور","phone":"66911536","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_065"},{"className":"السادس 4","studentName":"أواب ابوالقاسم حسن جادالله","phone":"70901184","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_066"},{"className":"السادس 4","studentName":"عبدالله عبدالعزيز على ال شاهين السليطى","phone":"55038855","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_067"},{"className":"السادس 4","studentName":"هيثم علي محمد الرقب","phone":"30571091","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_068"},{"className":"السادس 4","studentName":"الياس محمد زين دغمش","phone":"66135301","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_069"},{"className":"السادس 4","studentName":"يوسف عصام يوسف بابكر","phone":"55417545","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_070"},{"className":"السادس 4","studentName":"يوسف اشرف مصطفي محمد علي","phone":"33364990","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_071"},{"className":"السادس 4","studentName":"تميم عبدالله سلطان على العلى","phone":"55567665","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_072"},{"className":"السادس 4","studentName":"بلال محمد محمد محمد حسين","phone":"66919931","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_073"},{"className":"السادس 4","studentName":"راشد احمد راشد على الشرشنى","phone":"55686544","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_074"},{"className":"السادس 4","studentName":"خليفه محمد قائد علي العتولى","phone":"66665156","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_075"},{"className":"السادس 4","studentName":"احمد خليفة سالم المحروقي","phone":"55706502","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_076"},{"className":"السادس 4","studentName":"غانم يحيى صالح عبدالله العبيدى","phone":"59900002","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_077"},{"className":"السادس 4","studentName":"وليد عاقب فيصل على","phone":"77789079","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_078"},{"className":"السادس 4","studentName":"حمزه شادى عبدالكريم قاسم","phone":"70617398","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_079"},{"className":"السادس 4","studentName":"ناجي ياسين العلي","phone":"77597788","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_080"},{"className":"السادس 4","studentName":"أحمد يوسف أحمد عبد الله العبدلي","phone":"50353003","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_081"},{"className":"السادس 4","studentName":"معاذ محمد احمد عواد احمد","phone":"70256519","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_082"},{"className":"السادس 4","studentName":"عمر محمد احمد حسين","phone":"77862188","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_083"},{"className":"السادس 4","studentName":"مالك محمد انس الفوال","phone":"33033613","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_084"},{"className":"السادس 4","studentName":"يمان عمر محمدعبدالوهاب ابوشريعه","phone":"77211791","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_085"},{"className":"السادس 4","studentName":"براء فوزي بلدي","phone":"70352759","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_086"},{"className":"السادس 4","studentName":"ورد نورالدين العسلى","phone":"55400914","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١٠:١٠:٠١ ص","importId":"legacy_20261124_087"},{"className":"السادس 4","studentName":"نصر موفق نصر جوهره","phone":"55861239","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم نصر موفق نصر جوهره قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"whatsapp","status":"","subject":"","date":"٢٣‏/٩‏/٢٠٢٦","time":"٣:٣٩:٠٥ م","importId":"legacy_20261124_088"},{"className":"السادس 6","studentName":"محمد عبدالله يوسف موسى","phone":"71115958","email":"","messageText":"⚠️ السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود لفت عنايتكم إلى أن أبناءكم يحتاجون إلى مزيد من المتابعة والاهتمام في مادة اللغة الإنجليزية.\nالسبب: ⚠️ تدني علامة منتصف الفصل الدراسي الاول\n\nشاكرين لكم اهتمامكم وتعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"⚠️ سلوك سيء","type":"negative","medium":"email","status":"تم الإرسال","subject":"رسالة تحفيز لب>ل جهد أكبر","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٣٠:٣٣ ص","importId":"legacy_20261124_089"},{"className":"السادس 6","studentName":"محمد عمر احمد الشيخ","phone":"31035833","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_090"},{"className":"السادس 6","studentName":"محمد عبدالله يوسف موسى","phone":"71115958","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_091"},{"className":"السادس 6","studentName":"عزالدين محمد عيد زكي على","phone":"55459540","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_092"},{"className":"السادس 6","studentName":"علي حسن على سويد المالكى","phone":"66111788","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_093"},{"className":"السادس 6","studentName":"على اسلام على كامل سويفى","phone":"70140029","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_094"},{"className":"السادس 6","studentName":"احمد علي حسن الصائغ","phone":"55558865","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_095"},{"className":"السادس 6","studentName":"يوسف ابراهيم عبدالله حاجى الخورى","phone":"55223505","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_096"},{"className":"السادس 6","studentName":"عمار سعيد محمد علي اسعد","phone":"33488919","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_097"},{"className":"السادس 6","studentName":"هذال فهد سيدهاشم سيدمحمد الهاشمى","phone":"55497208","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_098"},{"className":"السادس 6","studentName":"عمر أحمد بدر ابوالمجد النجار","phone":"33164388","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_099"},{"className":"السادس 6","studentName":"احمد محمد على سيد","phone":"70250188","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_100"},{"className":"السادس 6","studentName":"عبدالرحمن محمد محمود محمد ابووطفه","phone":"66060231","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_101"},{"className":"السادس 6","studentName":"قصي محمد عبدالله عبدالقوي محمد","phone":"77663777","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_102"},{"className":"السادس 6","studentName":"على ابراهيم سعيد مخيمر","phone":"66682356","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_103"},{"className":"السادس 6","studentName":"بهاء محمد عبدالحميد الشاقلدي","phone":"33428932","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_104"},{"className":"السادس 6","studentName":"محمد ناهض مسعود الحداد","phone":"55654510","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_105"},{"className":"السادس 6","studentName":"عبدالرحمن محمد هيثم محسن","phone":"33860365","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_106"},{"className":"السادس 6","studentName":"محمد عمر سالم الزاكى","phone":"55307726","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_107"},{"className":"السادس 6","studentName":"محمدعثمان زكريا محمد زكريا","phone":"55517266","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_108"},{"className":"السادس 6","studentName":"محمد لؤي وسوف","phone":"30666439","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_109"},{"className":"السادس 6","studentName":"محمد عبدالله موسى العبسي","phone":"55648042","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_110"},{"className":"السادس 6","studentName":"ريان بشير حسن الروسان","phone":"70437742","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_111"},{"className":"السادس 6","studentName":"تميم حسين زين عبدالناصر السعدى","phone":"55977170","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_112"},{"className":"السادس 6","studentName":"محمد ديسم منتصر مفتاح","phone":"70442525","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_113"},{"className":"السادس 6","studentName":"عبدالرحمن رشيد عبدالرشيد","phone":"66331662","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_114"},{"className":"السادس 6","studentName":"عاطف الله توصيف الله","phone":"70558813","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_115"},{"className":"السادس 6","studentName":"حسام احمد جبريل حبيب","phone":"70346218","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_116"},{"className":"السادس 6","studentName":"محمد عمر موسى الجراجره","phone":"55956996","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"email","status":"تم الإرسال","subject":"رسالة شكر وتقدير وتحفيز للطالب المتميز","date":"٢٤‏/١١‏/٢٠٢٦","time":"١١:٢٧:١٥ ص","importId":"legacy_20261124_117"},{"className":"السادس 6","studentName":"ريان بشير حسن الروسان","phone":"70437742","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم ريان بشير حسن الروسان قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"whatsapp","status":"","subject":"","date":"٢٤‏/٩‏/٢٠٢٦","time":"١١:٠٧:٣٩ ص","importId":"legacy_20261124_118"},{"className":"السادس 6","studentName":"محمد لؤي وسوف","phone":"30666439","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم محمد لؤي وسوف قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"whatsapp","status":"","subject":"","date":"٢٤‏/٩‏/٢٠٢٦","time":"١١:٠٦:٤٢ ص","importId":"legacy_20261124_119"},{"className":"السادس 6","studentName":"حسام احمد جبريل حبيب","phone":"70346218","email":"","messageText":"📩 السلام عليكم ورحمة الله وبركاته،\nولي الأمر المحترم، نود أن نُعلمكم أن نجلكم حسام احمد جبريل حبيب قد أظهر سلوكًا إيجابيًا ومتميزًا في مادة اللغة الإنجليزية. 🌟\nالسبب: 🗣️ مشاركة ممتازة\n\nشكرًا لتعاونكم. 🙏 \nمعلم اللغة الإنجليزية: أ.عبدالباسط عطية","reason":"🗣️ مشاركة ممتازة","type":"positive","medium":"whatsapp","status":"","subject":"","date":"٢٣‏/٩‏/٢٠٢٦","time":"٣:٣٦:٠٧ م","importId":"legacy_20261124_120"}];
-
-function parentMessageDedupKey(m) {
-  return JSON.stringify([m.studentName||'',m.phone||'',m.messageText||'',m.date||'',m.time||'',m.medium||'']);
-}
-function mergeParentMessageArrays(existing,incoming) {
-  const result=Array.isArray(existing)?existing.slice():[];
-  const seen=new Set();
-  result.forEach(m=>{if(m){if(m.id!=null)seen.add('id:'+String(m.id));seen.add('key:'+parentMessageDedupKey(m));}});
-  (Array.isArray(incoming)?incoming:[]).forEach(item=>{
-    if(!item)return;
-    const idKey=item.id!=null?'id:'+String(item.id):null;
-    const contentKey='key:'+parentMessageDedupKey(item);
-    if((idKey&&seen.has(idKey))||seen.has(contentKey))return;
-    result.push(item);if(idKey)seen.add(idKey);seen.add(contentKey);
-  });
-  return result;
-}
-function importedParentMessageTimestamp(dateText,timeText,fallbackIndex) {
-  const digitMap={'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9','۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'};
-  const norm=v=>String(v||'').replace(/[٠-٩۰-۹]/g,ch=>digitMap[ch]).replace(/[\u200e\u200f]/g,'').trim();
-  const d=norm(dateText).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  const t=norm(timeText).match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([صم])/);
-  if(!d)return new Date(2026,10,24,12,fallbackIndex).getTime();
-  let h=t?Number(t[1]):12;const min=t?Number(t[2]):0;const sec=t&&t[3]?Number(t[3]):0;
-  if(t&&t[4]==='م'&&h<12)h+=12;if(t&&t[4]==='ص'&&h===12)h=0;
-  return new Date(Number(d[3]),Number(d[2])-1,Number(d[1]),h,min,sec).getTime();
-}
-async function mergeImportedParentMessages() {
-  if(!messagesLog||Array.isArray(messagesLog)||typeof messagesLog!=='object')messagesLog={};
-  let added=0;const perClass={};
-  importedParentMessageArchive.forEach((row,index)=>{
-    if(!Object.prototype.hasOwnProperty.call(allClassesData||{},row.className))return;
-    if(!Array.isArray(messagesLog[row.className]))messagesLog[row.className]=[];
-    const imported={id:row.importId,studentName:row.studentName,phone:row.phone,email:row.email,
-      messageText:row.messageText,reason:row.reason,type:row.type,medium:row.medium,status:row.status,
-      subject:row.subject,date:row.date,time:row.time,
-      timestamp:importedParentMessageTimestamp(row.date,row.time,index),importedFromExcel:true};
-    const merged=mergeParentMessageArrays(messagesLog[row.className],[imported]);
-    if(merged.length>messagesLog[row.className].length){messagesLog[row.className]=merged;added++;perClass[row.className]=(perClass[row.className]||0)+1;}
-  });
-  if(added){localStorage.setItem('messagesLog',JSON.stringify(messagesLog));await saveFirebaseData();console.info('تم دمج رسائل Excel:',perClass);}
-  return {added,perClass};
-}
 let currentMessagesFilter = 'all';
 let currentMessagesSearchTerm = '';
 
@@ -1851,79 +1755,12 @@ function getAcademicClassification(score, total) {
     return { percentage: percentage.toFixed(1), level, color, bgColor };
 }
 
-// ==================== البريد الإلكتروني الجماعي لأولياء الأمور ====================
-let bulkEmailEmotion = 'positive';
-function openBulkEmailModal() {
-    const students = getCurrentStudents() || [];
-    if (!students.length) { alert('⚠️ لا يوجد طلاب في هذا الصف'); return; }
-    const list = document.getElementById('bulkEmailStudentsList');
-    list.innerHTML = students.map((student, index) => `<label style="display:flex;align-items:center;gap:8px;background:#fff;padding:9px;border:1px solid #e2e8f0;border-radius:9px;cursor:pointer;"><input type="checkbox" class="bulk-email-student" value="${String(student.name).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}" onchange="updateBulkEmailSelectedCount()"><span>${String(student.name).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span></label>`).join('');
-    const reason = document.getElementById('bulkEmailReason');
-    reason.innerHTML = '<option value="">-- اختر السبب --</option>';
-    messageReasons.forEach(r => { const opt = document.createElement('option'); opt.value = r; opt.textContent = r; reason.appendChild(opt); });
-    setBulkEmailEmotion('positive');
-    updateBulkEmailSelectedCount();
-    document.getElementById('bulkEmailModal').style.display = 'flex';
-}
-function closeBulkEmailModal() { document.getElementById('bulkEmailModal').style.display = 'none'; }
-function getBulkEmailSelectedNames() { return Array.from(document.querySelectorAll('.bulk-email-student:checked')).map(el => el.value); }
-function updateBulkEmailSelectedCount() { const el = document.getElementById('bulkEmailSelectedCount'); if (el) el.textContent = getBulkEmailSelectedNames().length; }
-function setBulkEmailSelection(checked) { document.querySelectorAll('.bulk-email-student').forEach(el => { el.checked = !!checked; }); updateBulkEmailSelectedCount(); }
-function setBulkEmailEmotion(emotion) {
-    bulkEmailEmotion = emotion;
-    const positive = document.getElementById('bulkEmailPositiveBtn');
-    const negative = document.getElementById('bulkEmailNegativeBtn');
-    positive.style.opacity = emotion === 'positive' ? '1' : '.55';
-    negative.style.opacity = emotion === 'negative' ? '1' : '.55';
-    const reasonSelect = document.getElementById('bulkEmailReason');
-    const previousReason = reasonSelect.value;
-    const availableReasons = emotion === 'positive' ? positivePoints : negativePoints;
-    reasonSelect.innerHTML = '<option value="">-- اختر السبب --</option>';
-    availableReasons.forEach(item => { const option = document.createElement('option'); option.value = item.name; option.textContent = item.name; reasonSelect.appendChild(option); });
-    if (availableReasons.some(item => item.name === previousReason)) reasonSelect.value = previousReason;
-    updateBulkEmailMessage();
-}
-function updateBulkEmailMessage() {
-    const reason = document.getElementById('bulkEmailReason')?.value || '-- لم يتم اختيار السبب --';
-    const message = bulkEmailEmotion === 'positive'
-        ? `📩 السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود أن نعبر لكم عن تقديرنا لما أظهره أبناؤكم من سلوك إيجابي وتميز في مادة اللغة الإنجليزية. 🌟\nالسبب: ${reason}\n\nشكرًا لتعاونكم ودعمكم المستمر. 🙏\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`
-        : `⚠️ السلام عليكم ورحمة الله وبركاته،\nالسادة أولياء الأمور الكرام، نود لفت عنايتكم إلى أن أبناءكم يحتاجون إلى مزيد من المتابعة والاهتمام في مادة اللغة الإنجليزية.\nالسبب: ${reason}\n\nشاكرين لكم اهتمامكم وتعاونكم.\nمعلم اللغة الإنجليزية: أ. عبدالباسط عطية`;
-    document.getElementById('bulkEmailMessage').value = message;
-}
-function launchBulkOutlookEmail() {
-    const names = getBulkEmailSelectedNames();
-    if (!names.length) { alert('⚠️ اختر طالبًا واحدًا على الأقل'); return; }
-    const subject = (document.getElementById('bulkEmailSubject').value || 'رسائل بالبريد الإلكتروني للطلاب').trim();
-    const message = (document.getElementById('bulkEmailMessage').value || '').trim();
-    const reason = document.getElementById('bulkEmailReason').value || 'غير محدد';
-    if (!message) { alert('⚠️ اكتب نص الرسالة أولاً'); return; }
-    // Outlook يستقبل أسماء الطلاب العربية كما هي في حقل To ليقوم بحلّها من دليل العناوين الخاص بالمستخدم.
-    const recipients = names.join('; ');
-    const mailtoUrl = 'mailto:?to=' + encodeURIComponent(recipients) + '&subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(message);
-    const nowStatus = 'تم الإرسال'; // وفق طلب المستخدم: تسجل الحالة عند فتح مسودة Outlook.
-    names.forEach(name => {
-        const contacts = getCurrentParentContacts() || {};
-        const contact = contacts[name] || {};
-        logParentMessage(name, contact.phone || '', contact.email || '', message, reason, bulkEmailEmotion, 'email_bulk', nowStatus, subject);
-    });
-    try {
-        window.location.href = mailtoUrl;
-        closeBulkEmailModal();
-        alert('✅ تم فتح مسودة البريد وتسجيل الرسائل للطلاب المختارين في سجل مراسلات أولياء الأمور.\nراجع أن Outlook تعرّف على جميع الأسماء قبل الضغط على إرسال.');
-    } catch (error) {
-        alert('⚠️ تعذر فتح Outlook. تم تسجيل العملية في السجل؛ تحقق من إعداد تطبيق البريد الافتراضي في جهازك.');
-    }
-}
-
 // ==================== سجل مراسلات أولياء الأمور ====================
-function logParentMessage(studentName, phone, email, messageText, reason, type, medium, status, subject) {
-    const classKey = String(currentClass || '').trim();
-    if (!classKey) throw new Error('تعذر تحديد الصف الحالي لتسجيل الرسالة.');
-    if (!messagesLog || typeof messagesLog !== 'object' || Array.isArray(messagesLog)) messagesLog = {};
-    if (!Array.isArray(messagesLog[classKey])) messagesLog[classKey] = [];
+function logParentMessage(studentName, phone, email, messageText, reason, type, medium) {
+    if (!messagesLog[currentClass]) messagesLog[currentClass] = [];
     const now = new Date();
     const record = {
-        id: 'msg_' + (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '_' + Math.random().toString(36).slice(2))),
+        id: Date.now() + Math.random(),
         studentName: studentName,
         phone: phone || '',
         email: email || '',
@@ -1931,17 +1768,12 @@ function logParentMessage(studentName, phone, email, messageText, reason, type, 
         reason: reason || 'غير محدد',
         type: type,
         medium: medium,
-        status: status || '',
-        subject: subject || '',
         date: now.toLocaleDateString('ar-EG'),
         time: now.toLocaleTimeString('ar-EG'),
         timestamp: now.getTime()
     };
-    messagesLog[classKey].push(record);
+    messagesLog[currentClass].push(record);
     localStorage.setItem('messagesLog', JSON.stringify(messagesLog));
-    if (typeof saveFirebaseData === 'function' && firebaseSyncReady) {
-        saveFirebaseData().catch(error => console.error('Parent message cloud sync failed:', error));
-    }
 }
 
 function showMessagesLogModal() {
@@ -1966,7 +1798,7 @@ function closeMessagesLogModal() {
 }
 
 function updateMessagesFilterButtons() {
-    const filters = ['all', 'positive', 'negative', 'whatsapp', 'email', 'qeducation', 'email_bulk'];
+    const filters = ['all', 'positive', 'negative', 'whatsapp', 'email', 'qeducation'];
     filters.forEach(f => {
         const btn = document.getElementById('msgFilter' + f.charAt(0).toUpperCase() + f.slice(1));
         if (!btn) return;
@@ -1976,7 +1808,6 @@ function updateMessagesFilterButtons() {
             else if (f === 'whatsapp') { btn.style.background = 'linear-gradient(135deg, #25D366, #128C7E)'; btn.style.color = 'white'; }
             else if (f === 'email') { btn.style.background = 'linear-gradient(135deg, #3b82f6, #2563eb)'; btn.style.color = 'white'; }
             else if (f === 'qeducation') { btn.style.background = 'linear-gradient(135deg, #0f766e, #0d9488)'; btn.style.color = 'white'; }
-            else if (f === 'email_bulk') { btn.style.background = 'linear-gradient(135deg, #4f46e5, #3730a3)'; btn.style.color = 'white'; }
             else { btn.style.background = 'linear-gradient(135deg, #0891b2, #0e7490)'; btn.style.color = 'white'; }
             btn.style.transform = 'scale(1.05)';
             btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
@@ -1986,7 +1817,6 @@ function updateMessagesFilterButtons() {
             else if (f === 'whatsapp') { btn.style.background = '#dcfce7'; btn.style.color = '#166534'; }
             else if (f === 'email') { btn.style.background = '#dbeafe'; btn.style.color = '#1e40af'; }
             else if (f === 'qeducation') { btn.style.background = '#ccfbf1'; btn.style.color = '#115e59'; }
-            else if (f === 'email_bulk') { btn.style.background = '#e0e7ff'; btn.style.color = '#3730a3'; }
             else { btn.style.background = '#e2e8f0'; btn.style.color = '#333'; }
             btn.style.transform = 'scale(1)';
             btn.style.boxShadow = 'none';
@@ -2010,7 +1840,6 @@ function renderMessagesLogTable() {
     else if (currentMessagesFilter === 'whatsapp') filtered = filtered.filter(m => m.medium === 'whatsapp');
     else if (currentMessagesFilter === 'email') filtered = filtered.filter(m => m.medium === 'email');
     else if (currentMessagesFilter === 'qeducation') filtered = filtered.filter(m => m.medium === 'qeducation');
-    else if (currentMessagesFilter === 'email_bulk') filtered = filtered.filter(m => m.medium === 'email_bulk');
     
     if (currentMessagesSearchTerm) {
         filtered = filtered.filter(m => m.studentName.toLowerCase().includes(currentMessagesSearchTerm));
@@ -2033,11 +1862,7 @@ function renderMessagesLogTable() {
         
         const mediumBadge = m.medium === 'whatsapp'
             ? '<span style="background:#dcfce7; color:#166534; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold;">💬 واتساب</span>'
-            : (m.medium === 'qeducation'
-                ? '<span style="background:#ccfbf1; color:#115e59; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold;">🎓 تعليم قطر</span>'
-                : (m.medium === 'email_bulk'
-                    ? '<span style="background:#e0e7ff; color:#3730a3; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold;">📧 رسائل بالبريد الإلكتروني للطلاب</span>'
-                    : '<span style="background:#dbeafe; color:#1e40af; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold;">📧 بريد</span>'));
+            : (m.medium === 'qeducation' ? '<span style="background:#ccfbf1; color:#115e59; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold;">🎓 تعليم قطر</span>' : '<span style="background:#dbeafe; color:#1e40af; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold;">📧 بريد</span>');
         
         const shortMsg = m.messageText.length > 80 ? m.messageText.substring(0, 80) + '...' : m.messageText;
         
@@ -2049,7 +1874,7 @@ function renderMessagesLogTable() {
         html += '<td style="text-align:right; font-size:12px;" title="' + m.messageText.replace(/"/g, '&quot;') + '">' + shortMsg + '</td>';
         html += '<td style="text-align:center; font-size:11px;">' + m.reason + '</td>';
         html += '<td style="text-align:center;">' + typeBadge + '</td>';
-        html += '<td style="text-align:center;">' + mediumBadge + (m.status ? '<div style="margin-top:4px;color:#15803d;font-size:10px;font-weight:bold;">' + m.status + '</div>' : '') + '</td>';
+        html += '<td style="text-align:center;">' + mediumBadge + '</td>';
         html += '<td style="text-align:center; font-size:11px;">📅 ' + m.date + '<br>🕐 ' + m.time + '</td>';
         html += '<td style="text-align:center;">';
         html += '<button onclick="viewMessageDetails(\'' + m.id + '\')" style="background:#0891b2; color:white; border:none; padding:4px 8px; border-radius:10px; cursor:pointer; font-size:11px; margin-bottom:3px;">👁️</button>';
@@ -2101,7 +1926,7 @@ function exportMessagesLogToExcel() {
     if (messages.length === 0) { alert('⚠️ لا توجد رسائل للتصدير'); return; }
     
     const dataForExport = [
-        ['#', 'اسم الطالب', 'هاتف ولي الأمر', 'بريد ولي الأمر', 'نص الرسالة', 'سبب الإرسال', 'نوع الرسالة', 'وسيلة الإرسال', 'الحالة', 'عنوان البريد', 'التاريخ', 'الوقت']
+        ['#', 'اسم الطالب', 'هاتف ولي الأمر', 'بريد ولي الأمر', 'نص الرسالة', 'سبب الإرسال', 'نوع الرسالة', 'وسيلة الإرسال', 'التاريخ', 'الوقت']
     ];
     
     const sorted = [...messages].sort((a, b) => b.timestamp - a.timestamp);
@@ -2109,13 +1934,13 @@ function exportMessagesLogToExcel() {
         dataForExport.push([
             idx + 1, m.studentName, m.phone || '', m.email || '', m.messageText, m.reason,
             m.type === 'positive' ? 'إيجابية' : 'سلبية',
-            m.medium === 'whatsapp' ? 'واتساب' : (m.medium === 'qeducation' ? 'منصة تعليم قطر' : (m.medium === 'email_bulk' ? 'رسائل بالبريد الإلكتروني للطلاب' : 'بريد إلكتروني')),
-            m.status || '', m.subject || '', m.date, m.time
+            m.medium === 'whatsapp' ? 'واتساب' : (m.medium === 'qeducation' ? 'منصة تعليم قطر' : 'بريد إلكتروني'),
+            m.date, m.time
         ]);
     });
     
     const worksheet = XLSX.utils.aoa_to_sheet(dataForExport);
-    worksheet['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 60 }, { wch: 25 }, { wch: 12 }, { wch: 30 }, { wch: 16 }, { wch: 35 }, { wch: 15 }, { wch: 12 }];
+    worksheet['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 18 }, { wch: 25 }, { wch: 60 }, { wch: 25 }, { wch: 12 }, { wch: 14 }, { wch: 15 }, { wch: 12 }];
     if (!worksheet['!views']) worksheet['!views'] = [];
     worksheet['!views'].push({ RTL: true });
     
@@ -2171,8 +1996,7 @@ function exportMessagesLogToPdf() {
 }
 
 function getStudentMessages(studentName) {
-    const messages = messagesLog[currentClass] || [];
-    return messages.filter(m => m.studentName === studentName).sort((a, b) => b.timestamp - a.timestamp);
+    const messages = messagesLog[currentClass] || [];    return messages.filter(m => m.studentName === studentName).sort((a, b) => b.timestamp - a.timestamp);
 }
 function generateStudentMessagesReportHTML(student) {
     const messages = getStudentMessages(student.name);
@@ -3171,8 +2995,7 @@ function exportAcademicToExcel() {
     if (!worksheet['!views']) worksheet['!views'] = [];
     worksheet['!views'].push({ RTL: true });
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, exam.name);
-    const now = new Date();
+    XLSX.utils.book_append_sheet(workbook, worksheet, exam.name);    const now = new Date();
     const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');    const fileName = exam.name.replace(/\s+/g, '_') + '_' + currentClass.replace(/\s+/g, '_') + '_' + dateStr + '.xlsx';
     try { XLSX.writeFile(workbook, fileName, { bookType: 'xlsx', type: 'binary' }); alert('✅ تم تصدير Excel!'); } catch (error) { alert('❌ خطأ'); }
 }
@@ -4171,8 +3994,7 @@ async function purchaseReward(rewardId, price, studentName) {
     if (!student) { alert('❌ الطالب غير موجود'); return; }
     const reward = allRewards.find(r => r.id === rewardId);
     if (!reward) { alert('❌ الجائزة غير معروفة'); return; }
-    const ownedRewards = (studentRewards[currentClass] && studentRewards[currentClass][student.name]) || [];
-    if (ownedRewards.includes(rewardId)) { alert('❌ حصل عليها بالفعل!'); return; }    if (!confirm('شراء هذه الجائزة مقابل ' + reward.price + ' نقطة؟')) return;
+    const ownedRewards = (studentRewards[currentClass] && studentRewards[currentClass][student.name]) || [];    if (ownedRewards.includes(rewardId)) { alert('❌ حصل عليها بالفعل!'); return; }    if (!confirm('شراء هذه الجائزة مقابل ' + reward.price + ' نقطة؟')) return;
     try {
         const schoolId = getPointsSchoolId();
         if (!schoolId && !isGlobalFirebaseAdmin()) throw new Error('تعذر تحديد المدرسة الحالية.');
@@ -5171,8 +4993,7 @@ async function saveClassFeatureDatasetToServer(dataset, data) {
     return true;
 }
 
-// ==================== PHASE 23D: server-controlled student roster client ==================
-async function mutateStudentRosterOnServer(action, studentName) {    if (!firebaseSyncReady || !firebaseCurrentUser) throw new Error('يجب تسجيل الدخول والمزامنة أولاً.');
+// ==================== PHASE 23D: server-controlled student roster client ==================async function mutateStudentRosterOnServer(action, studentName) {    if (!firebaseSyncReady || !firebaseCurrentUser) throw new Error('يجب تسجيل الدخول والمزامنة أولاً.');
     const schoolId = getPointsSchoolId();
     if (!schoolId && !isGlobalFirebaseAdmin()) throw new Error('تعذر تحديد المدرسة الحالية.');
     const call = getPointsCallable('mutateStudentRoster');
@@ -6171,8 +5992,7 @@ async function showDisconnectedStudentsModal() {
     }
     document.getElementById('disconnectedStudentsModal').style.display = 'flex';
 }
-function closeDisconnectedStudentsModal() { document.getElementById('disconnectedStudentsModal').style.display = 'none'; }async function saveDisconnectedStudents() {
-    const students = getCurrentStudents();
+function closeDisconnectedStudentsModal() { document.getElementById('disconnectedStudentsModal').style.display = 'none'; }async function saveDisconnectedStudents() {    const students = getCurrentStudents();
     const selected = new Set(Array.from(document.querySelectorAll('.disconnected-student-checkbox:checked')).map(cb => parseInt(cb.getAttribute('data-index'))));
     const selectedNames = students.filter((student, i) => selected.has(i)).map(student => student.name);
     const button = document.getElementById('saveDisconnectedStudentsBtn');
@@ -6583,9 +6403,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sendWhatsAppBtn').onclick = sendWhatsApp;
     document.getElementById('sendEmailBtn').onclick = sendEmail;
     document.getElementById('sendQEducationBtn').onclick = openQEducationDraft;
-    document.getElementById('openBulkEmailBtn').onclick = openBulkEmailModal;
-    document.getElementById('launchBulkOutlookBtn').onclick = launchBulkOutlookEmail;
-    document.getElementById('bulkEmailReason').onchange = updateBulkEmailMessage;
     document.getElementById('messageReasonSelect').onchange = updateMessageText;
     document.getElementById('closeEmbedModalBtn').onclick = closeEmbedModal;
     document.getElementById('copyUrlBtn').onclick = function() { copyToClipboard(window.location.href, '✅ تم النسخ'); };
@@ -6957,7 +6774,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const classSnap=await firestoreDb.collection('schoolClasses').doc(mirrorId).get();
       if(classSnap.exists){
         const mirror=classSnap.data();
-        if(mirror.schoolId===staffSchoolId && mirror.classId===classId && mirror.classData!==undefined){scoped[classId]=mirror.classData;if(Array.isArray(mirror.messagesLog)){if(!messagesLog||Array.isArray(messagesLog)||typeof messagesLog!=='object')messagesLog={};messagesLog[classId]=mergeParentMessageArrays(messagesLog[classId],mirror.messagesLog);}}
+        if(mirror.schoolId===staffSchoolId && mirror.classId===classId && mirror.classData!==undefined)scoped[classId]=mirror.classData;
       }
     }
     if(Object.keys(scoped).length===0){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ لم نعثر على بيانات الفصول التابعة لمدرستك. افتح حساب مدير المدرسة، وتأكد من مزامنة بيانات المدرسة ثم راجع schoolId وإسناد classIds لحساب المعلم.';return;}
@@ -6973,8 +6790,6 @@ document.addEventListener('DOMContentLoaded', function() {
     await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ نوع الحساب غير معروف.';return;
   }
   try {
-   const importedMergeResult=await mergeImportedParentMessages();
-   if(importedMergeResult.added){const b=document.getElementById('firebaseSyncStatus');if(b)b.textContent='☁️ تم دمج '+importedMergeResult.added+' مراسلة قديمة ومزامنتها دون تكرار';}
    const pointsLoaded=await loadServerPointsForCurrentClass();
    try { await loadServerWarningsForCurrentClass(); } catch(warningLoadError) { console.warn('Secure warnings sidecar not loaded:',warningLoadError); }
    try { await loadClassFeatureDatasetsForCurrentClass(); } catch(datasetLoadError) { console.warn('Class feature datasets not loaded:',datasetLoadError); }
@@ -7007,6 +6822,35 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
+    // Expose login transition early; later optional UI errors must not disable the intro button.
+    window.__POINTS_STAFF_SHOW_LOGIN = showLoginScreen;
+    const introNextButton = document.getElementById('pointsIntroNext');
+    if (introNextButton && !introNextButton.dataset.pointsTransitionBound) {
+        introNextButton.dataset.pointsTransitionBound = '1';
+        introNextButton.addEventListener('click', function () {
+            const intro = document.getElementById('pointsIntroScreen');
+            const alreadyAuthenticatedIntro = !!(firebaseAuth && firebaseAuth.currentUser && window.__POINTS_INTRO_AFTER_LOGIN);
+            window.__POINTS_INTRO_CONTINUED = true;
+            if (intro) intro.style.display = 'none';
+            if (alreadyAuthenticatedIntro) {
+                window.__POINTS_INTRO_AFTER_LOGIN = false;
+                const appContainer = document.querySelector('.container');
+                if (appContainer) appContainer.style.display = 'block';
+                return;
+            }
+            try {
+                showLoginScreen();
+                if (!document.getElementById('loginOverlay')) showLoginScreen();
+            } catch (transitionError) {
+                console.error('Points Staff intro-to-login transition failed:', transitionError);
+                const message = document.createElement('div');
+                message.style.cssText = 'position:fixed;inset:0;z-index:100001;background:#fff;color:#991b1b;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-weight:bold;';
+                message.textContent = 'تعذر فتح شاشة الدخول. حدّث الصفحة وحاول مرة أخرى.';
+                document.body.appendChild(message);
+            }
+        });
+    }
+
     function showRegistrationScreen(email, currentOverlay) {
         currentOverlay.innerHTML = 
             '<div class="login-card">' +
@@ -7176,8 +7020,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const info=document.createElement('div');info.style.cssText='min-width:180px;flex:1;overflow-wrap:anywhere;';
                     info.innerHTML='<b>📧 '+(r.email||'—')+'</b><div style="color:#475569;font-size:13px;">📚 '+(r.subject||'—')+' · الشعب: '+(Array.isArray(r.requestedClassIds)?r.requestedClassIds.join('، '):'—')+'</div>';
                     const actions=document.createElement('div');actions.style.cssText='display:flex;gap:6px;align-items:center;';                    actions.innerHTML='<button style="background:#16a34a;color:white;border:0;border-radius:8px;padding:7px 10px;">اعتماد</button><button style="background:#dc2626;color:white;border:0;border-radius:8px;padding:7px 10px;">رفض</button>';
-                    actions.children[0].onclick=async()=>{const requested=Array.isArray(r.requestedClassIds)?r.requestedClassIds:[];if(!requested.length){alert('هذا الطلب لا يحتوي على صفوف مطلوبة.');return;}const chosen=prompt('حدد الصفوف التي ستُعتمد لهذا الموظف فقط، مفصولة بفاصلة.\nالصفوف المطلوبة: '+requested.join('، ')+'\nاتركها كما هي لاعتماد جميع الصفوف المطلوبة.',requested.join(', '));if(chosen===null)return;const selected=chosen.split(',').map(x=>x.trim()).filter(Boolean);if(selected.some(id=>!requested.includes(id))){alert('تم إدخال صف غير موجود ضمن طلب الموظف.');return;}if(!confirm('اعتماد '+r.email+' للصفوف: '+selected.join('، ')+'؟'))return;try{await approveOne(doc,card,selected);}catch(e){alert('تعذر الاعتماد: '+(e.code||e.message));}};
-                    actions.children[1].onclick=async()=>{if(!confirm('رفض '+r.email+'؟'))return;try{await rejectOne(doc,card);}catch(e){alert('تعذر الرفض: '+(e.code||e.message));}};
+                    actions.children[0].onclick=async()=>{const requested=Array.isArray(r.requestedClassIds)?r.requestedClassIds:[];if(!requested.length){alert('هذا الطلب لا يحتوي على صفوف مطلوبة.');return;}const chosen=prompt('حدد الصفوف التي ستُعتمد لهذا الموظف فقط، مفصولة بفاصلة.\nالصفوف المطلوبة: '+requested.join('، ')+'\nاتركها كما هي لاعتماد جميع الصفوف المطلوبة.',requested.join(', '));if(chosen===null)return;const selected=chosen.split(',').map(x=>x.trim()).filter(Boolean);if(selected.some(id=>!requested.includes(id))){alert('تم إدخال صف غير موجود ضمن طلب الموظف.');return;}if(!confirm('اعتماد '+r.email+' للصفوف: '+selected.join('، ')+'؟'))return;try{await approveOne(doc,card,selected);}catch(e){alert('تعذر الاعتماد: '+(e.code||e.message));}};                    actions.children[1].onclick=async()=>{if(!confirm('رفض '+r.email+'؟'))return;try{await rejectOne(doc,card);}catch(e){alert('تعذر الرفض: '+(e.code||e.message));}};
                     card.append(info,actions);schoolBox.appendChild(card);
                   });
                   countryBox.appendChild(schoolBox);
@@ -7238,17 +7081,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    const introNextButton = document.getElementById('pointsIntroNext');
-    if (introNextButton) introNextButton.addEventListener('click', function() {
-        const intro = document.getElementById('pointsIntroScreen');
-        if (intro) intro.style.display='none';
-        if (firebaseAuth && firebaseAuth.currentUser && window.__POINTS_INTRO_AFTER_LOGIN) {
-            window.__POINTS_INTRO_AFTER_LOGIN=false;
-            return;
-        }
-        window.__POINTS_INTRO_CONTINUED = true;
-        showLoginScreen();
-    });
     loadUsersData();
     showLoginScreen();
 })();
@@ -7500,13 +7332,12 @@ async function applyCommercialMenuLocks(forceCloseOnChange=false){
     if(firebaseProfile && (firebaseProfile.role==='admin' || firebaseCurrentUser?.uid==='hwPgzTQbdfUJa45G2Wwc79ANNJE2')) return;
     const response=await verifyPointsStaffLicense();
     const features=response.features||{};
-    const entries=Array.from(document.querySelectorAll('[data-feature]'));
+    const entries=Array.from(document.querySelectorAll('a[data-feature]'));
     const previous=window.__POINTS_LAST_ENTITLEMENT||null;
     const changed=!!previous && (previous.plan!==response.plan || JSON.stringify(previous.features||{})!==JSON.stringify(features));
     entries.forEach(el=>{
       const allowed=features[el.dataset.feature]===true;
       el.classList.toggle('feature-locked',!allowed);
-      if(el.tagName==='BUTTON')el.disabled=!allowed;
       if(!allowed){el.setAttribute('aria-disabled','true');el.title='هذه الميزة غير متاحة في باقتك الحالية';}
       else{el.removeAttribute('aria-disabled');el.title='';}
     });
@@ -7520,8 +7351,8 @@ async function applyCommercialMenuLocks(forceCloseOnChange=false){
     const blocker=document.getElementById('pointsLicenseBlocker');if(blocker)blocker.style.display='none';
   }catch(err){
     console.error('POINTS entitlement refresh failed:',err);
-    const entries=Array.from(document.querySelectorAll('[data-feature]'));
-    entries.forEach(el=>{el.classList.add('feature-locked');if(el.tagName==='BUTTON')el.disabled=true;el.setAttribute('aria-disabled','true');el.title='تعذر التحقق من صلاحية هذه الميزة';});
+    const entries=Array.from(document.querySelectorAll('.dropdown-content a[data-feature]'));
+    entries.forEach(el=>{el.classList.add('feature-locked');el.setAttribute('aria-disabled','true');el.title='تعذر التحقق من صلاحية هذه الميزة';});
     const blocker=document.getElementById('pointsLicenseBlocker');if(blocker){blocker.style.display='flex';const message=blocker.querySelector('[data-license-message]');if(message)message.textContent=(err&&err.message)||'تعذر التحقق من الترخيص أو الباقة. تم إيقاف استخدام النظام احترازيًا حتى عودة التحقق.';}
   }
 }
@@ -7553,529 +7384,5 @@ window.addEventListener('focus',()=>{if(firebaseAuth&&firebaseAuth.currentUser)a
   }, { once: true });
 })();
 </script>
-<script src="smart-academic-messaging.js?v=20261124-1"></script>
-
-<style id="points-live-worksheets-style">
-#liveWorksheetsModal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.78);z-index:12000;align-items:center;justify-content:center;padding:12px}
-#liveWorksheetsModal .lws-panel{background:#fff;border-radius:20px;width:min(1180px,98vw);height:min(92vh,900px);display:flex;flex-direction:column;padding:18px;overflow:hidden;direction:rtl}
-#liveWorksheetsModal .lws-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;padding-bottom:12px}
-#liveWorksheetsModal .lws-btn{border:0;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}
-#liveWorksheetsModal .lws-primary{background:#4338ca;color:#fff}
-#liveWorksheetsModal .lws-green{background:#059669;color:#fff}
-#liveWorksheetsModal .lws-red{background:#dc2626;color:#fff}
-#liveWorksheetsModal .lws-light{background:#e2e8f0;color:#1e293b}
-#liveWorksheetsModal .lws-list{overflow:auto;flex:1;padding:14px 2px}
-#liveWorksheetsModal .lws-card{border:1px solid #dbeafe;border-radius:14px;padding:14px;margin:10px 0;background:#f8fafc}
-#liveWorksheetsModal .lws-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-#liveWorksheetsModal .lws-editor{display:none;flex:1;min-height:0;flex-direction:column;overflow:auto;padding-top:12px}
-#liveWorksheetsModal .lws-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-#liveWorksheetsModal .lws-canvas{flex:1;min-height:280px;overflow:auto;border:2px dashed #cbd5e1;border-radius:12px;background:#f1f5f9;padding:15px;text-align:center}
-#liveWorksheetsModal .lws-field{position:absolute;border:2px solid #4338ca;background:rgba(255,255,255,.88);border-radius:5px;min-width:65px;min-height:28px;display:flex;align-items:center;justify-content:center;cursor:move;font-size:12px;font-weight:bold}
-#liveWorksheetsModal .lws-field button{position:absolute;top:-10px;left:-10px;border:0;border-radius:50%;background:#dc2626;color:white;width:20px;height:20px;cursor:pointer}
-#liveWorksheetsModal input,#liveWorksheetsModal select{font:inherit}
-@media(max-width:600px){#liveWorksheetsModal .lws-panel{height:96vh;padding:10px}#liveWorksheetsModal .lws-canvas{min-height:220px}}
-</style>
-
-<div id="liveWorksheetsModal" aria-hidden="true">
- <div class="lws-panel">
-  <div class="lws-top">
-   <h2 style="margin:0;color:#4338ca">📝 Live Worksheets</h2>
-   <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button class="lws-btn lws-primary" type="button" onclick="POINTS_LWS.newWorksheet()">➕ إنشاء ورقة</button>
-    <button class="lws-btn lws-light" type="button" onclick="POINTS_LWS.close()">إغلاق ✕</button>
-   </div>
-  </div>
-  <div id="pointsLwsList" class="lws-list"><p>⏳ جارٍ تحميل أوراق العمل...</p></div>
-  <div id="pointsLwsEditor" class="lws-editor">
-   <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-    <input id="pointsLwsTitle" type="text" placeholder="عنوان ورقة العمل" style="flex:1;min-width:180px;padding:11px;border:1px solid #cbd5e1;border-radius:9px">
-    <button class="lws-btn lws-green" type="button" onclick="POINTS_LWS.save()">💾 حفظ ونشر</button>
-    <button class="lws-btn lws-light" type="button" onclick="POINTS_LWS.showList()">رجوع</button>
-   </div>
-   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#eff6ff;border-radius:10px;padding:10px;margin-top:10px">
-    <label><input id="pointsLwsTimed" type="checkbox"> تفعيل التوقيت</label>
-    <label>يفتح <input id="pointsLwsOpens" type="datetime-local"></label>
-    <label>يغلق <input id="pointsLwsCloses" type="datetime-local"></label>
-    <label>المدة بالدقائق <input id="pointsLwsDuration" type="number" min="1" max="600" value="30" style="width:75px"></label>
-   </div>
-   <div class="lws-tools">
-    <button class="lws-btn lws-light" type="button" onclick="POINTS_LWS.addField('short_text')">📝 إجابة قصيرة</button>
-    <button class="lws-btn lws-light" type="button" onclick="POINTS_LWS.addField('long_text')">📋 إجابة طويلة</button>
-    <button class="lws-btn lws-light" type="button" onclick="POINTS_LWS.addField('mcq')">🔘 اختيار</button>
-    <button class="lws-btn lws-light" type="button" onclick="POINTS_LWS.addField('correct')">✏️ تصحيح</button>
-    <button class="lws-btn lws-light" type="button" onclick="POINTS_LWS.addField('rearrange')">🔀 ترتيب</button>
-   </div>
-   <div class="lws-canvas" id="pointsLwsCanvas">
-    <input id="pointsLwsFile" type="file" accept="image/*" style="display:none" onchange="POINTS_LWS.fileSelected(event)">
-    <div id="pointsLwsUpload" onclick="document.getElementById('pointsLwsFile').click()" style="cursor:pointer;padding:38px">
-     <div style="font-size:42px">🖼️</div><b>اضغط هنا لرفع صورة ورقة العمل</b><p style="color:#64748b">الصور فقط، بحد أقصى 10 ميجابايت</p>
-    </div>
-    <div id="pointsLwsWorkspace" style="display:none;position:relative;width:max-content;max-width:100%;margin:auto">
-     <img id="pointsLwsImage" style="display:block;max-width:100%;height:auto;user-select:none">
-     <div id="pointsLwsFields" style="position:absolute;inset:0"></div>
-    </div>
-   </div>
-  </div>
-  <div id="pointsLwsAnswers" style="display:none;overflow:auto;flex:1;padding:12px"></div>
- </div>
-</div>
-
-
-
-<style id="points-staff-answer-grading-style">
-#pointsStaffAnswerGrading{display:none;position:fixed;inset:0;z-index:13000;background:rgba(15,23,42,.82);align-items:center;justify-content:center;padding:12px;direction:rtl}
-#pointsStaffAnswerGrading .psag-panel{background:#fff;border-radius:20px;width:min(1180px,98vw);height:min(92vh,920px);display:flex;flex-direction:column;overflow:hidden;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-#pointsStaffAnswerGrading .psag-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;padding-bottom:12px}
-#pointsStaffAnswerGrading .psag-list{overflow:auto;flex:1;padding:14px 2px}
-#pointsStaffAnswerGrading .psag-card{border:1px solid #cbd5e1;border-radius:14px;padding:15px;margin:0 0 14px;background:#fff}
-#pointsStaffAnswerGrading .psag-btn{border:0;border-radius:10px;padding:10px 15px;font-weight:800;cursor:pointer}
-#pointsStaffAnswerGrading .psag-primary{background:#4338ca;color:#fff}
-#pointsStaffAnswerGrading .psag-light{background:#e2e8f0;color:#1e293b}
-#pointsStaffAnswerGrading .psag-success{background:#059669;color:#fff}
-#pointsStaffAnswerGrading select{padding:10px;border:1px solid #cbd5e1;border-radius:9px;min-width:240px;max-width:100%;font:inherit}
-@media(max-width:600px){#pointsStaffAnswerGrading .psag-panel{height:96vh;padding:10px}#pointsStaffAnswerGrading .psag-head{align-items:flex-start}}
-</style>
-<div id="pointsStaffAnswerGrading" aria-hidden="true">
- <div class="psag-panel">
-  <div class="psag-head">
-   <div>
-    <h2 style="margin:0;color:#4338ca">📚 تصحيح إجابات الطلاب</h2>
-    <div id="psagTeacherScope" style="margin-top:5px;color:#64748b;font-size:13px">تظهر هنا أوراق العمل التي أنشأتها بحسابك فقط</div>
-   </div>
-   <div style="display:flex;gap:8px;flex-wrap:wrap">
-    <button class="psag-btn psag-light" type="button" onclick="POINTS_LWS.refreshGrading()">🔄 تحديث</button>
-    <button class="psag-btn psag-light" type="button" onclick="POINTS_LWS.closeGrading()">إغلاق ✕</button>
-   </div>
-  </div>
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid #e2e8f0">
-   <label for="psagWorksheetSelect" style="font-weight:bold;color:#334155">اختر ورقة العمل:</label>
-   <select id="psagWorksheetSelect" onchange="POINTS_LWS.loadGradingAnswers()"><option value="">جارٍ تحميل أوراقك...</option></select>
-  </div>
-  <div id="psagAnswersList" class="psag-list"><p style="color:#64748b;text-align:center">اختر ورقة العمل لعرض إجابات طلاب فصولك.</p></div>
- </div>
-</div>
-<script>
-(function(){
-"use strict";
-const $=id=>document.getElementById(id);
-let fields=[], imageFile=null, activeWorksheetId=null;
-const ADMIN_UID='hwPgzTQbdfUJa45G2Wwc79ANNJE2';
-function currentSchoolId(){
- const p=firebaseProfile||{};
- return String(p.schoolId||'').trim();
-}
-function isAdmin(){
- return !!(firebaseCurrentUser&&firebaseCurrentUser.uid===ADMIN_UID&&firebaseProfile&&firebaseProfile.role==='admin'&&firebaseProfile.active===true&&firebaseProfile.approved===true);
-}
-function assertTeacher(){
- if(!firebaseCurrentUser||!firebaseProfile)throw new Error('يجب تسجيل الدخول بحساب الموظف أولاً.');
- if(!isAdmin()&&(firebaseProfile.role!=='staff'||firebaseProfile.active!==true||firebaseProfile.approved!==true))throw new Error('هذه الميزة متاحة للمعلم المعتمد فقط.');
- if(!isAdmin()&&!currentSchoolId())throw new Error('ملف المعلم لا يحتوي على schoolId.');
- const entitlement=window.__POINTS_LAST_ENTITLEMENT;
- if(!isAdmin()&&(!entitlement||!entitlement.features||entitlement.features.liveWorksheets!==true))throw new Error('ميزة Live Worksheets غير مفعلة في باقتك الحالية أو لم يتم التحقق من الترخيص بعد.');
- if(!window.firebase||!firebase.storage)throw new Error('مكتبة Firebase Storage غير متاحة. حدّث الصفحة.');
-}
-function schoolScope(){return isAdmin()?'global':currentSchoolId();}
-function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-async function loadList(){
- assertTeacher();
- const list=$('pointsLwsList');list.innerHTML='<p>⏳ جارٍ تحميل أوراق العمل...</p>';
- let q=firebase.firestore().collection('worksheets');
- if(!isAdmin()) q=q.where('schoolId','==',currentSchoolId()).where('createdBy','==',firebaseCurrentUser.uid);
- q=q.orderBy('createdAt','desc');
- const snap=await q.get();
- if(snap.empty){list.innerHTML='<div class="lws-card">لا توجد أوراق عمل حتى الآن. أنشئ أول ورقة من الزر أعلاه.</div>';return;}
- list.innerHTML='';
- snap.forEach(doc=>{
-  const d=doc.data()||{}, date=d.createdAt&&d.createdAt.toDate?d.createdAt.toDate().toLocaleDateString('ar-QA'):'—';
-  const owner=isAdmin()?'المعلم: '+esc(d.createdBy||'غير معروف'):'أوراقك';
-  const card=document.createElement('div');card.className='lws-card';
-  card.innerHTML='<b style="font-size:18px;color:#1e293b">'+esc(d.title||'ورقة بدون عنوان')+'</b><div style="color:#64748b;margin-top:5px">📅 '+date+' · '+owner+' · الدورة '+Number(d.releaseVersion||1)+'</div><div class="lws-actions"><button class="lws-btn lws-primary" type="button" data-act="copy">🔗 نسخ رابط الطالب</button><button class="lws-btn lws-light" type="button" data-act="answers">📋 إجابات الطلاب</button><button class="lws-btn lws-green" type="button" data-act="reactivate">🔄 إعادة التفعيل</button><button class="lws-btn lws-red" type="button" data-act="delete">🗑️ حذف</button></div>';
-  card.querySelector('[data-act="copy"]').onclick=()=>copyLink(doc.id);
-  card.querySelector('[data-act="answers"]').onclick=()=>showAnswers(doc.id,d.title||'');
-  card.querySelector('[data-act="reactivate"]').onclick=()=>reactivate(doc.id,d.title||'');
-  card.querySelector('[data-act="delete"]').onclick=()=>deleteWorksheet(doc.id,d);
-  list.appendChild(card);
- });
-}
-async function copyLink(id){
- const url='https://student.abuhazem.com/?id='+encodeURIComponent(id);
- try{await navigator.clipboard.writeText(url);alert('تم نسخ رابط الطالب:\\n'+url);}catch(_){prompt('انسخ رابط الطالب:',url);}
-}
-async function showAnswers(id,title){
- assertTeacher();
- $('pointsLwsList').style.display='none';$('pointsLwsEditor').style.display='none';$('pointsLwsAnswers').style.display='block';
- const box=$('pointsLwsAnswers');box.innerHTML='<h3>إجابات: '+esc(title)+'</h3><p>⏳ جارٍ تحميل الإجابات...</p><button class="lws-btn lws-light" onclick="POINTS_LWS.showList()">رجوع</button>';
- const worksheet=await firebase.firestore().collection('worksheets').doc(id).get();
- if(!worksheet.exists)throw new Error('ورقة العمل غير موجودة.');
- const wd=worksheet.data()||{};
- if(!isAdmin()&&(wd.createdBy!==firebaseCurrentUser.uid||wd.schoolId!==currentSchoolId()))throw new Error('غير مصرح لك بعرض هذه الإجابات.');
- let q=firebase.firestore().collection('student_answers').where('worksheetId','==',id);
- if(!isAdmin())q=q.where('schoolId','==',currentSchoolId());
- const snap=await q.get();
- let body='';
- snap.forEach(doc=>{const a=doc.data()||{};body+='<div class="lws-card"><b>'+esc(a.studentName||'طالب')+'</b> · '+esc(a.studentClass||'')+'<pre style="white-space:pre-wrap;margin-top:8px">'+esc(JSON.stringify(a.answers||a.responses||{},null,2))+'</pre></div>';});
- box.innerHTML='<h3 style="color:#4338ca">إجابات: '+esc(title)+'</h3><p>عدد الإرسالات: '+snap.size+'</p><button class="lws-btn lws-light" onclick="POINTS_LWS.showList()">رجوع</button>'+(body||'<p>لا توجد إجابات مسجلة لهذه الورقة.</p>');
-}
-async function reactivate(id,title){
- assertTeacher();
- if(!confirm('إعادة فتح دورة حل جديدة للورقة «'+title+'» مع الاحتفاظ بالمحاولات والنقاط السابقة؟'))return;
- try{
-  const wd=await firebase.firestore().collection('worksheets').doc(id).get();
-  if(!wd.exists)throw new Error('الورقة غير موجودة.');
-  const d=wd.data()||{};
-  if(!isAdmin()&&(d.createdBy!==firebaseCurrentUser.uid||d.schoolId!==currentSchoolId()))throw new Error('لا تملك صلاحية هذه الورقة.');
-  const call=firebase.app().functions('us-central1').httpsCallable('reactivateStudentWorksheet');
-  const r=await call({worksheetId:id});
-  if(!r.data||r.data.success!==true)throw new Error(r.data&&r.data.message||'لم يؤكد الخادم إعادة التفعيل.');
-  alert('تمت إعادة التفعيل بنجاح.');await loadList();
- }catch(e){alert('تعذر إعادة التفعيل: '+(e.message||e));}
-}
-async function deleteWorksheet(id,d){
- assertTeacher();
- if(!confirm('حذف ورقة العمل ومفتاح الإجابة الخاص بها؟'))return;
- try{
-  const ref=firebase.firestore().collection('worksheets').doc(id);
-  const snap=await ref.get();if(!snap.exists)throw new Error('الورقة غير موجودة.');
-  const data=snap.data()||{};
-  if(!isAdmin()&&(data.createdBy!==firebaseCurrentUser.uid||data.schoolId!==currentSchoolId()))throw new Error('لا تملك صلاحية حذف هذه الورقة.');
-  const batch=firebase.firestore().batch();
-  batch.delete(ref);batch.delete(firebase.firestore().collection('worksheet_answer_keys').doc(id));
-  await batch.commit();await loadList();
- }catch(e){alert('تعذر الحذف: '+(e.message||e));}
-}
-function showEditor(){
- $('pointsLwsList').style.display='none';$('pointsLwsAnswers').style.display='none';$('pointsLwsEditor').style.display='flex';
-}
-function showList(){
- $('pointsLwsEditor').style.display='none';$('pointsLwsAnswers').style.display='none';$('pointsLwsList').style.display='block';loadList().catch(e=>{$('pointsLwsList').innerHTML='<div class="lws-card" style="color:#b91c1c">تعذر تحميل الأوراق: '+esc(e.message||e)+'</div>';});
-}
-function newWorksheet(){
- assertTeacher();fields=[];imageFile=null;activeWorksheetId=null;
- $('pointsLwsTitle').value='';$('pointsLwsTimed').checked=false;$('pointsLwsOpens').value='';$('pointsLwsCloses').value='';$('pointsLwsDuration').value='30';
- $('pointsLwsFile').value='';$('pointsLwsUpload').style.display='block';$('pointsLwsWorkspace').style.display='none';$('pointsLwsFields').innerHTML='';
- showEditor();
-}
-function fileSelected(ev){
- const f=ev.target.files&&ev.target.files[0];if(!f)return;
- if(!f.type.startsWith('image/')){alert('ارفع صورة فقط.');ev.target.value='';return;}
- if(f.size>10*1024*1024){alert('الحد الأقصى 10 ميجابايت.');ev.target.value='';return;}
- imageFile=f;
- const img=$('pointsLwsImage'),url=URL.createObjectURL(f);
- img.onload=()=>{URL.revokeObjectURL(url);$('pointsLwsUpload').style.display='none';$('pointsLwsWorkspace').style.display='block';};
- img.src=url;
-}
-function addField(type){
- if(!imageFile){alert('ارفع صورة الورقة أولاً.');return;}
- const f={id:'lws_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),type,x:15,y:15+fields.length*5,w:110,h:type==='long_text'?55:34};
- fields.push(f);renderField(f);
-}
-function renderField(f){
- const el=document.createElement('div');el.className='lws-field';el.id=f.id;
- el.style.left=f.x+'%';el.style.top=f.y+'%';el.style.width=f.w+'px';el.style.height=f.h+'px';
- const label={short_text:'إجابة قصيرة',long_text:'إجابة طويلة',mcq:'اختيار',correct:'تصحيح',rearrange:'ترتيب'}[f.type]||'إجابة';
- el.innerHTML='<span>'+label+'</span><button type="button" title="حذف">×</button>';
- el.querySelector('button').onclick=e=>{e.stopPropagation();fields=fields.filter(x=>x.id!==f.id);el.remove();};
- let drag=false,sx=0,sy=0,left=0,top=0;
- el.addEventListener('pointerdown',e=>{if(e.target.tagName==='BUTTON')return;drag=true;sx=e.clientX;sy=e.clientY;left=el.offsetLeft;top=el.offsetTop;el.setPointerCapture(e.pointerId);});
- el.addEventListener('pointermove',e=>{if(!drag)return;const parent=$('pointsLwsFields');let x=Math.max(0,Math.min(parent.clientWidth-el.offsetWidth,left+e.clientX-sx));let y=Math.max(0,Math.min(parent.clientHeight-el.offsetHeight,top+e.clientY-sy));el.style.left=x+'px';el.style.top=y+'px';f.x=parent.clientWidth?x/parent.clientWidth*100:0;f.y=parent.clientHeight?y/parent.clientHeight*100:0;});
- el.addEventListener('pointerup',()=>drag=false);el.addEventListener('pointercancel',()=>drag=false);
- $('pointsLwsFields').appendChild(el);
-}
-async function save(){
- assertTeacher();
- const title=$('pointsLwsTitle').value.trim();if(!title)return alert('أدخل عنوان الورقة.');
- if(!imageFile)return alert('ارفع صورة الورقة أولاً.');
- if(!fields.length)return alert('أضف حقل إجابة واحدًا على الأقل.');
- const timed=$('pointsLwsTimed').checked,openVal=$('pointsLwsOpens').value,closeVal=$('pointsLwsCloses').value,duration=Number($('pointsLwsDuration').value);
- let opensAt=null,closesAt=null;
- if(timed){opensAt=new Date(openVal);closesAt=new Date(closeVal);if(!openVal||!closeVal||!Number.isFinite(opensAt.getTime())||!Number.isFinite(closesAt.getTime())||closesAt<=opensAt||!Number.isInteger(duration)||duration<1||duration>600)return alert('راجع مواعيد الفتح والإغلاق والمدة.');}
- const answerKey={};
- for(let i=0;i<fields.length;i++){const v=prompt('الإجابة النموذجية للسؤال '+(i+1)+' ('+fields[i].type+')');if(v!==null&&v.trim())answerKey[fields[i].id]=v.trim();}
- const btn=document.querySelector('#liveWorksheetsModal button[onclick="POINTS_LWS.save()"]');btn.disabled=true;btn.textContent='⏳ جارٍ الحفظ...';
- try{
-  const uid=firebaseCurrentUser.uid,schoolId=schoolScope(),profile=firebaseProfile||{};
-  const licenseId=String(profile.licenseId||profile.customerId||'').trim();
-  const fileName=Date.now()+'_'+imageFile.name.replace(/[^\w.\-ء-ي]/g,'_');
-  const storagePath='worksheets/'+uid+'/'+fileName;
-  const upload=await firebase.storage().ref(storagePath).put(imageFile);
-  const imageUrl=await upload.ref.getDownloadURL();
-  const ref=firebase.firestore().collection('worksheets').doc();
-  const batch=firebase.firestore().batch();
-  const image=$('pointsLwsImage');
-  const fieldsToSave=fields.map(f=>({...f,wPct:image.clientWidth?(f.w/image.clientWidth)*100:0,hPct:image.clientHeight?(f.h/image.clientHeight)*100:0}));
-  batch.set(ref,{title,imageUrl,fields:fieldsToSave,editorImageWidth:image.clientWidth||0,editorImageHeight:image.clientHeight||0,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:uid,schoolId,...(licenseId?{licenseId}:{}),active:true,releaseVersion:1,timingEnabled:timed,...(timed?{opensAt:firebase.firestore.Timestamp.fromDate(opensAt),closesAt:firebase.firestore.Timestamp.fromDate(closesAt),durationMinutes:duration}:{})});
-  batch.set(firebase.firestore().collection('worksheet_answer_keys').doc(ref.id),{worksheetId:ref.id,schoolId,...(licenseId?{licenseId}:{}),answerKey,createdAt:firebase.firestore.FieldValue.serverTimestamp(),createdBy:uid});
-  await batch.commit();
-  alert('تم حفظ ورقة العمل ونشرها. مفتاح الإجابة محفوظ في مستند منفصل.');
-  showList();
- }catch(e){console.error('Live Worksheets save failed',e);alert('تعذر حفظ الورقة: '+(e.message||e));}
- finally{btn.disabled=false;btn.textContent='💾 حفظ ونشر';}
-}
-function open(){
- try{assertTeacher();$('liveWorksheetsModal').style.display='flex';$('liveWorksheetsModal').setAttribute('aria-hidden','false');showList();}
- catch(e){alert(e.message||e);}
-}
-function close(){$('liveWorksheetsModal').style.display='none';$('liveWorksheetsModal').setAttribute('aria-hidden','true');}
-
-function assertStaffGrading(){
- if(!firebaseCurrentUser||!firebaseProfile)throw new Error('يجب تسجيل الدخول بحساب المعلم أولاً.');
- const p=firebaseProfile||{};
- if(p.role!=='staff'||p.active!==true||p.approved!==true)throw new Error('تصحيح الإجابات متاح لحساب المعلم المعتمد فقط.');
- if(!String(p.schoolId||'').trim())throw new Error('ملف المعلم لا يحتوي على schoolId.');
- const entitlement=window.__POINTS_LAST_ENTITLEMENT;
- if(!entitlement||!entitlement.features||entitlement.features.liveWorksheets!==true)throw new Error('ميزة Live Worksheets غير مفعلة في باقتك الحالية أو لم يتم التحقق من الترخيص بعد.');
- if(!firebase||!firebase.firestore)throw new Error('خدمة Firestore غير متاحة.');
-}
-function staffAssignedClasses(){
- const a=Array.isArray(firebaseProfile&&firebaseProfile.classIds)?firebaseProfile.classIds:[];
- return a.map(x=>String(x||'').trim()).filter(Boolean);
-}
-function openGrading(){
- try{
-  assertStaffGrading();
-  const p=firebaseProfile||{};
-  $('pointsStaffAnswerGrading').style.display='flex';
-  $('pointsStaffAnswerGrading').setAttribute('aria-hidden','false');
-  $('psagTeacherScope').textContent='المعلم: '+String(p.displayName||p.name||p.email||firebaseCurrentUser.uid)+' · تظهر أوراقك وإجابات فصولك المسندة إليك فقط';
-  $('psagAnswersList').innerHTML='<p style="text-align:center;color:#64748b">⏳ جارٍ تحميل أوراق العمل الخاصة بحسابك...</p>';
-  loadGradingWorksheets();
- }catch(e){alert(e.message||e);}
-}
-function closeGrading(){
- $('pointsStaffAnswerGrading').style.display='none';
- $('pointsStaffAnswerGrading').setAttribute('aria-hidden','true');
-}
-async function refreshGrading(){
- assertStaffGrading();
- await loadGradingWorksheets(true);
-}
-async function loadGradingWorksheets(keepSelection){
- assertStaffGrading();
- const select=$('psagWorksheetSelect');
- const previous=keepSelection?select.value:'';
- select.innerHTML='<option value="">⏳ جارٍ تحميل أوراقك...</option>';
- const schoolId=String(firebaseProfile.schoolId).trim();
- const snap=await firebase.firestore().collection('worksheets')
-  .where('schoolId','==',schoolId)
-  .where('createdBy','==',firebaseCurrentUser.uid)
-  .orderBy('createdAt','desc').get();
- select.innerHTML='<option value="">-- اختر ورقة العمل --</option>';
- snap.forEach(doc=>{
-  const op=document.createElement('option');op.value=doc.id;
-  op.textContent=String((doc.data()||{}).title||'ورقة عمل بدون عنوان');
-  select.appendChild(op);
- });
- if(previous&&Array.from(select.options).some(o=>o.value===previous))select.value=previous;
- if(select.value)await loadGradingAnswers();
- else $('psagAnswersList').innerHTML=snap.empty
-  ?'<div class="psag-card" style="text-align:center;color:#64748b">لا توجد أوراق عمل أنشأتها بهذا الحساب حتى الآن.</div>'
-  :'<p style="text-align:center;color:#64748b">اختر ورقة العمل لعرض إجابات طلاب فصولك.</p>';
-}
-function safeGradingText(v){
- return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-async function loadGradingAnswers(){
- assertStaffGrading();
- const list=$('psagAnswersList'),worksheetId=$('psagWorksheetSelect').value;
- if(!worksheetId){list.innerHTML='<p style="text-align:center;color:#64748b">اختر ورقة العمل أولاً.</p>';return;}
- list.innerHTML='<p style="text-align:center;color:#64748b">⏳ جارٍ تحميل الإجابات...</p>';
- try{
-  const db=firebase.firestore(),schoolId=String(firebaseProfile.schoolId).trim(),uid=firebaseCurrentUser.uid;
-  const wSnap=await db.collection('worksheets').doc(worksheetId).get();
-  if(!wSnap.exists)throw new Error('ورقة العمل غير موجودة.');
-  const wd=wSnap.data()||{};
-  if(wd.createdBy!==uid||wd.schoolId!==schoolId)throw new Error('غير مصرح لك بعرض إجابات هذه الورقة؛ فهي ليست من أوراق حسابك.');
-  const assigned=staffAssignedClasses();
-  if(!assigned.length)throw new Error('لا توجد فصول مسندة إلى حساب المعلم في ملف الترخيص.');
-  const answersSnap=await db.collection('student_answers').where('worksheetId','==',worksheetId).get();
-  const docs=answersSnap.docs.filter(d=>{
-   const a=d.data()||{};
-   return String(a.schoolId||'')===schoolId && assigned.includes(String(a.studentClass||'').trim());
-  });
-  if(!docs.length){list.innerHTML='<div class="psag-card" style="text-align:center;color:#64748b">لا توجد إجابات مسجلة لهذه الورقة في الفصول المسندة إلى حسابك.</div>';return;}
-  let answerKey={};
-  const keySnap=await db.collection('worksheet_answer_keys').doc(worksheetId).get();
-  if(keySnap.exists){
-   const kd=keySnap.data()||{};
-   if(kd.schoolId===schoolId)answerKey=kd.answerKey||{};
-  }
-  if(!Object.keys(answerKey).length&&wd.answerKey&&typeof wd.answerKey==='object')answerKey=wd.answerKey;
-  list.innerHTML='';
-  docs.sort((a,b)=>{
-   const at=a.data().submittedAt&&a.data().submittedAt.toMillis?a.data().submittedAt.toMillis():0;
-   const bt=b.data().submittedAt&&b.data().submittedAt.toMillis?b.data().submittedAt.toMillis():0;
-   return bt-at;
-  });
-  for(const doc of docs){
-   const a=doc.data()||{},map=a.answers||a.responses||{},entries=Object.entries(map);
-   const norm=v=>String(v==null?'':v).trim().toLowerCase().replace(/[\s.,!?;:،؛]/g,'');
-   const correctFields=[];
-   let correctCount=0,gradedCount=0;
-   const rows=entries.map(([fieldId,value],i)=>{
-    const hasKey=Object.prototype.hasOwnProperty.call(answerKey,fieldId)&&String(answerKey[fieldId]||'').trim()!=='';
-    const correct=hasKey&&norm(value)===norm(answerKey[fieldId]);
-    if(hasKey)gradedCount++;
-    if(correct){correctCount++;correctFields.push(fieldId);}
-    const previous=a.questionGrades&&Object.prototype.hasOwnProperty.call(a.questionGrades,fieldId)
-      ?Number(a.questionGrades[fieldId]):(correct?10:0);
-    const initial=Number.isFinite(previous)?Math.max(0,Math.min(10,previous)):(correct?10:0);
-    return `<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;padding:10px 4px">
-      <div style="flex:1;min-width:220px"><b>السؤال ${i+1}</b><div style="white-space:pre-wrap;overflow-wrap:anywhere;color:#334155">${safeGradingText(value||'— بدون إجابة —')}</div>
-      <small style="color:#64748b">${hasKey?'الإجابة النموذجية: '+safeGradingText(answerKey[fieldId]):'لا يوجد مفتاح إجابة لهذا السؤال'}</small></div>
-      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-       <span style="font-weight:bold;color:${correct?'#047857':hasKey?'#b91c1c':'#64748b'}">${hasKey?(correct?'✔ صحيح آليًا':'✘ غير صحيح آليًا'):'بحاجة لمراجعة المعلم'}</span>
-       <label style="font-size:13px;font-weight:bold;color:#334155">درجة السؤال:
-        <input class="psag-question-grade" data-field-id="${safeGradingText(fieldId)}" type="number" min="0" max="10" step="1" value="${initial}" style="width:66px;padding:7px;border:2px solid #93c5fd;border-radius:8px;text-align:center;font-weight:bold">
-        <span>/ 10</span>
-       </label>
-      </div></div>`;
-   }).join('');
-   const card=document.createElement('section');
-   card.className='psag-card';card.id='psag-card-'+doc.id;
-   const max=entries.length*10;
-   const suggested=correctCount*10;
-   card.innerHTML=`
-    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#f1f5f9;padding:12px;border-radius:9px">
-     <div><h3 style="margin:0;color:#1e3a8a">${safeGradingText(a.studentName||'طالب')}</h3>
-      <div>الصف: ${safeGradingText(a.studentClass||'—')} | الورقة: ${safeGradingText(a.worksheetTitle||wd.title||'—')}</div>
-      <small>تاريخ الإرسال: ${a.submittedAt&&a.submittedAt.toDate?a.submittedAt.toDate().toLocaleString('ar-QA'):'—'}</small></div>
-     <div style="text-align:center;min-width:165px">
-      <div style="font-weight:bold;color:#047857">الدرجة المقترحة آليًا</div>
-      <div style="font-size:24px;font-weight:900;color:#1e3a8a">${suggested} / ${max}</div>
-      <div style="margin-top:7px;padding:7px 10px;background:#fff7ed;border:1px solid #fdba74;border-radius:9px">
-       <small style="font-weight:bold;color:#9a3412">الدرجة النهائية بعد التعديل</small>
-       <div class="psag-final-score" style="font-size:26px;font-weight:900;color:#c2410c">${entries.reduce((sum,[fid])=>sum+(a.questionGrades&&a.questionGrades[fid]!=null?Number(a.questionGrades[fid]):(correctFields.includes(fid)?10:0)),0)} / ${max}</div>
-      </div>
-      <small>تمت مراجعة ${gradedCount} من ${entries.length} سؤال</small>
-     </div>
-    </div>
-    <div style="margin-top:12px">${rows}</div>
-    <div style="margin-top:12px;padding:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px">
-     <b style="color:#1e40af">✏️ يمكنك تعديل درجة كل سؤال من 0 إلى 10 قبل الاعتماد.</b>
-     <div style="font-size:12px;color:#475569;margin-top:4px">لن تُرسل النقاط إلا بعد الضغط على زر الاعتماد، ولن تتكرر نقاط الواجب إذا سبق احتسابه.</div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px">
-     ${a.pointsCredited===true?'<span style="color:#047857;font-weight:bold;align-self:center">✅ سبق اعتماد النقاط لهذا الواجب</span>':''}
-     <button class="psag-btn psag-success psag-save-grade" type="button" ${a.pointsCredited===true?'disabled':''}>✅ اعتماد الدرجة المعدلة وإرسال النقاط</button>
-    </div>`;
-   card.querySelectorAll('.psag-question-grade').forEach(input=>{
-    input.addEventListener('input',()=>recalculateGradingCard(card));
-    input.addEventListener('change',()=>recalculateGradingCard(card));
-   });
-   const saveBtn=card.querySelector('.psag-save-grade');
-   if(saveBtn)saveBtn.onclick=()=>saveTeacherStudentScore(doc.id,correctFields,max,saveBtn);
-   list.appendChild(card);
-  }
- }catch(e){
-  console.error('Teacher grading load failed',e);
-  list.innerHTML='<div class="psag-card" style="color:#b91c1c">تعذر تحميل الإجابات: '+safeGradingText(e.message||e)+'</div>';
- }
-}
-function recalculateGradingCard(card){
- const inputs=Array.from(card.querySelectorAll('.psag-question-grade'));
- let total=0;
- inputs.forEach(input=>{
-  let n=Number(input.value);if(!Number.isFinite(n))n=0;
-  n=Math.max(0,Math.min(10,n));input.value=n;total+=n;
- });
- const display=card.querySelector('.psag-final-score');
- if(display)display.textContent=total+' / '+(inputs.length*10);
-}
-async function saveTeacherStudentScore(answerId,correctFields,maxScore,button){
- assertStaffGrading();
- const db=firebase.firestore(),uid=firebaseCurrentUser.uid,profile=firebaseProfile||{};
- const card=document.getElementById('psag-card-'+answerId);
- if(!card)throw new Error('تعذر العثور على بطاقة الإجابة.');
- const inputs=Array.from(card.querySelectorAll('.psag-question-grade'));
- if(!inputs.length)throw new Error('لا توجد أسئلة قابلة للتصحيح.');
- let score=0,questionGrades={};
- inputs.forEach(input=>{
-  const n=Number(input.value),fieldId=input.getAttribute('data-field-id');
-  if(!Number.isFinite(n)||n<0||n>10)throw new Error('يجب أن تكون درجة كل سؤال بين 0 و10.');
-  score+=n;questionGrades[fieldId]=n;
- });
- score=Math.round(score*100)/100;
- const answerRef=db.collection('student_answers').doc(answerId);
- const answerSnap=await answerRef.get();
- if(!answerSnap.exists)throw new Error('لم يتم العثور على إجابة الطالب.');
- const answer=answerSnap.data()||{};
- const schoolId=String(profile.schoolId||'').trim();
- const assigned=staffAssignedClasses();
- if(String(answer.schoolId||'')!==schoolId||!assigned.includes(String(answer.studentClass||'').trim()))throw new Error('هذه الإجابة لا تخص المدرسة أو الفصول المسندة إلى حسابك.');
- const worksheetSnap=await db.collection('worksheets').doc(String(answer.worksheetId||'')).get();
- if(!worksheetSnap.exists)throw new Error('ورقة العمل المرتبطة بالإجابة غير موجودة.');
- const worksheet=worksheetSnap.data()||{};
- if(worksheet.createdBy!==uid||worksheet.schoolId!==schoolId)throw new Error('هذه الورقة ليست من إنشاء حسابك. لا يمكنك تصحيح إجاباتها.');
- if(answer.pointsCredited===true)throw new Error('سبق اعتماد نقاط هذه الإجابة، ولا يمكن إضافة النقاط مرة أخرى.');
- const automaticScore=inputs.reduce((sum,input)=>sum+(correctFields.includes(input.getAttribute('data-field-id'))?10:0),0);
- if(!confirm('مراجعة الدرجة قبل الإرسال\\n\\nالدرجة التلقائية: '+automaticScore+' / '+maxScore+'\\nالدرجة بعد التعديل: '+score+' / '+maxScore+'\\n\\nهل تريد اعتماد الدرجة وإرسال '+score+' نقطة إلى برنامج النقاط؟'))return;
- button.disabled=true;button.textContent='⏳ جارٍ حفظ الدرجة وإرسال النقاط...';
- try{
-  await answerRef.update({
-   correctFields:correctFields,score:score,maxScore:maxScore,
-   gradingMode:score===automaticScore?'automatic':'manual_adjusted',
-   scoreAdjustedByTeacher:score!==automaticScore,questionGrades:questionGrades,
-   gradedAt:firebase.firestore.FieldValue.serverTimestamp(),gradedBy:uid
-  });
-  const normalized=v=>String(v==null?'':v).trim().replace(/\s+/g,' ');
-  const className=normalized(answer.studentClass),studentName=normalized(answer.studentName);
-  const awardKey='HW:'+String(answer.worksheetId||'')+':'+className+':'+studentName.toLowerCase();
-  const mirrorRef=db.collection('schoolClasses').doc(schoolId+'__'+className);
-  const credited=await db.runTransaction(async transaction=>{
-   const mirrorSnap=await transaction.get(mirrorRef);
-   if(!mirrorSnap.exists)throw new Error('لم يتم العثور على سجل الفصل في schoolClasses: '+className);
-   const mirror=mirrorSnap.data()||{};
-   if(mirror.schoolId!==schoolId||mirror.classId!==className)throw new Error('بيانات الفصل لا تطابق المدرسة أو اسم الفصل.');
-   const classData=mirror.classData||{};
-   if(!Array.isArray(classData.students))throw new Error('قائمة طلاب الفصل غير موجودة في سجل الفصل.');
-   const student=classData.students.find(item=>normalized(item.name)===studentName);
-   if(!student)throw new Error('لم يتم العثور على الطالب في برنامج النقاط: '+studentName+' - '+className);
-   const awarded=Array.isArray(student.homeworkAwardIds)?student.homeworkAwardIds:[];
-   if(awarded.includes(answerId)||awarded.includes(awardKey))return false;
-   student.points=(Number(student.points)||0)+score;
-   student.homeworkPointsSubtotal=(Number(student.homeworkPointsSubtotal)||0)+score;
-   student.homeworkAwardIds=awarded.concat([answerId,awardKey]);
-   student.homeworkPointsLabel='نقاط الإجابة عن الواجب المنزلي';
-   transaction.set(mirrorRef,{schoolId:schoolId,classId:className,classData:classData,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),updatedBy:uid},{merge:true});
-   return true;
-  });
-  if(credited===false){
-   await answerRef.update({pointsCredited:false,creditStatus:'duplicate',duplicateSubmission:true});
-   alert('تم حفظ الدرجة، لكن سبق احتساب نقاط هذا الواجب لهذا الطالب؛ لم تُضف نقاط مرة أخرى.');
-   button.disabled=true;button.textContent='⚠️ سبق احتساب هذا الواجب';return;
-  }
-  await answerRef.update({pointsCredited:true,creditStatus:'credited'});
-  await db.collection('homework_results').doc(answerId).set({
-   schoolId:schoolId,worksheetId:answer.worksheetId||'',worksheetTitle:answer.worksheetTitle||worksheet.title||'',
-   studentName:answer.studentName||'',studentClass:answer.studentClass||'',score:score,maxScore:maxScore,
-   awardedAt:firebase.firestore.FieldValue.serverTimestamp(),status:'credited'
-  },{merge:true});
-  alert('✅ تم اعتماد الدرجة '+score+' من '+maxScore+' وإرسال النقاط إلى رصيد الطالب بنجاح.');
-  button.disabled=true;button.textContent='✅ تم الاعتماد وإرسال النقاط';
- }catch(e){
-  console.error('Teacher grading save failed',e);
-  alert('تعذر اعتماد الدرجة أو إرسال النقاط: '+(e.message||e));
-  button.disabled=false;button.textContent='🔁 إعادة المحاولة';
- }
-}
-
-// إزالة أي زر Live Worksheets إضافي قد تضيفه نسخة قديمة أو سكربت خارجي، مع الإبقاء على الزر العلوي الصحيح.
-function removeDuplicateLiveWorksheetButtons(){
- document.querySelectorAll('button').forEach(btn=>{
-  if(btn.id==='lwsLaunchBtn'||btn.closest('#liveWorksheetsModal'))return;
-  const label=String(btn.innerText||btn.textContent||'').replace(/\s+/g,' ').trim();
-  if(/Live\s*Worksheets/i.test(label))btn.remove();
- });
-}
-removeDuplicateLiveWorksheetButtons();
-if(document.body&&window.MutationObserver){
- const duplicateButtonObserver=new MutationObserver(removeDuplicateLiveWorksheetButtons);
- duplicateButtonObserver.observe(document.body,{childList:true,subtree:true});
-}
-window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,openGrading,closeGrading,refreshGrading,loadGradingAnswers};
-})();
-</script>
-
 </body>
 </html>
