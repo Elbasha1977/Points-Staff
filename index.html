@@ -6746,6 +6746,23 @@ document.addEventListener('DOMContentLoaded', function() {
 // ==================== نظام تسجيل الدخول ====================
 // ==================== نظام تسجيل الدخول ====================
 (function() {
+    // ربط زر «التالي» فور بدء وحدة تسجيل الدخول، قبل أي تهيئة أخرى قد تتعطل.
+    const introNextButton = document.getElementById('pointsIntroNext');
+    if (introNextButton) {
+        introNextButton.addEventListener('click', function() {
+            const intro = document.getElementById('pointsIntroScreen');
+            if (intro) intro.style.display = 'none';
+
+            if (firebaseAuth && firebaseAuth.currentUser && window.__POINTS_INTRO_AFTER_LOGIN) {
+                window.__POINTS_INTRO_AFTER_LOGIN = false;
+                return;
+            }
+
+            window.__POINTS_INTRO_CONTINUED = true;
+            showLoginScreen();
+        });
+    }
+
     const USERS_STORAGE_KEY = 'school_users_data_complete';
     const PENDING_KEY = 'school_pending_requests_complete';
     const LEGACY_ADMIN_CODE = 'Anhs7293@';
@@ -7235,17 +7252,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    const introNextButton = document.getElementById('pointsIntroNext');
-    if (introNextButton) introNextButton.addEventListener('click', function() {
-        const intro = document.getElementById('pointsIntroScreen');
-        if (intro) intro.style.display='none';
-        if (firebaseAuth && firebaseAuth.currentUser && window.__POINTS_INTRO_AFTER_LOGIN) {
-            window.__POINTS_INTRO_AFTER_LOGIN=false;
-            return;
-        }
-        window.__POINTS_INTRO_CONTINUED = true;
-        showLoginScreen();
-    });
     loadUsersData();
     showLoginScreen();
 })();
