@@ -6678,6 +6678,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (!document.getElementById('loginOverlay')) showLoginScreen();
                     } catch (transitionError) {
                         console.error('Points Staff intro-to-login transition failed:', transitionError);
+                        // If the login form was already created, never cover it with
+                        // the full-screen diagnostic message. Keep the real login usable.
+                        const existingLoginOverlay = document.getElementById('loginOverlay');
+                        if (existingLoginOverlay) {
+                            existingLoginOverlay.style.display = 'flex';
+                            existingLoginOverlay.style.visibility = 'visible';
+                            existingLoginOverlay.style.zIndex = '400001';
+                            return;
+                        }
                         const message = document.createElement('div');
                         message.style.cssText = 'position:fixed;inset:0;z-index:100001;background:#fff;color:#991b1b;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-weight:bold;';
                         message.textContent = 'تعذر فتح شاشة الدخول. حدّث الصفحة وحاول مرة أخرى.';
@@ -6726,6 +6735,68 @@ document.addEventListener('DOMContentLoaded', function() {
                 '</div>' +
             '</div>';
         document.body.appendChild(overlay);
+        overlay.querySelector('#loginBtn').onclick = async function() {
+ const email=overlay.querySelector('#loginEmail').value.trim().toLowerCase(), password=overlay.querySelector('#loginPassword').value, msgDiv=overlay.querySelector('#loginMessage');
+ if(!email){msgDiv.innerText='❌ الرجاء إدخال البريد';return;} if(!isValidEmail(email)){msgDiv.innerText='❌ أدخل بريدًا إلكترونيًا صحيحًا';return;}
+ msgDiv.innerText='⏳ جاري التحقق من حسابك...';msgDiv.style.color='#f59e0b';
+ try{
+  const cred=await firebaseAuth.signInWithEmailAndPassword(email,password);firebaseCurrentUser=cred.user;
+  const ps=await FIRESTORE_PROFILE_COLLECTION.doc(firebaseCurrentUser.uid).get();
+  if(!ps.exists){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ لا يوجد ملف صلاحيات لهذا الحساب في قاعدة البيانات';return;}
+  firebaseProfile=ps.data();
+  updatePointsBrandTenantName();
+  if(firebaseProfile.active!==true||firebaseProfile.approved!==true){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='⏳ الحساب غير مفعل من مدير الموقع';return;}
+  msgDiv.innerText='⏳ تم التحقق من الحساب. جارٍ التحقق من ترخيص نسخة الموظفين...';
+  await verifyPointsStaffLicense();
+  if(firebaseProfile.role==='admin'){
+    if(!await loadFirebaseData()){await firebaseAuth.signOut();firebaseCurrentUser=null;return;}
+  } else if(firebaseProfile.role==='schoolAdmin'){
+    if(!isSchoolManager()){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ حساب مدير المدرسة غير مكتمل أو لا يحتوي على schoolId.';return;}
+    if(!await loadFirebaseData()){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;return;}
+  } else if(firebaseProfile.role==='staff'){
+    const permitted=Array.isArray(firebaseProfile.classIds)?firebaseProfile.classIds:[];
+    if(permitted.length===0){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='⏳ حساب الموظف معتمد، لكن لم تُسند إليه فصول بعد. راجع المدير.';return;}
+    const scoped={};
+    const staffSchoolId=typeof firebaseProfile.schoolId==='string'?firebaseProfile.schoolId.trim():'';
+    if(!staffSchoolId){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ حساب المعلم لا يحتوي على رمز المدرسة (schoolId). راجع مدير المدرسة لتحديث ملف الصلاحيات.';return;}
+    for(const classId of permitted){
+      const mirrorId=staffSchoolId+'__'+classId;
+      const classSnap=await firestoreDb.collection('schoolClasses').doc(mirrorId).get();
+      if(classSnap.exists){
+        const mirror=classSnap.data();
+        if(mirror.schoolId===staffSchoolId && mirror.classId===classId && mirror.classData!==undefined)scoped[classId]=mirror.classData;
+      }
+    }
+    if(Object.keys(scoped).length===0){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ لم نعثر على بيانات الفصول التابعة لمدرستك. افتح حساب مدير المدرسة، وتأكد من مزامنة بيانات المدرسة ثم راجع schoolId وإسناد classIds لحساب المعلم.';return;}
+    allClassesData=scoped;
+    currentClass=permitted.find(id=>Object.prototype.hasOwnProperty.call(scoped,id))||Object.keys(scoped)[0];
+    localStorage.setItem('allClassesData',JSON.stringify(allClassesData));
+    // Staff accounts load only their assigned class mirrors above; mark the scoped
+    // Firebase session ready so saveFirebaseData() can persist changes to those mirrors.
+    firebaseSyncReady=true;
+    const staffSyncStatus=document.getElementById('firebaseSyncStatus');
+    if(staffSyncStatus)staffSyncStatus.textContent='☁️ تم تحميل الفصول المصرح بها';
+  } else {
+    await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ نوع الحساب غير معروف.';return;
+  }
+  try {
+   const pointsLoaded=await loadServerPointsForCurrentClass();
+   try { await loadServerWarningsForCurrentClass(); } catch(warningLoadError) { console.warn('Secure warnings sidecar not loaded:',warningLoadError); }
+   try { await loadClassFeatureDatasetsForCurrentClass(); } catch(datasetLoadError) { console.warn('Class feature datasets not loaded:',datasetLoadError); }
+   if(pointsLoaded&&typeof renderStudents==='function')renderStudents();
+  }catch(pointsLoadError){
+   POINTS_SECURE_POINTS_LOAD_ERROR = String(pointsLoadError && pointsLoadError.message || pointsLoadError || 'تعذر تحميل النقاط');
+   console.warn('Secure points sidecar not loaded:',pointsLoadError);
+   const pointsStatus=document.getElementById('firebaseSyncStatus');
+   if(pointsStatus)pointsStatus.textContent='⚠️ تعذر مزامنة سجل النقاط: '+POINTS_SECURE_POINTS_LOAD_ERROR;
+  }
+  await applyCommercialMenuLocks();
+  updatePointsBrandTenantName();
+  msgDiv.innerText='✅ تم تسجيل الدخول';msgDiv.style.color='#22c55e';
+  setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();updatePointsBrandTenantName();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ Connected';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent=POINTS_SECURE_POINTS_LOAD_ERROR?('⚠️ تعذر مزامنة سجل النقاط: '+POINTS_SECURE_POINTS_LOAD_ERROR):'☁️ تم تحميل الفصول المصرح بها ومزامنة سجل النقاط';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}/* شاشة الترحيب تظهر قبل تسجيل الدخول فقط؛ لا تُعرض مرة أخرى بعد نجاح الدخول. */},400);
+ }catch(e){console.error(e);msgDiv.innerText='❌ تعذر تسجيل الدخول: '+(e.message||e);msgDiv.style.color='#dc2626';}
+};
+
         document.getElementById('showRegisterBtn').onclick=function(){
           const panel=document.getElementById('registerPanel');
           panel.style.display=panel.style.display==='none'?'block':'none';
@@ -6794,67 +6865,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         
-        document.getElementById('loginBtn').onclick = async function() {
- const email=document.getElementById('loginEmail').value.trim().toLowerCase(), password=document.getElementById('loginPassword').value, msgDiv=document.getElementById('loginMessage');
- if(!email){msgDiv.innerText='❌ الرجاء إدخال البريد';return;} if(!isValidEmail(email)){msgDiv.innerText='❌ أدخل بريدًا إلكترونيًا صحيحًا';return;}
- msgDiv.innerText='⏳ جاري التحقق من حسابك...';msgDiv.style.color='#f59e0b';
- try{
-  const cred=await firebaseAuth.signInWithEmailAndPassword(email,password);firebaseCurrentUser=cred.user;
-  const ps=await FIRESTORE_PROFILE_COLLECTION.doc(firebaseCurrentUser.uid).get();
-  if(!ps.exists){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ لا يوجد ملف صلاحيات لهذا الحساب في قاعدة البيانات';return;}
-  firebaseProfile=ps.data();
-  updatePointsBrandTenantName();
-  if(firebaseProfile.active!==true||firebaseProfile.approved!==true){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='⏳ الحساب غير مفعل من مدير الموقع';return;}
-  msgDiv.innerText='⏳ تم التحقق من الحساب. جارٍ التحقق من ترخيص نسخة الموظفين...';
-  await verifyPointsStaffLicense();
-  if(firebaseProfile.role==='admin'){
-    if(!await loadFirebaseData()){await firebaseAuth.signOut();firebaseCurrentUser=null;return;}
-  } else if(firebaseProfile.role==='schoolAdmin'){
-    if(!isSchoolManager()){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ حساب مدير المدرسة غير مكتمل أو لا يحتوي على schoolId.';return;}
-    if(!await loadFirebaseData()){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;return;}
-  } else if(firebaseProfile.role==='staff'){
-    const permitted=Array.isArray(firebaseProfile.classIds)?firebaseProfile.classIds:[];
-    if(permitted.length===0){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='⏳ حساب الموظف معتمد، لكن لم تُسند إليه فصول بعد. راجع المدير.';return;}
-    const scoped={};
-    const staffSchoolId=typeof firebaseProfile.schoolId==='string'?firebaseProfile.schoolId.trim():'';
-    if(!staffSchoolId){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ حساب المعلم لا يحتوي على رمز المدرسة (schoolId). راجع مدير المدرسة لتحديث ملف الصلاحيات.';return;}
-    for(const classId of permitted){
-      const mirrorId=staffSchoolId+'__'+classId;
-      const classSnap=await firestoreDb.collection('schoolClasses').doc(mirrorId).get();
-      if(classSnap.exists){
-        const mirror=classSnap.data();
-        if(mirror.schoolId===staffSchoolId && mirror.classId===classId && mirror.classData!==undefined)scoped[classId]=mirror.classData;
-      }
-    }
-    if(Object.keys(scoped).length===0){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ لم نعثر على بيانات الفصول التابعة لمدرستك. افتح حساب مدير المدرسة، وتأكد من مزامنة بيانات المدرسة ثم راجع schoolId وإسناد classIds لحساب المعلم.';return;}
-    allClassesData=scoped;
-    currentClass=permitted.find(id=>Object.prototype.hasOwnProperty.call(scoped,id))||Object.keys(scoped)[0];
-    localStorage.setItem('allClassesData',JSON.stringify(allClassesData));
-    // Staff accounts load only their assigned class mirrors above; mark the scoped
-    // Firebase session ready so saveFirebaseData() can persist changes to those mirrors.
-    firebaseSyncReady=true;
-    const staffSyncStatus=document.getElementById('firebaseSyncStatus');
-    if(staffSyncStatus)staffSyncStatus.textContent='☁️ تم تحميل الفصول المصرح بها';
-  } else {
-    await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='❌ نوع الحساب غير معروف.';return;
-  }
-  try {
-   const pointsLoaded=await loadServerPointsForCurrentClass();
-   try { await loadServerWarningsForCurrentClass(); } catch(warningLoadError) { console.warn('Secure warnings sidecar not loaded:',warningLoadError); }
-   try { await loadClassFeatureDatasetsForCurrentClass(); } catch(datasetLoadError) { console.warn('Class feature datasets not loaded:',datasetLoadError); }
-   if(pointsLoaded&&typeof renderStudents==='function')renderStudents();
-  }catch(pointsLoadError){
-   POINTS_SECURE_POINTS_LOAD_ERROR = String(pointsLoadError && pointsLoadError.message || pointsLoadError || 'تعذر تحميل النقاط');
-   console.warn('Secure points sidecar not loaded:',pointsLoadError);
-   const pointsStatus=document.getElementById('firebaseSyncStatus');
-   if(pointsStatus)pointsStatus.textContent='⚠️ تعذر مزامنة سجل النقاط: '+POINTS_SECURE_POINTS_LOAD_ERROR;
-  }
-  await applyCommercialMenuLocks();
-  updatePointsBrandTenantName();
-  msgDiv.innerText='✅ تم تسجيل الدخول';msgDiv.style.color='#22c55e';
-  setTimeout(()=>{overlay.remove();if(container)container.style.display='block';if(typeof renderStudents==='function')renderStudents();if(typeof updateDateTimeDisplay==='function')updateDateTimeDisplay();updatePointsBrandTenantName();const b=document.getElementById('firebaseSyncStatus');if(b){if(isSchoolManager()&&firebaseSyncReady)b.textContent='☁️ تم الاتصال ببيانات المدرسة';else if(isGlobalFirebaseAdmin()&&firebaseSyncReady)b.textContent='☁️ Connected';else if(firebaseProfile&&firebaseProfile.role==='staff')b.textContent=POINTS_SECURE_POINTS_LOAD_ERROR?('⚠️ تعذر مزامنة سجل النقاط: '+POINTS_SECURE_POINTS_LOAD_ERROR):'☁️ تم تحميل الفصول المصرح بها ومزامنة سجل النقاط';else b.textContent='⚠️ تسجيل الدخول لا يعني اكتمال المزامنة';}/* شاشة الترحيب تظهر قبل تسجيل الدخول فقط؛ لا تُعرض مرة أخرى بعد نجاح الدخول. */},400);
- }catch(e){console.error(e);msgDiv.innerText='❌ تعذر تسجيل الدخول: '+(e.message||e);msgDiv.style.color='#dc2626';}
-};
+
 
         document.getElementById('forgotLink').onclick = function(e) {
             e.preventDefault();
