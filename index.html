@@ -531,7 +531,8 @@ body{overscroll-behavior-y:auto}
 
 </head>
 <body>
- <div class="container">
+
+<div class="container">
 <div id="pointsEntitlementNotice" style="display:none;max-width:900px;margin:8px auto;padding:10px 14px;border-radius:12px;background:#fff7ed;color:#9a3412;text-align:center;font-weight:bold;"></div>
 <div id="pointsLicenseBlocker" style="display:none;position:fixed;inset:0;z-index:200000;background:rgba(8,20,45,.94);align-items:center;justify-content:center;padding:20px;">
  <div style="max-width:520px;width:100%;background:#fff;border:3px solid #d4af37;border-radius:22px;padding:28px;text-align:center;box-shadow:0 20px 60px #0005;">
@@ -6721,6 +6722,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const LEGACY_ADMIN_CODE = 'Anhs7293@';
     const ADMIN_EMAIL = 'a.atia1201@education.qa';
     let usersData = {};
+    
     function loadUsersData() {
         const saved = localStorage.getItem(USERS_STORAGE_KEY);
         if (saved) { try { usersData = JSON.parse(saved); } catch(e) { usersData = {}; } }
@@ -6785,7 +6787,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showLoginScreen() {
-        const container = document.querySelector('.container');
+const container = document.querySelector('.container');
         if (container) container.style.display = 'none';
         const oldOverlay = document.getElementById('loginOverlay');
         if(oldOverlay) oldOverlay.remove();
@@ -7201,9 +7203,7 @@ document.addEventListener('DOMContentLoaded', function() {
             adminDiv.remove();
         };
     }
-    
-    // Intro button handler is bound at the start of this module above.
-    loadUsersData();
+loadUsersData();
     showLoginScreen();
 })();
 
