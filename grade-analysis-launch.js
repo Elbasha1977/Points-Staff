@@ -18,7 +18,8 @@
       "#"+LINK_ID+":hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(15,62,102,.32)}"+
       "#"+LINK_ID+" .ga-icon{font-size:22px}"+
       "#"+LINK_ID+".ga-dashboard{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:12px 20px;border:0;border-radius:14px;background:linear-gradient(135deg,#0f3e66,#1976d2);color:#fff!important;text-decoration:none!important;font-family:Tahoma,Arial,sans-serif;font-size:15px;font-weight:900;box-shadow:0 6px 18px rgba(15,62,102,.20);cursor:pointer;white-space:nowrap;margin:6px auto}"+
-      ".ga-launch-row{display:flex;justify-content:center;align-items:center;width:100%;margin:14px auto 4px}"+
+      ".ga-launch-row{display:flex;justify-content:center;align-items:center;width:100%;margin:14px auto 4px}" +
+      ".ga-launch-row-inline{display:contents}"+
       "#"+DIAG_ID+"{position:fixed;z-index:2147483647;right:12px;left:12px;bottom:12px;max-width:760px;margin:0 auto;padding:14px 16px;border:2px solid #d97706;border-radius:12px;background:#fff7ed;color:#7c2d12;font:14px/1.8 Tahoma,Arial,sans-serif;text-align:right;white-space:normal;box-shadow:0 8px 30px rgba(0,0,0,.22)}"+
       "#"+DIAG_ID+" strong{display:block;margin-bottom:4px}";
     document.head.appendChild(style);
@@ -34,6 +35,8 @@
     // حالة Firebase Auth هي الحاجز الوحيد: لا نظهر الزر قبل تسجيل الدخول.
     // لا نمنع إنشاءه بسبب طبقة تمهيدية قد تبقى ظاهرة بعد اكتمال الدخول.
     const candidates=[
+      document.querySelector(".row2"),
+      document.querySelector(".row1"),
       document.querySelector(".header-buttons"),
       document.querySelector("#mainApp .buttons-grid"),
       document.querySelector(".buttons-grid"),
@@ -47,7 +50,7 @@
     let link=document.getElementById(LINK_ID);
     if(!row){
       row=document.createElement("div");
-      row.className="ga-launch-row";
+      row.className="ga-launch-row ga-launch-row-inline";
       row.id=LINK_ID+"-row";
     }
     if(!link){
