@@ -8023,23 +8023,28 @@ async function saveTeacherStudentScore(answerId,correctFields,maxScore,button){
  }
 }
 
-// إزالة زر Live Worksheets المكرر في أي موضع أو عنصر قابل للنقر،
-// مع الإبقاء حصريًا على زر الإطلاق العلوي ومحتوى نافذة Live Worksheets نفسها.
-function removeDuplicateLiveWorksheetButtons(){
- if(!document.body)return;
- const candidates=document.querySelectorAll('button,a,[role=\"button\"],[onclick],[tabindex]');
+// إزالة عناصر Live Worksheets المكررة دون إعادة فحص الصفحة كاملة عند كل تغيير.
+function removeDuplicateLiveWorksheetButtons(root){
+ if(!root)return;
+ const selector='button,a,[role="button"],[onclick]';
+ const candidates=[];
+ if(root.nodeType===1 && root.matches && root.matches(selector)) candidates.push(root);
+ if(root.querySelectorAll) candidates.push(...root.querySelectorAll(selector));
  candidates.forEach(el=>{
   if(el.id==='lwsLaunchBtn'||el.closest('#liveWorksheetsModal'))return;
   const label=String(el.innerText||el.textContent||el.value||'').replace(/\s+/g,' ').trim();
-  if(/live\s*worksheets/i.test(label)){
-   // لا نحذف حاوية عامة؛ نحذف عنصر التحكم نفسه فقط.
-   if(el.matches('button,a,[role=\"button\"],[onclick]'))el.remove();
-  }
+  if(/live\s*worksheets/i.test(label))el.remove();
  });
 }
-removeDuplicateLiveWorksheetButtons();
+removeDuplicateLiveWorksheetButtons(document.body);
 if(document.body&&window.MutationObserver){
- const duplicateButtonObserver=new MutationObserver(()=>removeDuplicateLiveWorksheetButtons());
+ const duplicateButtonObserver=new MutationObserver(records=>{
+  for(const record of records){
+   for(const node of record.addedNodes){
+    if(node.nodeType===1)removeDuplicateLiveWorksheetButtons(node);
+   }
+  }
+ });
  duplicateButtonObserver.observe(document.body,{childList:true,subtree:true});
 }
 window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,openGrading,closeGrading,refreshGrading,loadGradingAnswers};
