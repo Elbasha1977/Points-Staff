@@ -581,7 +581,7 @@ body{overscroll-behavior-y:auto}
                 </div>
             </div>
 
-                        <div id="pointsWorksheetsMenuWrap" style="display:flex;justify-content:center;margin:0 0 14px;position:relative;z-index:1200"><div style="position:relative"><button id="pointsWorksheetsMenuBtn" class="btn" type="button" aria-haspopup="true" aria-expanded="false" onclick="togglePointsWorksheetsMenu(event)" style="background:linear-gradient(135deg,#4338ca,#7c3aed);min-width:250px;padding:13px 22px;font-size:17px">📚 Worksheets ▼</button><div id="pointsWorksheetsMenu" style="display:none;position:absolute;top:calc(100% + 5px);right:0;min-width:300px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 30px #0f172a22;padding:7px;z-index:1201"><button type="button" onclick="closePointsWorksheetsMenu();POINTS_LWS.open()" style="display:block;width:100%;text-align:right;padding:12px;border:0;background:white;cursor:pointer;font:inherit">📝 Live Worksheets</button><button type="button" onclick="closePointsWorksheetsMenu();POINTS_LWS.openGrading()" style="display:block;width:100%;text-align:right;padding:12px;border:0;background:white;cursor:pointer;font:inherit">✍️ تصحيح إجابات الطلاب</button><button type="button" onclick="closePointsWorksheetsMenu();openHomeworkCertificateVerifier()" style="display:block;width:100%;text-align:right;padding:12px;border:0;background:white;cursor:pointer;font:inherit">🏅 التحقق من شهادات التقدير للواجبات المنزلية</button></div></div></div>
+                        <div id="pointsWorksheetsMenuWrap" data-feature="liveWorksheets" style="display:flex;justify-content:center;margin:0 0 14px;position:relative;z-index:1200"><div style="position:relative"><button id="pointsWorksheetsMenuBtn" class="btn" type="button" aria-haspopup="true" aria-expanded="false" onclick="togglePointsWorksheetsMenu(event)" style="background:linear-gradient(135deg,#4338ca,#7c3aed);min-width:250px;padding:13px 22px;font-size:17px">📚 Worksheets ▼</button><div id="pointsWorksheetsMenu" style="display:none;position:absolute;top:calc(100% + 5px);right:0;min-width:300px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 12px 30px #0f172a22;padding:7px;z-index:1201"><button id="lwsLaunchBtn" type="button" data-feature="liveWorksheets" onclick="closePointsWorksheetsMenu();POINTS_LWS.open()" style="display:block;width:100%;text-align:right;padding:12px;border:0;background:white;cursor:pointer;font:inherit">📝 Live Worksheets</button><button type="button" data-feature="liveWorksheets" onclick="closePointsWorksheetsMenu();POINTS_LWS.openGrading()" style="display:block;width:100%;text-align:right;padding:12px;border:0;background:white;cursor:pointer;font:inherit">✍️ تصحيح إجابات الطلاب</button><button type="button" onclick="closePointsWorksheetsMenu();openHomeworkCertificateVerifier()" style="display:block;width:100%;text-align:right;padding:12px;border:0;background:white;cursor:pointer;font:inherit">🏅 التحقق من شهادات التقدير للواجبات المنزلية</button></div></div></div>
 
 <div class="row1">
                 <div class="dropdown">
@@ -7459,10 +7459,15 @@ async function applyCommercialMenuLocks(forceCloseOnChange=false){
     const changed=!!previous && (previous.plan!==response.plan || JSON.stringify(previous.features||{})!==JSON.stringify(features));
     entries.forEach(el=>{
       const allowed=features[el.dataset.feature]===true;
-      el.classList.toggle('feature-locked',!allowed);
+      el.hidden=!allowed;
+      el.classList.remove('feature-locked');
       if(el.tagName==='BUTTON')el.disabled=!allowed;
       if(!allowed){el.setAttribute('aria-disabled','true');el.title='هذه الميزة غير متاحة في باقتك الحالية';}
       else{el.removeAttribute('aria-disabled');el.title='';}
+    });
+    document.querySelectorAll('.dropdown').forEach(dropdown=>{
+      const items=Array.from(dropdown.querySelectorAll('.dropdown-content [data-feature]'));
+      if(items.length)dropdown.hidden=items.every(item=>item.hidden);
     });
     if(changed && forceCloseOnChange){
       document.querySelectorAll('.modal').forEach(m=>{m.style.display='none';});
@@ -7475,7 +7480,11 @@ async function applyCommercialMenuLocks(forceCloseOnChange=false){
   }catch(err){
     console.error('POINTS entitlement refresh failed:',err);
     const entries=Array.from(document.querySelectorAll('[data-feature]'));
-    entries.forEach(el=>{el.classList.add('feature-locked');if(el.tagName==='BUTTON')el.disabled=true;el.setAttribute('aria-disabled','true');el.title='تعذر التحقق من صلاحية هذه الميزة';});
+    entries.forEach(el=>{el.hidden=true;el.classList.remove('feature-locked');if(el.tagName==='BUTTON')el.disabled=true;el.setAttribute('aria-disabled','true');el.title='تعذر التحقق من صلاحية هذه الميزة';});
+    document.querySelectorAll('.dropdown').forEach(dropdown=>{
+      const items=Array.from(dropdown.querySelectorAll('.dropdown-content [data-feature]'));
+      if(items.length)dropdown.hidden=items.every(item=>item.hidden);
+    });
     const blocker=document.getElementById('pointsLicenseBlocker');if(blocker){blocker.style.display='flex';const message=blocker.querySelector('[data-license-message]');if(message)message.textContent=(err&&err.message)||'تعذر التحقق من الترخيص أو الباقة. تم إيقاف استخدام النظام احترازيًا حتى عودة التحقق.';}
   }
 }
