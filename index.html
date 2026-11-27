@@ -6746,28 +6746,55 @@ document.addEventListener('DOMContentLoaded', function() {
 // ==================== نظام تسجيل الدخول ====================
 // ==================== نظام تسجيل الدخول ====================
 (function() {
-    // ربط زر «التالي» فور بدء وحدة تسجيل الدخول، قبل أي تهيئة أخرى قد تتعطل.
-    const introNextButton = document.getElementById('pointsIntroNext');
-    if (introNextButton) {
-        introNextButton.addEventListener('click', function() {
-            const intro = document.getElementById('pointsIntroScreen');
-            if (intro) intro.style.display = 'none';
-
-            if (firebaseAuth && firebaseAuth.currentUser && window.__POINTS_INTRO_AFTER_LOGIN) {
-                window.__POINTS_INTRO_AFTER_LOGIN = false;
-                return;
-            }
-
-            window.__POINTS_INTRO_CONTINUED = true;
-            showLoginScreen();
-        });
-    }
-
     const USERS_STORAGE_KEY = 'school_users_data_complete';
     const PENDING_KEY = 'school_pending_requests_complete';
     const LEGACY_ADMIN_CODE = 'Anhs7293@';
     const ADMIN_EMAIL = 'a.atia1201@education.qa';
     let usersData = {};
+
+    // Bind the welcome transition immediately when the login module starts.
+    // This must happen before any optional initialization can interrupt the module.
+    window.__POINTS_STAFF_SHOW_LOGIN = showLoginScreen;
+    const introNextButtonEarly = document.getElementById('pointsIntroNext');
+    if (introNextButtonEarly && !introNextButtonEarly.dataset.pointsTransitionBound) {
+        introNextButtonEarly.dataset.pointsTransitionBound = '1';
+        let introTransitionBusy = false;
+        introNextButtonEarly.addEventListener('click', function (event) {
+            if (event) event.preventDefault();
+            if (introTransitionBusy) return;
+            introTransitionBusy = true;
+            const intro = document.getElementById('pointsIntroScreen');
+            const alreadyAuthenticatedIntro = !!window.__POINTS_INTRO_AFTER_LOGIN;
+            window.__POINTS_INTRO_CONTINUED = true;
+            if (intro) intro.style.display = 'none';
+            if (alreadyAuthenticatedIntro) {
+                window.__POINTS_INTRO_AFTER_LOGIN = false;
+                const appContainer = document.querySelector('.container');
+                if (appContainer) appContainer.style.display = 'block';
+                return;
+            }
+            try {
+                showLoginScreen();
+                if (!document.getElementById('loginOverlay')) showLoginScreen();
+                if (!document.getElementById('loginOverlay')) {
+                    throw new Error('Login overlay was not created');
+                }
+            } catch (transitionError) {
+                console.error('Points Staff intro-to-login transition failed:', transitionError);
+                if (intro) intro.style.display = 'flex';
+                introTransitionBusy = false;
+                introNextButtonEarly.disabled = false;
+                let message = document.getElementById('pointsIntroTransitionError');
+                if (!message) {
+                    message = document.createElement('div');
+                    message.id = 'pointsIntroTransitionError';
+                    message.style.cssText = 'position:fixed;left:10px;right:10px;bottom:12px;z-index:400001;padding:12px;border-radius:10px;background:#fff;color:#991b1b;border:1px solid #fecaca;text-align:center;direction:rtl;font-weight:bold;';
+                    document.body.appendChild(message);
+                }
+                message.textContent = 'تعذر فتح شاشة تسجيل الدخول. حاول مرة أخرى بعد تحديث الصفحة.';
+            }
+        });
+    }
     
     function loadUsersData() {
         const saved = localStorage.getItem(USERS_STORAGE_KEY);
@@ -7252,6 +7279,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
+    // Intro button handler is bound at the start of this module above.
     loadUsersData();
     showLoginScreen();
 })();
