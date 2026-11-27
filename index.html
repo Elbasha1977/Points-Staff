@@ -6822,7 +6822,9 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Expose login transition early; later optional UI errors must not disable the intro button.
+    // Expose the login transition as soon as its implementation exists.
+    // The intro button handler is registered here (not at the very end of this
+    // large script), so a later optional feature error cannot leave the button inert.
     window.__POINTS_STAFF_SHOW_LOGIN = showLoginScreen;
     const introNextButton = document.getElementById('pointsIntroNext');
     if (introNextButton && !introNextButton.dataset.pointsTransitionBound) {
@@ -6830,6 +6832,7 @@ document.addEventListener('DOMContentLoaded', function() {
         introNextButton.addEventListener('click', function () {
             const intro = document.getElementById('pointsIntroScreen');
             const alreadyAuthenticatedIntro = !!(firebaseAuth && firebaseAuth.currentUser && window.__POINTS_INTRO_AFTER_LOGIN);
+            // Set the gate before hiding the intro; showLoginScreen checks this flag.
             window.__POINTS_INTRO_CONTINUED = true;
             if (intro) intro.style.display = 'none';
             if (alreadyAuthenticatedIntro) {
@@ -6840,12 +6843,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             try {
                 showLoginScreen();
+                // Defensive retry if an older overlay was removed but not recreated.
                 if (!document.getElementById('loginOverlay')) showLoginScreen();
             } catch (transitionError) {
                 console.error('Points Staff intro-to-login transition failed:', transitionError);
                 const message = document.createElement('div');
                 message.style.cssText = 'position:fixed;inset:0;z-index:100001;background:#fff;color:#991b1b;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-weight:bold;';
-                message.textContent = 'تعذر فتح شاشة الدخول. حدّث الصفحة وحاول مرة أخرى.';
+                message.textContent = 'تعذر فتح شاشة الدخول. حدّث الصفحة وحاول مرة أخرى. إذا تكررت المشكلة افتح أدوات المطور لمعرفة الخطأ.';
                 document.body.appendChild(message);
             }
         });
@@ -6987,8 +6991,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const approveCall=firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('approveStaffRegistration');
             const response=await approveCall({requestId:r.uid||doc.id,approvedClassIds:approvedClasses});
             const result=response&&response.data?response.data:{};
-            if(result.success!==true||!result.licenseId)throw new Error(result.message||'لم يؤكد الخادم اعتماد الموظف وحجز المقعد.');
-            if(card)card.innerHTML='<div style="color:#15803d;font-weight:bold;padding:10px;">✅ تم الاعتماد وحجز مقعد للموظف: '+(r.email||'')+' · الصفوف: '+approvedClasses.join('، ')+'</div>';
+            if(result.success!==true||!result.licenseId)throw new Error(result.message||'لم يؤكد الخادم اعتماد الموظف وحجز المقعد.');            if(card)card.innerHTML='<div style="color:#15803d;font-weight:bold;padding:10px;">✅ تم الاعتماد وحجز مقعد للموظف: '+(r.email||'')+' · الصفوف: '+approvedClasses.join('، ')+'</div>';
           }
           async function rejectOne(doc, card){
             const rejectCall=firebase.app().functions(POINTS_LICENSE_REGION).httpsCallable('rejectStaffRegistration');
@@ -7020,7 +7023,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const info=document.createElement('div');info.style.cssText='min-width:180px;flex:1;overflow-wrap:anywhere;';
                     info.innerHTML='<b>📧 '+(r.email||'—')+'</b><div style="color:#475569;font-size:13px;">📚 '+(r.subject||'—')+' · الشعب: '+(Array.isArray(r.requestedClassIds)?r.requestedClassIds.join('، '):'—')+'</div>';
                     const actions=document.createElement('div');actions.style.cssText='display:flex;gap:6px;align-items:center;';                    actions.innerHTML='<button style="background:#16a34a;color:white;border:0;border-radius:8px;padding:7px 10px;">اعتماد</button><button style="background:#dc2626;color:white;border:0;border-radius:8px;padding:7px 10px;">رفض</button>';
-                    actions.children[0].onclick=async()=>{const requested=Array.isArray(r.requestedClassIds)?r.requestedClassIds:[];if(!requested.length){alert('هذا الطلب لا يحتوي على صفوف مطلوبة.');return;}const chosen=prompt('حدد الصفوف التي ستُعتمد لهذا الموظف فقط، مفصولة بفاصلة.\nالصفوف المطلوبة: '+requested.join('، ')+'\nاتركها كما هي لاعتماد جميع الصفوف المطلوبة.',requested.join(', '));if(chosen===null)return;const selected=chosen.split(',').map(x=>x.trim()).filter(Boolean);if(selected.some(id=>!requested.includes(id))){alert('تم إدخال صف غير موجود ضمن طلب الموظف.');return;}if(!confirm('اعتماد '+r.email+' للصفوف: '+selected.join('، ')+'؟'))return;try{await approveOne(doc,card,selected);}catch(e){alert('تعذر الاعتماد: '+(e.code||e.message));}};                    actions.children[1].onclick=async()=>{if(!confirm('رفض '+r.email+'؟'))return;try{await rejectOne(doc,card);}catch(e){alert('تعذر الرفض: '+(e.code||e.message));}};
+                    actions.children[0].onclick=async()=>{const requested=Array.isArray(r.requestedClassIds)?r.requestedClassIds:[];if(!requested.length){alert('هذا الطلب لا يحتوي على صفوف مطلوبة.');return;}const chosen=prompt('حدد الصفوف التي ستُعتمد لهذا الموظف فقط، مفصولة بفاصلة.\nالصفوف المطلوبة: '+requested.join('، ')+'\nاتركها كما هي لاعتماد جميع الصفوف المطلوبة.',requested.join(', '));if(chosen===null)return;const selected=chosen.split(',').map(x=>x.trim()).filter(Boolean);if(selected.some(id=>!requested.includes(id))){alert('تم إدخال صف غير موجود ضمن طلب الموظف.');return;}if(!confirm('اعتماد '+r.email+' للصفوف: '+selected.join('، ')+'؟'))return;try{await approveOne(doc,card,selected);}catch(e){alert('تعذر الاعتماد: '+(e.code||e.message));}};
+                    actions.children[1].onclick=async()=>{if(!confirm('رفض '+r.email+'؟'))return;try{await rejectOne(doc,card);}catch(e){alert('تعذر الرفض: '+(e.code||e.message));}};
                     card.append(info,actions);schoolBox.appendChild(card);
                   });
                   countryBox.appendChild(schoolBox);
