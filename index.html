@@ -6454,7 +6454,8 @@ function escapeHomeworkResult(v){return String(v==null?'':v).replace(/[&<>"']/g,
 // ==================== ربط الأحداث ====================
 document.addEventListener('DOMContentLoaded', function() {
     initMonthlyData();
-    renderStudents();
+    // Defer the student table, honor board and eligibility prompts until after login.
+    // The authenticated login flow already calls renderStudents() after loading the authorized class data.
     setInterval(updateDateTimeDisplay, 1000);
     updateDateTimeDisplay();
     
