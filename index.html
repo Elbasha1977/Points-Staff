@@ -8021,24 +8021,33 @@ async function saveTeacherStudentScore(answerId,correctFields,maxScore,button){
  }
 }
 
-// إزالة زر Live Worksheets المكرر في أي موضع أو عنصر قابل للنقر،
-// مع الإبقاء حصريًا على زر الإطلاق العلوي ومحتوى نافذة Live Worksheets نفسها.
-function removeDuplicateLiveWorksheetButtons(){
+// حذف زر Live Worksheets الإضافي الذي يوجّه إلى صفحة المدير،
+// مع الإبقاء على زر الموظفين الأصلي (#lwsLaunchBtn) ومحتوى نافذة الموظف.
+function removeDuplicateLiveWorksheetButtons(root){
+ const scope=root||document;
  if(!document.body)return;
- const candidates=document.querySelectorAll('button,a,[role=\"button\"],[onclick],[tabindex]');
+ const candidates=[];
+ if(scope.nodeType===1 && scope.matches && scope.matches('button,a,[role="button"],[onclick]')) candidates.push(scope);
+ if(scope.querySelectorAll) candidates.push(...scope.querySelectorAll('button,a,[role="button"],[onclick]'));
  candidates.forEach(el=>{
   if(el.id==='lwsLaunchBtn'||el.closest('#liveWorksheetsModal'))return;
   const label=String(el.innerText||el.textContent||el.value||'').replace(/\s+/g,' ').trim();
-  if(/live\s*worksheets/i.test(label)){
-   // لا نحذف حاوية عامة؛ نحذف عنصر التحكم نفسه فقط.
-   if(el.matches('button,a,[role=\"button\"],[onclick]'))el.remove();
-  }
+  if(/live\s*worksheets/i.test(label))el.remove();
  });
 }
-// Run the duplicate cleanup once. Avoid a whole-document MutationObserver here:
-// the app dynamically updates many tables and modals, so rescanning the full DOM
-// after every mutation can lock the browser on slower managed devices.
-removeDuplicateLiveWorksheetButtons();
+// تنظيف أولي ثم مراقبة العناصر المضافة فقط، دون إعادة فحص الصفحة كاملة؛
+// وهذا يمنع ظهور زر المدير إذا أضافته شيفرة أخرى بعد تحميل واجهة الموظف.
+removeDuplicateLiveWorksheetButtons(document);
+if(document.body && !window.__POINTS_LWS_DUPLICATE_GUARD){
+ window.__POINTS_LWS_DUPLICATE_GUARD=true;
+ const lwsDuplicateObserver=new MutationObserver(records=>{
+  records.forEach(record=>record.addedNodes.forEach(node=>{
+   if(node.nodeType===1)removeDuplicateLiveWorksheetButtons(node);
+   else if(node.nodeType===3 && node.parentElement)removeDuplicateLiveWorksheetButtons(node.parentElement);
+  }));
+ });
+ lwsDuplicateObserver.observe(document.body,{childList:true,subtree:true});
+}
 window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,openGrading,closeGrading,refreshGrading,loadGradingAnswers};
 })();
 </script>
