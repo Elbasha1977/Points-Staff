@@ -35,7 +35,7 @@ self.addEventListener("fetch", event => {
         else html += script;
       }
       const smartMessagingVersion = "20261124-smart-academic-messaging-v3";
-      const smartTagPattern = /(<script\\b[^>]*\\bsrc=["'])([^"']*smart-academic-messaging\\.js)(?:\\?[^"']*)?(["'][^>]*>)/gi;
+      const smartTagPattern = /(<script\b[^>]*\bsrc=["'])([^"']*smart-academic-messaging\.js)(?:\?[^"']*)?(["'][^>]*>)/gi;
       let smartTagFound = false;
       html = html.replace(smartTagPattern, (_match, opening, source, closing) => {
         smartTagFound = true;
