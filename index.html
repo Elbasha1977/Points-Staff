@@ -345,6 +345,43 @@ body { background: linear-gradient(135deg, #dbeafe, #c7d2fe); padding: 20px; }
 .login-card .error { color: #ef4444; margin: 10px 0; font-size: 14px; }
 .login-card .admin-panel { margin-top: 20px; font-size: 14px; }
 .login-card .admin-panel a { color: #4338ca; text-decoration: none; font-weight: bold; }
+/* iOS Home Screen / standalone login touch and keyboard reliability */
+@supports (-webkit-touch-callout: none) {
+  #loginOverlay {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+    pointer-events: auto !important;
+    isolation: isolate !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    align-items: flex-start !important;
+    touch-action: pan-y !important;
+  }
+  #loginOverlay .login-card {
+    pointer-events: auto !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    animation: none !important;
+  }
+  #loginOverlay input,
+  #loginOverlay button,
+  #loginOverlay a,
+  #loginOverlay select {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    touch-action: manipulation !important;
+  }
+  #loginOverlay input {
+    -webkit-appearance: none;
+    font-size: 16px !important;
+  }
+}
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .diagnostic-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
 .diagnostic-table th { background: #4338ca; color: white; padding: 12px; font-size: 15px; text-align: center; position: sticky; top: 0; z-index: 10; }
