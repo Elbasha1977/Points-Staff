@@ -7448,11 +7448,16 @@ document.addEventListener('DOMContentLoaded',function(){
 
 <script>
 // Independent commercial entitlement for every dropdown item.
+let pointsEntitlementLastCheckedAt=0;
 async function applyCommercialMenuLocks(forceCloseOnChange=false){
   try{
     if(!firebaseAuth || !firebaseAuth.currentUser) return;
     if(firebaseProfile && (firebaseProfile.role==='admin' || firebaseCurrentUser?.uid==='hwPgzTQbdfUJa45G2Wwc79ANNJE2')) return;
+    // Reuse the last successful entitlement result during rapid tab focus changes.
+    // Login always performs a fresh check; background refresh is capped at 5 minutes.
+    if(forceCloseOnChange && pointsEntitlementLastCheckedAt && Date.now()-pointsEntitlementLastCheckedAt<300000) return;
     const response=await verifyPointsStaffLicense();
+    pointsEntitlementLastCheckedAt=Date.now();
     const features=response.features||{};
     const entries=Array.from(document.querySelectorAll('[data-feature]'));
     const previous=window.__POINTS_LAST_ENTITLEMENT||null;
@@ -7494,7 +7499,7 @@ setInterval(async()=>{
   if(pointsEntitlementRefreshBusy||!firebaseAuth||!firebaseAuth.currentUser||!firebaseProfile||firebaseProfile.role==='admin')return;
   pointsEntitlementRefreshBusy=true;
   try{await applyCommercialMenuLocks(true);}finally{pointsEntitlementRefreshBusy=false;}
-},15000);
+},300000);
 window.addEventListener('focus',()=>{if(firebaseAuth&&firebaseAuth.currentUser)applyCommercialMenuLocks(true);});
 </script>
 
@@ -8025,21 +8030,28 @@ async function saveTeacherStudentScore(answerId,correctFields,maxScore,button){
 
 // إزالة زر Live Worksheets المكرر في أي موضع أو عنصر قابل للنقر،
 // مع الإبقاء حصريًا على زر الإطلاق العلوي ومحتوى نافذة Live Worksheets نفسها.
-function removeDuplicateLiveWorksheetButtons(){
+function removeDuplicateLiveWorksheetButtons(root=document){
  if(!document.body)return;
- const candidates=document.querySelectorAll('button,a,[role=\"button\"],[onclick],[tabindex]');
+ const selector='button,a,[role="button"],[onclick],[tabindex]';
+ const candidates=[];
+ if(root&&root.nodeType===1&&root.matches&&root.matches(selector))candidates.push(root);
+ if(root&&root.querySelectorAll)candidates.push(...root.querySelectorAll(selector));
  candidates.forEach(el=>{
   if(el.id==='lwsLaunchBtn'||el.closest('#liveWorksheetsModal'))return;
   const label=String(el.innerText||el.textContent||el.value||'').replace(/\s+/g,' ').trim();
   if(/live\s*worksheets/i.test(label)){
    // لا نحذف حاوية عامة؛ نحذف عنصر التحكم نفسه فقط.
-   if(el.matches('button,a,[role=\"button\"],[onclick]'))el.remove();
+   if(el.matches('button,a,[role="button"],[onclick]'))el.remove();
   }
  });
 }
-removeDuplicateLiveWorksheetButtons();
+removeDuplicateLiveWorksheetButtons(document);
 if(document.body&&window.MutationObserver){
- const duplicateButtonObserver=new MutationObserver(()=>removeDuplicateLiveWorksheetButtons());
+ const duplicateButtonObserver=new MutationObserver(records=>{
+  records.forEach(record=>record.addedNodes.forEach(node=>{
+   if(node&&node.nodeType===1)removeDuplicateLiveWorksheetButtons(node);
+  }));
+ });
  duplicateButtonObserver.observe(document.body,{childList:true,subtree:true});
 }
 window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,openGrading,closeGrading,refreshGrading,loadGradingAnswers};
