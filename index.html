@@ -452,17 +452,18 @@ body { background: linear-gradient(135deg, #dbeafe, #c7d2fe); padding: 20px; }
 .dropdown-content a.feature-locked::after{content:'🔒';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px}
 .dropdown-content a.feature-locked:hover{background:#f1f5f9!important;color:#64748b!important}
 
-/* Opening brand screen */
-#pointsIntroScreen{position:fixed;inset:0;z-index:300000;display:flex;align-items:center;justify-content:center;padding:18px;background:linear-gradient(135deg,#dbeafe,#c7d2fe);}
-#pointsIntroCard{width:min(100%,1350px);max-height:calc(100dvh - 36px);overflow:auto;text-align:center;background:#08275f;border:3px solid #d5a52a;border-radius:28px;padding:clamp(10px,2vw,22px);box-shadow:0 18px 55px rgba(5,20,55,.35);}
-#pointsIntroImage{display:block;width:100%;max-height:calc(100dvh - 190px);object-fit:contain;border-radius:20px;}
-.points-intro-brand-stage{position:relative;width:100%;max-width:900px;aspect-ratio:3/2;margin:0 auto;}
+/* Opening brand screen — compact, viewport-fitted, no scrolling */
+#pointsIntroScreen{position:fixed;inset:0;z-index:300000;display:flex;align-items:center;justify-content:center;padding:8px;background:linear-gradient(135deg,#dbeafe,#c7d2fe);overflow:hidden;}
+#pointsIntroCard{box-sizing:border-box;width:min(100%,1080px);max-height:calc(100dvh - 16px);overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;background:#08275f;border:3px solid #d5a52a;border-radius:22px;padding:clamp(7px,1.2vh,14px);box-shadow:0 18px 55px rgba(5,20,55,.35);}
+#pointsIntroImage{display:block;width:100%;max-height:calc(100dvh - 210px);object-fit:contain;border-radius:16px;}
+.points-intro-brand-stage{position:relative;width:min(900px,calc((100dvh - 210px)*1.5));max-width:100%;aspect-ratio:3/2;margin:0 auto;flex:0 1 auto;}
 .points-intro-brand-stage #pointsIntroImage{width:100%;height:100%;max-height:none;object-fit:fill;}
 .points-intro-school-overlay{position:absolute;left:41.5%;top:49.5%;width:39.5%;height:15.5%;display:flex;align-items:center;justify-content:center;padding:2px 8px;background:#ffeb00;border:2px solid #050505;border-radius:16px;color:#050505;font-weight:900;font-size:clamp(8px,1.3vw,15px);line-height:1.15;text-align:center;overflow:hidden;text-shadow:none;box-shadow:none;}
 @media(max-width:600px){.points-intro-school-overlay{left:41.5%;top:49.5%;width:39.5%;height:15.5%;border-radius:10px;border-width:1.5px;padding:1px 4px;font-size:clamp(7px,2.05vw,11px);line-height:1.08;}}
-#pointsIntroSchool{margin:12px auto 14px;color:#fff0b5;font-size:clamp(16px,2.2vw,25px);font-weight:900;text-align:center;line-height:1.5;}
-#pointsIntroNext{min-width:180px;padding:13px 42px;border:2px solid #ffe08a;border-radius:30px;background:linear-gradient(135deg,#ffe08a,#d5a52a);color:#102c60;font-size:20px;font-weight:900;cursor:pointer;box-shadow:0 5px 16px #0004;}
+#pointsIntroSchool{flex:0 0 auto;margin:2px auto 4px;color:#fff0b5;font-size:clamp(13px,1.8vw,21px);font-weight:900;text-align:center;line-height:1.2;}
+#pointsIntroNext{flex:0 0 auto;min-width:150px;padding:8px 30px;border:2px solid #ffe08a;border-radius:30px;background:linear-gradient(135deg,#ffe08a,#d5a52a);color:#102c60;font-size:17px;font-weight:900;cursor:pointer;box-shadow:0 5px 16px #0004;}
 #pointsIntroNext:hover{transform:translateY(-2px);filter:brightness(1.05);}
+@media(max-height:700px){#pointsIntroCard{gap:3px;padding:6px} .points-intro-brand-stage{width:min(760px,calc((100dvh - 150px)*1.5))} #pointsIntroSchool{font-size:clamp(12px,1.5vw,17px);margin:1px auto 2px} #pointsIntroNext{padding:6px 26px;font-size:16px}}
 .compact-brand{width:min(100%,1050px);margin:0 auto 16px;padding:13px 18px;display:grid;grid-template-columns:1fr 2px 1fr;align-items:center;gap:16px;background:linear-gradient(135deg,#061b49,#123b78);border:2px solid #d5a52a;border-radius:16px;box-shadow:0 5px 16px #0f172a26;color:#fff;}
 .compact-brand-side{min-width:0;text-align:center;line-height:1.8;font-weight:800}
 .compact-brand-school{font-size:clamp(15px,1.8vw,21px);font-weight:900;color:#ffe08a;text-align:center;margin-bottom:3px}
@@ -470,7 +471,7 @@ body { background: linear-gradient(135deg, #dbeafe, #c7d2fe); padding: 20px; }
 .compact-brand-license-line strong,.compact-brand-expiry strong{color:#ffe08a}
 .compact-brand-divider{width:2px;height:72%;min-height:55px;background:linear-gradient(180deg,transparent,#d5a52a,transparent)}
 .compact-brand-author{font-size:clamp(12px,1.35vw,16px);font-weight:900;color:#fff;text-align:center;white-space:normal}
-@media(max-width:600px){#pointsIntroScreen{padding:8px}#pointsIntroCard{border-radius:16px;padding:8px}#pointsIntroImage{max-height:calc(100dvh - 175px)}.compact-brand{gap:8px;padding:9px;grid-template-columns:1fr 1px 1fr}.compact-brand-author{font-size:11px}.compact-brand-license-line,.compact-brand-expiry{font-size:11px}.compact-brand-school{font-size:13px}.compact-brand-divider{min-height:60px}}
+@media(max-width:600px){#pointsIntroScreen{padding:6px}#pointsIntroCard{border-radius:16px;padding:6px;gap:4px}.points-intro-brand-stage{width:min(100%,calc((100dvh - 165px)*1.5))}#pointsIntroSchool{margin:2px auto 3px;font-size:clamp(12px,3.2vw,17px)}#pointsIntroNext{min-width:135px;padding:7px 24px;font-size:16px}.compact-brand{gap:8px;padding:9px;grid-template-columns:1fr 1px 1fr}.compact-brand-author{font-size:11px}.compact-brand-license-line,.compact-brand-expiry{font-size:11px}.compact-brand-school{font-size:13px}.compact-brand-divider{min-height:60px}}
 
 /* منظومة المخالفات الجديدة */
 .violations-hub-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:20px 0}
@@ -8059,31 +8060,30 @@ window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,o
 <script id="points-next-button-final-guard">
 (function () {
   "use strict";
-  var button = document.getElementById("pointsIntroNext");
+  var original = document.getElementById("pointsIntroNext");
   var intro = document.getElementById("pointsIntroScreen");
-  if (!button || !intro || window.__POINTS_NEXT_FINAL_GUARD_INSTALLED) return;
+  if (!original || !intro || window.__POINTS_NEXT_FINAL_GUARD_INSTALLED) return;
   window.__POINTS_NEXT_FINAL_GUARD_INSTALLED = true;
 
+  // Replace the button node to discard older, competing click handlers.
+  // Keep its appearance and attributes, but give it one authoritative handler.
+  var button = original.cloneNode(true);
+  original.parentNode.replaceChild(button, original);
+
   var transitioning = false;
-
-  window.addEventListener("click", function (event) {
-    var target = event.target;
-    if (target !== button && !(target && button.contains(target))) return;
-
+  button.addEventListener("click", function (event) {
     event.preventDefault();
     event.stopPropagation();
-    event.stopImmediatePropagation();
-
     if (transitioning) return;
     transitioning = true;
     button.disabled = true;
 
     try {
       window.__POINTS_INTRO_CONTINUED = true;
-      var authenticatedIntro = !!window.__POINTS_INTRO_AFTER_LOGIN;
+      var alreadyAuthenticated = !!window.__POINTS_INTRO_AFTER_LOGIN;
       intro.style.display = "none";
 
-      if (authenticatedIntro) {
+      if (alreadyAuthenticated) {
         window.__POINTS_INTRO_AFTER_LOGIN = false;
         var app = document.querySelector(".container");
         if (app) app.style.display = "block";
@@ -8092,16 +8092,15 @@ window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,o
 
       var openLogin = window.__POINTS_STAFF_SHOW_LOGIN;
       if (typeof openLogin !== "function") {
-        throw new Error("Login screen initializer is unavailable");
+        throw new Error("Login screen initializer was not registered");
       }
-
       openLogin();
 
       var overlay = document.getElementById("loginOverlay");
-      if (!overlay) throw new Error("Login overlay was not created");
+      if (!overlay) throw new Error("Login screen initializer did not create loginOverlay");
       overlay.style.display = "";
     } catch (error) {
-      console.error("POINTS Staff Next button transition failed:", error);
+      console.error("POINTS Staff Next transition failed:", error);
       window.__POINTS_INTRO_CONTINUED = false;
       intro.style.display = "flex";
       button.disabled = false;
@@ -8111,15 +8110,12 @@ window.POINTS_LWS={open,close,newWorksheet,showList,fileSelected,addField,save,o
       if (!message) {
         message = document.createElement("div");
         message.id = "pointsIntroTransitionError";
-        message.style.cssText =
-          "position:fixed;left:10px;right:10px;bottom:12px;z-index:400001;" +
-          "padding:12px;border-radius:10px;background:#fff;color:#991b1b;" +
-          "border:1px solid #fecaca;text-align:center;direction:rtl;font-weight:bold;";
+        message.style.cssText = "position:fixed;left:10px;right:10px;bottom:12px;z-index:400001;padding:12px;border-radius:10px;background:#fff;color:#991b1b;border:1px solid #fecaca;text-align:center;direction:rtl;font-weight:bold;";
         document.body.appendChild(message);
       }
-      message.textContent = "تعذر فتح شاشة تسجيل الدخول. حاول مرة أخرى بعد تحديث الصفحة.";
+      message.textContent = "تعذر فتح شاشة تسجيل الدخول. أعد تحميل الصفحة وحاول مرة أخرى.";
     }
-  }, true);
+  });
 })();
 </script>
 
