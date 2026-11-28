@@ -6944,6 +6944,8 @@ const container = document.querySelector('.container');
   if(firebaseProfile.active!==true||firebaseProfile.approved!==true){await firebaseAuth.signOut();firebaseCurrentUser=null;msgDiv.innerText='⏳ الحساب غير مفعل من مدير الموقع';return;}
   msgDiv.innerText='⏳ تم التحقق من الحساب. جارٍ التحقق من ترخيص نسخة الموظفين...';
   await verifyPointsStaffLicense();
+  // The license was just checked for this authenticated session; reuse it when applying menu locks.
+  pointsEntitlementLastCheckedAt=Date.now();
   if(firebaseProfile.role==='admin'){
     if(!await loadFirebaseData()){await firebaseAuth.signOut();firebaseCurrentUser=null;return;}
   } else if(firebaseProfile.role==='schoolAdmin'){
@@ -6955,14 +6957,15 @@ const container = document.querySelector('.container');
     const scoped={};
     const staffSchoolId=typeof firebaseProfile.schoolId==='string'?firebaseProfile.schoolId.trim():'';
     if(!staffSchoolId){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ حساب المعلم لا يحتوي على رمز المدرسة (schoolId). راجع مدير المدرسة لتحديث ملف الصلاحيات.';return;}
-    for(const classId of permitted){
-      const mirrorId=staffSchoolId+'__'+classId;
-      const classSnap=await firestoreDb.collection('schoolClasses').doc(mirrorId).get();
+    // Fetch all assigned class mirrors concurrently instead of waiting for each class in sequence.
+    const classSnaps=await Promise.all(permitted.map(classId=>firestoreDb.collection('schoolClasses').doc(staffSchoolId+'__'+classId).get()));
+    classSnaps.forEach((classSnap,index)=>{
+      const classId=permitted[index];
       if(classSnap.exists){
         const mirror=classSnap.data();
         if(mirror.schoolId===staffSchoolId && mirror.classId===classId && mirror.classData!==undefined){scoped[classId]=mirror.classData;if(Array.isArray(mirror.messagesLog)){if(!messagesLog||Array.isArray(messagesLog)||typeof messagesLog!=='object')messagesLog={};messagesLog[classId]=mergeParentMessageArrays(messagesLog[classId],mirror.messagesLog);}}
       }
-    }
+    });
     if(Object.keys(scoped).length===0){await firebaseAuth.signOut();firebaseCurrentUser=null;firebaseProfile=null;msgDiv.innerText='❌ لم نعثر على بيانات الفصول التابعة لمدرستك. افتح حساب مدير المدرسة، وتأكد من مزامنة بيانات المدرسة ثم راجع schoolId وإسناد classIds لحساب المعلم.';return;}
     allClassesData=scoped;
     currentClass=permitted.find(id=>Object.prototype.hasOwnProperty.call(scoped,id))||Object.keys(scoped)[0];
@@ -7490,11 +7493,14 @@ async function applyCommercialMenuLocks(forceCloseOnChange=false){
   try{
     if(!firebaseAuth || !firebaseAuth.currentUser) return;
     if(firebaseProfile && (firebaseProfile.role==='admin' || firebaseCurrentUser?.uid==='hwPgzTQbdfUJa45G2Wwc79ANNJE2')) return;
-    // Reuse the last successful entitlement result during rapid tab focus changes.
-    // Login always performs a fresh check; background refresh is capped at 5 minutes.
-    if(forceCloseOnChange && pointsEntitlementLastCheckedAt && Date.now()-pointsEntitlementLastCheckedAt<300000) return;
-    const response=await verifyPointsStaffLicense();
-    pointsEntitlementLastCheckedAt=Date.now();
+    // Login performs a fresh license check. Reuse that verified response for menu rendering
+    // and for up to 5 minutes; a forced refresh after the cache expires checks the server again.
+    let response=window.POINTS_STAFF_CUSTOMER_LICENSE;
+    const entitlementFresh=pointsEntitlementLastCheckedAt && Date.now()-pointsEntitlementLastCheckedAt<300000;
+    if(!entitlementFresh || !response){
+      response=await verifyPointsStaffLicense();
+      pointsEntitlementLastCheckedAt=Date.now();
+    }
     const features=response.features||{};
     const entries=Array.from(document.querySelectorAll('[data-feature]'));
     const previous=window.__POINTS_LAST_ENTITLEMENT||null;
